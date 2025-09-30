@@ -1,0 +1,26 @@
+[
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0g1",
+    "title": "About Dhyey Production",
+    "slug": "about-dhyey-production",
+    "body": "<h1>About Dhyey Production</h1><p>Welcome to Dhyey Production, where stories come alive and imagination knows no bounds. Founded with a vision to create a platform where storytellers from around the world can share their narratives, we believe in the power of stories to connect, inspire, and transform lives.</p><h2>Our Mission</h2><p>At Dhyey Production, our mission is to democratize storytelling by providing a platform where every voice can be heard. Whether you're a seasoned author or someone with a story burning inside you, we're here to help you share it with the world.</p><h2>What We Offer</h2><ul><li><strong>Creative Freedom:</strong> Write in any genre, any style, any length</li><li><strong>Global Audience:</strong> Connect with readers from around the world</li><li><strong>Community Support:</strong> Join a community of passionate storytellers</li><li><strong>Professional Tools:</strong> Access to editing and publishing tools</li></ul><h2>Our Values</h2><p>We believe in:</p><ul><li><strong>Authenticity:</strong> Every story deserves to be told in its authentic voice</li><li><strong>Diversity:</strong> Stories from all cultures, backgrounds, and perspectives are welcome</li><li><strong>Quality:</strong> We maintain high standards while supporting creative expression</li><li><strong>Community:</strong> Building connections between writers and readers</li></ul><h2>Join Our Story</h2><p>Whether you're here to read, write, or both, you're part of the Dhyey Production family. Together, we're building a world where every story matters and every voice is heard.</p><p>Ready to begin your storytelling journey? <a href='/signup'>Join us today</a> and become part of our growing community of storytellers.</p>",
+    "metaDescription": "Learn about Dhyey Production, a storytelling platform where writers and readers connect through the power of narrative.",
+    "isPublished": true,
+    "createdAt": "2024-09-15T10:00:00.000Z",
+    "lastUpdated": "2024-09-20T12:00:00.000Z",
+    "createdBy": "65f1a2b3c4d5e6f7a8b9c0e4",
+    "updatedBy": "65f1a2b3c4d5e6f7a8b9c0e4"
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0g2",
+    "title": "Privacy Policy",
+    "slug": "privacy-policy",
+    "body": "<h1>Privacy Policy</h1><p>Last updated: September 20, 2024</p><h2>Information We Collect</h2><p>We collect information you provide directly to us, such as when you create an account, publish a story, or contact us for support.</p><h2>How We Use Your Information</h2><p>We use the information we collect to provide, maintain, and improve our services, communicate with you, and protect our platform and users.</p><h2>Information Sharing</h2><p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as described in this policy.</p><h2>Contact Us</h2><p>If you have questions about this Privacy Policy, please contact us at privacy@dhyeyproduction.com</p>",
+    "metaDescription": "Dhyey Production's privacy policy explaining how we collect, use, and protect your personal information.",
+    "isPublished": true,
+    "createdAt": "2024-09-15T10:30:00.000Z",
+    "lastUpdated": "2024-09-20T12:30:00.000Z",
+    "createdBy": "65f1a2b3c4d5e6f7a8b9c0e4",
+    "updatedBy": "65f1a2b3c4d5e6f7a8b9c0e4"
+  }
+]

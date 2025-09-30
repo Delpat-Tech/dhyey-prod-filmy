@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: "default.jpg",
   },
+  bio: {
+    type: String,
+    maxlength: [500, 'Bio must be less than 500 characters'],
+    default: ''
+  },
   role: {
     type: String,
     enum: ["user", "guide", "lead-guide", "admin"],

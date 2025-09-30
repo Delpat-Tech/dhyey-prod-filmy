@@ -1,6 +1,7 @@
 const express = require('express');
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
+const storyController = require('./../controllers/storyController');
 
 const router = express.Router();
 
@@ -10,6 +11,10 @@ router.get('/logout', authController.logout);
 
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
+
+// Public profile routes
+router.get('/:userId', userController.getUserProfile);
+router.get('/:userId/stories', authController.optionalAuth, storyController.getUserStories);
 
 // Protect all routes after this middleware
 router.use(authController.protect);

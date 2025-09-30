@@ -1,0 +1,37 @@
+[
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0d1",
+    "name": "Adventure",
+    "slug": "adventure",
+    "description": "Thrilling tales of exploration and discovery",
+    "isActive": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0d2",
+    "name": "Fantasy",
+    "slug": "fantasy",
+    "description": "Magical worlds and mythical creatures",
+    "isActive": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0d3",
+    "name": "Romance",
+    "slug": "romance",
+    "description": "Love stories that touch the heart",
+    "isActive": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0d4",
+    "name": "Mystery",
+    "slug": "mystery",
+    "description": "Puzzles and secrets waiting to be solved",
+    "isActive": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0d5",
+    "name": "Science Fiction",
+    "slug": "science_fiction",
+    "description": "Futuristic tales of technology and space",
+    "isActive": true
+  }
+]

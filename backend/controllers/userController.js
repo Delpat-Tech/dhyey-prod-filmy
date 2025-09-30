@@ -70,7 +70,7 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   }
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
-  const filteredBody = filterObj(req.body, 'name', 'email');
+  const filteredBody = filterObj(req.body, 'name', 'email', 'bio');
   if (req.file) filteredBody.photo = req.file.filename;
 
   // 3) Update user document
@@ -93,6 +93,25 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   res.status(204).json({
     status: 'success',
     data: null
+  });
+});
+
+// Get user profile by ID (public)
+exports.getUserProfile = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.userId)
+    .select('_id name photo bio');
+
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+
+  res.status(200).json({
+    data: {
+      userId: user._id,
+      username: user.name,
+      profilePictureUrl: user.photo,
+      bio: user.bio
+    }
   });
 });
 

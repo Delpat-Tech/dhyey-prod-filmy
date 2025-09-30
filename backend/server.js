@@ -7,14 +7,11 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 
-dotenv.config({ path: "./config.env" });
-const port = process.env.PORT;
+dotenv.config({ path: "./.env" });
+const port = process.env.PORT || 3000;
 const api = require("./api");
 
-const DB = process.env.DATABASE.replace(
-  "<password>",
-  process.env.DATABASE_PASSWORD
-);
+const DB = process.env.DATABASE || 'mongodb://localhost:27017/dhyey-production';
 
 mongoose
   .connect(DB, {

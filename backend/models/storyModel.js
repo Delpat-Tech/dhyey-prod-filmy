@@ -1,0 +1,103 @@
+const mongoose = require('mongoose');
+
+const storySchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'A story must have a title'],
+    trim: true,
+    maxlength: [200, 'Title must be less than 200 characters']
+  },
+  body: {
+    type: String,
+    required: [true, 'A story must have content'],
+  },
+  snippet: {
+    type: String,
+    maxlength: [300, 'Snippet must be less than 300 characters']
+  },
+  authorId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User',
+    required: [true, 'A story must have an author']
+  },
+  authorName: {
+    type: String,
+    required: [true, 'Author name is required']
+  },
+  categoryId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'Category',
+    required: [true, 'A story must belong to a category']
+  },
+  featuredImageUrl: {
+    type: String,
+    default: 'default-story.jpg'
+  },
+  hashtags: [{
+    type: String,
+    lowercase: true,
+    trim: true
+  }],
+  status: {
+    type: String,
+    enum: ['draft', 'in_review', 'published', 'rejected'],
+    default: 'draft'
+  },
+  likeCount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  publishedDate: {
+    type: Date
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Indexes for better performance
+storySchema.index({ status: 1, publishedDate: -1 });
+storySchema.index({ authorId: 1, status: 1 });
+storySchema.index({ title: 'text', authorName: 'text' });
+storySchema.index({ hashtags: 1 });
+
+// Pre-save middleware to update snippet and publishedDate
+storySchema.pre('save', function(next) {
+  // Auto-generate snippet from body if not provided
+  if (!this.snippet && this.body) {
+    const plainText = this.body.replace(/<[^>]*>/g, ''); // Remove HTML tags
+    this.snippet = plainText.substring(0, 297) + (plainText.length > 297 ? '...' : '');
+  }
+  
+  // Set published date when status changes to published
+  if (this.isModified('status') && this.status === 'published' && !this.publishedDate) {
+    this.publishedDate = new Date();
+  }
+  
+  // Update updatedAt field
+  this.updatedAt = new Date();
+  
+  next();
+});
+
+// Populate author details
+storySchema.pre(/^find/, function(next) {
+  this.populate({
+    path: 'authorId',
+    select: 'name photo'
+  });
+  next();
+});
+
+const Story = mongoose.model('Story', storySchema);
+
+module.exports = Story;

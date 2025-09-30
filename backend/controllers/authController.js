@@ -84,9 +84,50 @@ exports.logout = (req, res) => {
   res.redirect('/');
 };
 
+// Optional authentication - doesn't fail if no token
+exports.optionalAuth = catchAsync(async (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    // Verification token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next();
+    }
+
+    // Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+
+    // Set user if token is valid
+    req.user = currentUser;
+    res.locals.user = currentUser;
+  } catch (error) {
+    // If token is invalid, just continue without user
+  }
+  
+  next();
+});
+
 exports.protect = catchAsync(async (req, res, next) => {
   // 1) Getting token and check of it's there
-  // let token;
+  let token;
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')

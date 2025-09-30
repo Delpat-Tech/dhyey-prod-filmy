@@ -1,0 +1,42 @@
+[
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0e1",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "photo": "jane-doe.jpg",
+    "bio": "Writer of adventure and fantasy tales. Passionate about creating immersive worlds that transport readers to new dimensions.",
+    "role": "user",
+    "password": "$2a$12$UOCb8E5tqz7QcFQVgUxOau7VhqAzM5NjHjlVQfQVgUxOau7VhqAzM5",
+    "active": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0e2",
+    "name": "John Smith",
+    "email": "john@example.com",
+    "photo": "john-smith.jpg",
+    "bio": "Mystery and thriller enthusiast. I love crafting stories that keep readers on the edge of their seats.",
+    "role": "user",
+    "password": "$2a$12$UOCb8E5tqz7QcFQVgUxOau7VhqAzM5NjHjlVQfQVgUxOau7VhqAzM5",
+    "active": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0e3",
+    "name": "Emily Chen",
+    "email": "emily@example.com",
+    "photo": "emily-chen.jpg",
+    "bio": "Romance novelist with a passion for heartwarming stories. Believer in happily ever afters.",
+    "role": "user",
+    "password": "$2a$12$UOCb8E5tqz7QcFQVgUxOau7VhqAzM5NjHjlVQfQVgUxOau7VhqAzM5",
+    "active": true
+  },
+  {
+    "_id": "65f1a2b3c4d5e6f7a8b9c0e4",
+    "name": "Admin User",
+    "email": "admin@dhyeyproduction.com",
+    "photo": "admin.jpg",
+    "bio": "Administrator of Dhyey Production platform",
+    "role": "admin",
+    "password": "$2a$12$UOCb8E5tqz7QcFQVgUxOau7VhqAzM5NjHjlVQfQVgUxOau7VhqAzM5",
+    "active": true
+  }
+]

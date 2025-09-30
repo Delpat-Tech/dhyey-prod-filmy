@@ -43,29 +43,56 @@ const storySchema = new mongoose.Schema({
     enum: ['draft', 'in_review', 'published', 'rejected'],
     default: 'draft'
   },
-  likeCount: {
-    type: Number,
-    default: 0,
-    min: 0
-  },
   publishedDate: {
     type: Date
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  likeCount: {
+    type: Number,
+    default: 0
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  // Moderation and audit fields
+  moderationHistory: [{
+    action: {
+      type: String,
+      enum: ['approved', 'rejected', 'unpublished', 'resubmitted'],
+      required: true
+    },
+    moderatorId: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    moderatorName: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    feedback: {
+      type: String // For rejection reasons or notes
+    },
+    previousStatus: String,
+    newStatus: String
+  }],
+  rejectionFeedback: {
+    type: String // Current rejection reason (for easy access)
+  },
+  lastModeratedBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  },
+  lastModeratedAt: {
+    type: Date
   }
 }, {
+  timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
 
 // Indexes for better performance
-storySchema.index({ status: 1, publishedDate: -1 });
 storySchema.index({ authorId: 1, status: 1 });
 storySchema.index({ title: 'text', authorName: 'text' });
 storySchema.index({ hashtags: 1 });

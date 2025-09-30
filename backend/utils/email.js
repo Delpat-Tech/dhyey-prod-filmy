@@ -53,6 +53,48 @@ module.exports = class Email {
         <p>If you didn't request this, please ignore this email.</p>
         <p>The Dhyey Production Team</p>
       `;
+    } else if (template === 'storyApproved') {
+      html = `
+        <h1>🎉 Your Story Has Been Published!</h1>
+        <p>Hello ${this.firstName},</p>
+        <p>Great news! Your story <strong>"${this.storyTitle}"</strong> has been reviewed and approved by our moderation team.</p>
+        <p>Your story is now live and available for readers to discover and enjoy.</p>
+        <p><a href="${this.url}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Published Story</a></p>
+        <p>Thank you for contributing to our storytelling community!</p>
+        <p>Happy writing!</p>
+        <p>The Dhyey Production Team</p>
+      `;
+    } else if (template === 'storyRejected') {
+      html = `
+        <h1>Story Review Update</h1>
+        <p>Hello ${this.firstName},</p>
+        <p>Thank you for submitting your story <strong>"${this.storyTitle}"</strong> to Dhyey Production.</p>
+        <p>After careful review, our moderation team has provided the following feedback:</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #ff9800; margin: 15px 0;">
+          <p><strong>Feedback:</strong></p>
+          <p>${this.feedback}</p>
+        </div>
+        <p>We encourage you to revise your story based on this feedback and resubmit it. We believe in your storytelling potential!</p>
+        <p><a href="${this.url}" style="background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Edit Your Story</a></p>
+        <p>Keep writing!</p>
+        <p>The Dhyey Production Team</p>
+      `;
+    } else if (template === 'storyUnpublished') {
+      html = `
+        <h1>Story Status Update</h1>
+        <p>Hello ${this.firstName},</p>
+        <p>We're writing to inform you that your story <strong>"${this.storyTitle}"</strong> has been unpublished from our platform.</p>
+        ${this.feedback ? `
+        <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #ff9800; margin: 15px 0;">
+          <p><strong>Reason:</strong></p>
+          <p>${this.feedback}</p>
+        </div>
+        ` : ''}
+        <p>If you have any questions about this decision, please don't hesitate to contact our support team.</p>
+        <p><a href="${this.url}" style="background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">View Your Story</a></p>
+        <p>Thank you for your understanding.</p>
+        <p>The Dhyey Production Team</p>
+      `;
     }
 
     // 2) Define email options
@@ -84,5 +126,23 @@ module.exports = class Email {
       'passwordReset',
       'Your password reset token (valid for only 10 minutes)'
     );
+  }
+
+  // Story moderation email templates
+  async sendStoryApproved(storyTitle) {
+    this.storyTitle = storyTitle;
+    await this.send('storyApproved', `Great news! Your story "${storyTitle}" has been published`);
+  }
+
+  async sendStoryRejected(storyTitle, feedback) {
+    this.storyTitle = storyTitle;
+    this.feedback = feedback;
+    await this.send('storyRejected', `Update needed for your story "${storyTitle}"`);
+  }
+
+  async sendStoryUnpublished(storyTitle, feedback) {
+    this.storyTitle = storyTitle;
+    this.feedback = feedback;
+    await this.send('storyUnpublished', `Your story "${storyTitle}" has been unpublished`);
   }
 };

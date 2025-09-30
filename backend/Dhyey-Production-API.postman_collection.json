@@ -816,6 +816,188 @@
 					}
 				},
 				{
+					"name": "Approve Story (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"feedback\": \"Great story! Approved for publication.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin/{{story_id}}/approve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin",
+								"{{story_id}}",
+								"approve"
+							]
+						}
+					}
+				},
+				{
+					"name": "Reject Story (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"feedback\": \"The story needs more character development and a clearer plot structure. Please revise and resubmit.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin/{{story_id}}/reject",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin",
+								"{{story_id}}",
+								"reject"
+							]
+						}
+					}
+				},
+				{
+					"name": "Unpublish Story (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"feedback\": \"Story unpublished due to content policy violation. Please review our guidelines.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin/{{story_id}}/unpublish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin",
+								"{{story_id}}",
+								"unpublish"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Moderation History (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin/{{story_id}}/moderation-history",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin",
+								"{{story_id}}",
+								"moderation-history"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Moderation Stats (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin/moderation/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin",
+								"moderation",
+								"stats"
+							]
+						}
+					}
+				},
+				{
 					"name": "Create CMS Page (Admin)",
 					"request": {
 						"auth": {

@@ -534,7 +534,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/v1/stories/admin",
+							"raw": "{{base_url}}/api/v1/stories/admin?page=1&pageSize=20",
 							"host": [
 								"{{base_url}}"
 							],
@@ -543,6 +543,175 @@
 								"v1",
 								"stories",
 								"admin"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								},
+								{
+									"key": "title",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "author",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "category",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"disabled": true
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter Stories by Status (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin?status=in_review&page=1&pageSize=20",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "in_review"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Search Stories by Title (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin?title=adventure&sortBy=likeCount&sortOrder=desc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin"
+							],
+							"query": [
+								{
+									"key": "title",
+									"value": "adventure"
+								},
+								{
+									"key": "sortBy",
+									"value": "likeCount"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Filter by Author and Category (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/stories/admin?author=Jane&category=fantasy&status=published",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"stories",
+								"admin"
+							],
+							"query": [
+								{
+									"key": "author",
+									"value": "Jane"
+								},
+								{
+									"key": "category",
+									"value": "fantasy"
+								},
+								{
+									"key": "status",
+									"value": "published"
+								}
 							]
 						}
 					}

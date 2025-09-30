@@ -70,6 +70,19 @@ storySchema.index({ authorId: 1, status: 1 });
 storySchema.index({ title: 'text', authorName: 'text' });
 storySchema.index({ hashtags: 1 });
 
+// Additional indexes for admin filtering
+storySchema.index({ title: 1 }); // For title search
+storySchema.index({ authorName: 1 }); // For author search
+storySchema.index({ status: 1 }); // For status filtering
+storySchema.index({ categoryId: 1 }); // For category filtering
+storySchema.index({ createdAt: -1 }); // For date sorting
+storySchema.index({ likeCount: -1 }); // For popularity sorting
+
+// Compound indexes for common query combinations
+storySchema.index({ status: 1, createdAt: -1 }); // Status + date
+storySchema.index({ categoryId: 1, status: 1 }); // Category + status
+storySchema.index({ authorName: 1, status: 1, createdAt: -1 }); // Author + status + date
+
 // Pre-save middleware to update snippet and publishedDate
 storySchema.pre('save', function(next) {
   // Auto-generate snippet from body if not provided

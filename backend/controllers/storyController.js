@@ -240,8 +240,125 @@ exports.searchStories = catchAsync(async (req, res, next) => {
   });
 });
 
-// Admin functions using factory
-exports.getAllStories = factory.getAll(Story);
+// Get all stories with advanced filtering (Admin)
+exports.getAllStories = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 20;
+  const skip = (page - 1) * pageSize;
+
+  // Build query object
+  let query = {};
+
+  // Title search (case-insensitive)
+  if (req.query.title) {
+    query.title = { $regex: req.query.title, $options: 'i' };
+  }
+
+  // Author search (case-insensitive)
+  if (req.query.author) {
+    query.authorName = { $regex: req.query.author, $options: 'i' };
+  }
+
+  // Status filter
+  if (req.query.status) {
+    const validStatuses = ['draft', 'in_review', 'published', 'rejected'];
+    const statusQuery = req.query.status.toLowerCase().replace(/\s+/g, '_');
+    
+    if (validStatuses.includes(statusQuery)) {
+      query.status = statusQuery;
+    } else if (statusQuery === 'in_review' || req.query.status.toLowerCase() === 'in review') {
+      query.status = 'in_review';
+    }
+  }
+
+  // Category filter
+  if (req.query.category) {
+    // First find the category by name or slug
+    const category = await Category.findOne({
+      $or: [
+        { name: { $regex: req.query.category, $options: 'i' } },
+        { slug: req.query.category.toLowerCase() }
+      ]
+    });
+    
+    if (category) {
+      query.categoryId = category._id;
+    }
+  }
+
+  // Date range filters
+  if (req.query.createdAfter) {
+    query.createdAt = { ...query.createdAt, $gte: new Date(req.query.createdAfter) };
+  }
+  if (req.query.createdBefore) {
+    query.createdAt = { ...query.createdAt, $lte: new Date(req.query.createdBefore) };
+  }
+
+  // Get total count for pagination
+  const totalCount = await Story.countDocuments(query);
+  const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Build sort object
+  let sort = {};
+  if (req.query.sortBy) {
+    const sortField = req.query.sortBy;
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+    sort[sortField] = sortOrder;
+  } else {
+    sort = { createdAt: -1 }; // Default sort by newest first
+  }
+
+  // Execute query with population
+  const stories = await Story.find(query)
+    .populate({
+      path: 'authorId',
+      select: 'name email photo'
+    })
+    .populate({
+      path: 'categoryId',
+      select: 'name slug'
+    })
+    .sort(sort)
+    .skip(skip)
+    .limit(pageSize)
+    .lean();
+
+  // Format response
+  const formattedStories = stories.map(story => ({
+    id: story._id,
+    title: story.title,
+    authorName: story.authorName,
+    authorEmail: story.authorId?.email,
+    category: story.categoryId?.name,
+    status: story.status,
+    likeCount: story.likeCount,
+    createdAt: story.createdAt,
+    publishedDate: story.publishedDate,
+    snippet: story.snippet
+  }));
+
+  res.status(200).json({
+    status: 'success',
+    results: formattedStories.length,
+    data: formattedStories,
+    meta: {
+      totalCount,
+      pageSize,
+      currentPage: page,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1
+    },
+    filters: {
+      title: req.query.title || null,
+      author: req.query.author || null,
+      status: req.query.status || null,
+      category: req.query.category || null
+    }
+  });
+});
+
+// Other admin functions using factory
 exports.getStory = factory.getOne(Story, { path: 'authorId categoryId' });
 exports.updateStory = factory.updateOne(Story);
 exports.deleteStory = factory.deleteOne(Story);

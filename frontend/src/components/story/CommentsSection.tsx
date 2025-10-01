@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
-import { Heart, Reply, MoreHorizontal, Send } from 'lucide-react'
+import { Heart, Send } from 'lucide-react'
 
 interface CommentsSectionProps {
   storyId: number
@@ -69,6 +69,8 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<number | null>(null)
   const [replyText, setReplyText] = useState('')
+  const [showAllComments, setShowAllComments] = useState(false)
+  const [likedReplies, setLikedReplies] = useState<Set<number>>(new Set())
 
   const handleLikeComment = (commentId: number) => {
     setComments(prev => prev.map(comment => 
@@ -82,8 +84,32 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
     ))
   }
 
+  const handleLikeReply = (replyId: number) => {
+    const newLikedReplies = new Set(likedReplies)
+    if (likedReplies.has(replyId)) {
+      newLikedReplies.delete(replyId)
+    } else {
+      newLikedReplies.add(replyId)
+    }
+    setLikedReplies(newLikedReplies)
+
+    setComments(prev => prev.map(comment => ({
+      ...comment,
+      replies: comment.replies.map(reply => 
+        reply.id === replyId 
+          ? { 
+              ...reply, 
+              isLiked: !reply.isLiked,
+              likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+            }
+          : reply
+      )
+    })))
+  }
+
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Submit comment:', newComment) // Debug log
     if (!newComment.trim()) return
 
     const comment = {
@@ -91,7 +117,7 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
       author: {
         name: "You",
         username: "currentuser",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face"
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&crop=face"
       },
       content: newComment,
       likes: 0,
@@ -113,7 +139,7 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
       author: {
         name: "You",
         username: "currentuser",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&crop=face"
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=24&h=24&fit=crop&crop=face"
       },
       content: replyText,
       likes: 0,
@@ -131,165 +157,144 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
     setReplyingTo(null)
   }
 
+  const visibleComments = showAllComments ? comments : comments.slice(0, 3)
+
   return (
-    <div className="px-6 py-8 border-t border-gray-100">
-      <h3 className="text-xl font-bold text-gray-900 mb-6">
-        Comments ({comments.length})
-      </h3>
-
-      {/* Add Comment Form */}
-      <form onSubmit={handleSubmitComment} className="mb-8">
-        <div className="flex space-x-3">
-          <Image
-            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=40&h=40&fit=crop&crop=face"
-            alt="Your avatar"
-            width={40}
-            height={40}
-            className="rounded-full"
-          />
-          <div className="flex-1">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your thoughts about this story..."
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              rows={3}
-            />
-            <div className="flex justify-end mt-2">
-              <button
-                type="submit"
-                disabled={!newComment.trim()}
-                className="flex items-center space-x-2 bg-purple-500 text-white px-4 py-2 rounded-full font-medium hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send size={16} />
-                <span>Comment</span>
-              </button>
-            </div>
-          </div>
+    <div className="bg-white">
+      {/* Like count and time - Instagram style */}
+      <div className="px-4 py-2 border-b border-gray-100">
+        <div className="font-semibold text-sm text-black mb-1">
+          370 likes
         </div>
-      </form>
+        <div className="text-xs text-gray-500">
+          2 hours ago
+        </div>
+      </div>
 
-      {/* Comments List */}
-      <div className="space-y-6">
-        {comments.map((comment) => (
-          <div key={comment.id} className="space-y-4">
+      {/* Comments List - Instagram Style */}
+      <div className="px-4 py-3">
+        {visibleComments.map((comment) => (
+          <div key={comment.id} className="mb-4">
             {/* Main Comment */}
-            <div className="flex space-x-3">
+            <div className="flex items-start space-x-3">
               <Image
                 src={comment.author.avatar}
                 alt={comment.author.name}
-                width={40}
-                height={40}
-                className="rounded-full"
+                width={32}
+                height={32}
+                className="rounded-full flex-shrink-0"
               />
-              <div className="flex-1">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <h4 className="font-semibold text-gray-900">{comment.author.name}</h4>
-                      <span className="text-sm text-gray-500">@{comment.author.username}</span>
-                      <span className="text-sm text-gray-500">•</span>
-                      <span className="text-sm text-gray-500">{comment.timeAgo}</span>
-                    </div>
-                    <button className="p-1 text-gray-400 hover:text-gray-600 rounded-full">
-                      <MoreHorizontal size={16} />
-                    </button>
-                  </div>
-                  <p className="text-gray-700">{comment.content}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline flex-wrap">
+                  <span className="font-semibold text-black text-sm mr-2">
+                    {comment.author.username}
+                  </span>
+                  <span className="text-black text-sm break-words">
+                    {comment.content}
+                  </span>
                 </div>
                 
-                {/* Comment Actions */}
-                <div className="flex items-center space-x-4 mt-2 ml-4">
-                  <button
-                    onClick={() => handleLikeComment(comment.id)}
-                    className={`flex items-center space-x-1 text-sm transition-colors ${
-                      comment.isLiked ? 'text-red-600' : 'text-gray-600 hover:text-red-600'
-                    }`}
-                  >
-                    <Heart size={14} className={comment.isLiked ? 'fill-red-600' : ''} />
-                    <span>{comment.likes}</span>
-                  </button>
-                  
+                {/* Comment metadata */}
+                <div className="flex items-center space-x-4 mt-2">
+                  <span className="text-xs text-gray-500">{comment.timeAgo}</span>
+                  {comment.likes > 0 && (
+                    <span className="text-xs text-gray-500 font-medium">
+                      {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
+                    </span>
+                  )}
                   <button
                     onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                    className="flex items-center space-x-1 text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                    className="text-xs text-gray-500 font-medium hover:text-gray-700"
                   >
-                    <Reply size={14} />
-                    <span>Reply</span>
+                    Reply
+                  </button>
+                  <button
+                    onClick={() => handleLikeComment(comment.id)}
+                    className="p-1"
+                  >
+                    <Heart 
+                      size={12} 
+                      className={`${comment.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-gray-600'} transition-colors`} 
+                    />
                   </button>
                 </div>
-
-                {/* Reply Form */}
-                {replyingTo === comment.id && (
-                  <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="mt-3 ml-4">
-                    <div className="flex space-x-2">
-                      <Image
-                        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&crop=face"
-                        alt="Your avatar"
-                        width={32}
-                        height={32}
-                        className="rounded-full"
-                      />
-                      <div className="flex-1">
-                        <textarea
-                          value={replyText}
-                          onChange={(e) => setReplyText(e.target.value)}
-                          placeholder={`Reply to ${comment.author.name}...`}
-                          className="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-sm"
-                          rows={2}
-                        />
-                        <div className="flex justify-end space-x-2 mt-2">
-                          <button
-                            type="button"
-                            onClick={() => setReplyingTo(null)}
-                            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            disabled={!replyText.trim()}
-                            className="px-3 py-1 bg-purple-500 text-white text-sm rounded-full hover:bg-purple-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Reply
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </form>
-                )}
 
                 {/* Replies */}
                 {comment.replies.length > 0 && (
-                  <div className="mt-4 ml-4 space-y-3">
+                  <div className="mt-3 space-y-3">
                     {comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex space-x-2">
+                      <div key={reply.id} className="flex items-start space-x-3 ml-6">
                         <Image
                           src={reply.author.avatar}
                           alt={reply.author.name}
-                          width={32}
-                          height={32}
-                          className="rounded-full"
+                          width={24}
+                          height={24}
+                          className="rounded-full flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <div className="bg-gray-50 rounded-lg p-3">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h5 className="font-medium text-gray-900 text-sm">{reply.author.name}</h5>
-                              <span className="text-xs text-gray-500">@{reply.author.username}</span>
-                              <span className="text-xs text-gray-500">•</span>
-                              <span className="text-xs text-gray-500">{reply.timeAgo}</span>
-                            </div>
-                            <p className="text-gray-700 text-sm">{reply.content}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-baseline flex-wrap">
+                            <span className="font-semibold text-black text-sm mr-2">
+                              {reply.author.username}
+                            </span>
+                            <span className="text-black text-sm break-words">
+                              {reply.content}
+                            </span>
                           </div>
-                          <div className="flex items-center space-x-3 mt-1 ml-3">
-                            <button className="flex items-center space-x-1 text-xs text-gray-600 hover:text-red-600 transition-colors">
-                              <Heart size={12} />
-                              <span>{reply.likes}</span>
+                          
+                          {/* Reply metadata */}
+                          <div className="flex items-center space-x-4 mt-1">
+                            <span className="text-xs text-gray-500">{reply.timeAgo}</span>
+                            {reply.likes > 0 && (
+                              <span className="text-xs text-gray-500 font-medium">
+                                {reply.likes} {reply.likes === 1 ? 'like' : 'likes'}
+                              </span>
+                            )}
+                            <button
+                              onClick={() => handleLikeReply(reply.id)}
+                              className="p-1"
+                            >
+                              <Heart 
+                                size={10} 
+                                className={`${reply.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-gray-600'} transition-colors`} 
+                              />
                             </button>
                           </div>
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Reply Form */}
+                {replyingTo === comment.id && (
+                  <div className="mt-3 ml-6">
+                    <form onSubmit={(e) => handleSubmitReply(e, comment.id)} className="flex items-center space-x-3">
+                      <Image
+                        src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=24&h=24&fit=crop&crop=face"
+                        alt="Your avatar"
+                        width={24}
+                        height={24}
+                        className="rounded-full flex-shrink-0"
+                      />
+                      <div className="flex-1 flex items-center">
+                        <input
+                          type="text"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder={`Reply to ${comment.author.username}...`}
+                          className="flex-1 text-sm border-none outline-none bg-transparent placeholder-gray-500"
+                          autoFocus
+                        />
+                        {replyText.trim() && (
+                          <button
+                            type="submit"
+                            className="text-blue-500 hover:text-blue-600 font-semibold text-sm ml-2"
+                          >
+                            Post
+                          </button>
+                        )}
+                      </div>
+                    </form>
                   </div>
                 )}
               </div>
@@ -298,11 +303,54 @@ export default function CommentsSection({ storyId }: CommentsSectionProps) {
         ))}
       </div>
 
-      {/* Load More Comments */}
-      <div className="text-center mt-8">
-        <button className="text-purple-600 hover:text-purple-700 font-medium">
-          Load more comments
-        </button>
+      {/* View More Comments */}
+      {!showAllComments && comments.length > 3 && (
+        <div className="px-4 pb-3">
+          <button
+            onClick={() => setShowAllComments(true)}
+            className="text-gray-500 text-sm hover:text-gray-700"
+          >
+            View all {comments.length} comments
+          </button>
+        </div>
+      )}
+
+      {/* Add Comment Form - Instagram Style */}
+      <div className="border-t border-gray-200 px-4 py-3">
+        <form onSubmit={handleSubmitComment} className="flex items-center space-x-3">
+          <Image
+            src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&crop=face"
+            alt="Your avatar"
+            width={32}
+            height={32}
+            className="rounded-full flex-shrink-0"
+          />
+          <div className="flex-1 flex items-center">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNewComment(value)
+              }}
+              placeholder="Add a comment..."
+              className="flex-1 text-sm py-2 px-0 border-none outline-none bg-transparent text-black placeholder-gray-400"
+              autoComplete="off"
+            />
+            
+            {newComment.trim().length > 0 && (
+              <button
+                type="submit"
+                className="text-blue-500 hover:text-blue-600 font-semibold text-sm ml-2"
+                onClick={(e) => {
+                  handleSubmitComment(e)
+                }}
+              >
+                Post
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   )

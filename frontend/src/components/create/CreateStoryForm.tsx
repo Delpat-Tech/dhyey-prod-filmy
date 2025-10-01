@@ -70,8 +70,8 @@ export default function CreateStoryForm() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden backdrop-blur-sm">
+      <form onSubmit={handleSubmit} className="p-8 space-y-6">
         {/* Title */}
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -84,7 +84,7 @@ export default function CreateStoryForm() {
             value={formData.title}
             onChange={handleInputChange}
             placeholder="Enter your story title..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-lg transition-all duration-200 text-gray-900 bg-white"
             required
           />
         </div>
@@ -100,7 +100,7 @@ export default function CreateStoryForm() {
               name="genre"
               value={formData.genre}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 bg-white"
               required
             >
               <option value="">Select a genre</option>
@@ -121,7 +121,7 @@ export default function CreateStoryForm() {
               value={formData.hashtags}
               onChange={handleInputChange}
               placeholder="#fiction #love #mystery"
-              className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 bg-white"
             />
             <p className="text-xs text-gray-500 mt-1">Separate hashtags with spaces</p>
           </div>
@@ -181,7 +181,7 @@ export default function CreateStoryForm() {
             onChange={handleInputChange}
             placeholder="Start writing your story here..."
             rows={12}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none transition-all duration-200 text-gray-900 bg-white"
             required
           />
           <div className="flex justify-between items-center mt-2">
@@ -208,7 +208,7 @@ export default function CreateStoryForm() {
             type="button"
             onClick={handleSaveDraft}
             disabled={saveStatus === 'saving'}
-            className="flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50"
           >
             <Save size={16} />
             <span>{saveStatus === 'saving' ? 'Saving...' : 'Save Draft'}</span>
@@ -217,7 +217,7 @@ export default function CreateStoryForm() {
           <button
             type="button"
             onClick={handlePreview}
-            className="flex items-center justify-center space-x-2 px-6 py-3 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+            className="flex items-center justify-center space-x-2 px-6 py-3 border border-purple-300 text-purple-700 rounded-xl hover:bg-purple-50 hover:border-purple-400 transition-all duration-200"
           >
             <Eye size={16} />
             <span>Preview</span>
@@ -226,7 +226,7 @@ export default function CreateStoryForm() {
           <button
             type="submit"
             disabled={isSubmitting || !formData.title || !formData.content || !formData.genre}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
           >
             <Send size={16} />
             <span>{isSubmitting ? 'Submitting...' : 'Submit for Review'}</span>

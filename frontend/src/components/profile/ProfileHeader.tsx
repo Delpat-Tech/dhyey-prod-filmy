@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import Link from 'next/link'
+import { useState, useEffect, useRef } from 'react'
 import { Settings, Edit, Share, MoreHorizontal, MapPin, Calendar, Link as LinkIcon } from 'lucide-react'
 
 // Mock user data - replace with API calls later
@@ -24,9 +25,66 @@ const userData = {
 
 export default function ProfileHeader() {
   const [isFollowing, setIsFollowing] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false)
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
+  }
+
+  const handleShare = () => {
+    setShowShareMenu(!showShareMenu)
+    setShowMoreMenu(false)
+  }
+
+  const handleMore = () => {
+    setShowMoreMenu(!showMoreMenu)
+    setShowShareMenu(false)
+  }
+
+  const shareProfile = async (platform: string) => {
+    const url = `${window.location.origin}/profile/${userData.username}`
+    const title = `Check out ${userData.name}'s profile on Dhyey`
+    
+    try {
+      switch (platform) {
+        case 'copy':
+          await navigator.clipboard.writeText(url)
+          alert('Profile link copied to clipboard!')
+          break
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'linkedin':
+          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
+          break
+      }
+    } catch (error) {
+      console.error('Share failed:', error)
+    }
+    setShowShareMenu(false)
   }
 
   return (
@@ -53,13 +111,19 @@ export default function ProfileHeader() {
               <div className="flex space-x-2">
                 {userData.isOwnProfile ? (
                   <>
-                    <button className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    <Link 
+                      href="/profile/edit"
+                      className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center"
+                    >
                       <Edit size={16} className="inline mr-2" />
                       Edit Profile
-                    </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
+                    </Link>
+                    <Link 
+                      href="/settings"
+                      className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
+                    >
                       <Settings size={16} />
-                    </button>
+                    </Link>
                   </>
                 ) : (
                   <>
@@ -73,12 +137,86 @@ export default function ProfileHeader() {
                     >
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
-                      <Share size={16} />
-                    </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
-                      <MoreHorizontal size={16} />
-                    </button>
+                    <div className="relative" ref={shareMenuRef}>
+                      <button 
+                        onClick={handleShare}
+                        className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        <Share size={16} />
+                      </button>
+                      
+                      {/* Share Menu */}
+                      {showShareMenu && (
+                        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[180px]">
+                          <button
+                            onClick={() => shareProfile('copy')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            📋 Copy Profile Link
+                          </button>
+                          <button
+                            onClick={() => shareProfile('twitter')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            🐦 Share on Twitter
+                          </button>
+                          <button
+                            onClick={() => shareProfile('facebook')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            📘 Share on Facebook
+                          </button>
+                          <button
+                            onClick={() => shareProfile('linkedin')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            💼 Share on LinkedIn
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative" ref={moreMenuRef}>
+                      <button 
+                        onClick={handleMore}
+                        className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                      
+                      {/* More Menu */}
+                      {showMoreMenu && (
+                        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
+                          <button
+                            onClick={() => {
+                              console.log('Send message')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            💬 Send Message
+                          </button>
+                          <button
+                            onClick={() => {
+                              console.log('Report user')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            🚨 Report User
+                          </button>
+                          <hr className="my-1 border-gray-100" />
+                          <button
+                            onClick={() => {
+                              console.log('Block user')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                          >
+                            🚫 Block User
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -87,22 +225,22 @@ export default function ProfileHeader() {
 
           {/* Stats */}
           <div className="flex justify-around py-4 border-y border-gray-100 mb-4">
-            <div className="text-center">
+            <button className="text-center hover:bg-gray-50 px-2 py-1 rounded transition-colors">
               <div className="font-bold text-lg text-gray-900">{userData.stats.stories}</div>
               <div className="text-sm text-gray-600">Stories</div>
-            </div>
-            <div className="text-center">
+            </button>
+            <Link href="/profile/followers" className="text-center hover:bg-gray-50 px-2 py-1 rounded transition-colors">
               <div className="font-bold text-lg text-gray-900">{userData.stats.followers.toLocaleString()}</div>
               <div className="text-sm text-gray-600">Followers</div>
-            </div>
-            <div className="text-center">
+            </Link>
+            <Link href="/profile/following" className="text-center hover:bg-gray-50 px-2 py-1 rounded transition-colors">
               <div className="font-bold text-lg text-gray-900">{userData.stats.following}</div>
               <div className="text-sm text-gray-600">Following</div>
-            </div>
-            <div className="text-center">
+            </Link>
+            <button className="text-center hover:bg-gray-50 px-2 py-1 rounded transition-colors">
               <div className="font-bold text-lg text-gray-900">{userData.stats.likes.toLocaleString()}</div>
               <div className="text-sm text-gray-600">Likes</div>
-            </div>
+            </button>
           </div>
 
           {/* Bio */}
@@ -149,13 +287,19 @@ export default function ProfileHeader() {
                 
                 {userData.isOwnProfile ? (
                   <div className="flex space-x-2">
-                    <button className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    <Link 
+                      href="/profile/edit"
+                      className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors inline-flex items-center"
+                    >
                       <Edit size={16} className="inline mr-2" />
                       Edit Profile
-                    </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
+                    </Link>
+                    <Link 
+                      href="/settings"
+                      className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
+                    >
                       <Settings size={16} />
-                    </button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="flex space-x-2">
@@ -169,12 +313,86 @@ export default function ProfileHeader() {
                     >
                       {isFollowing ? 'Following' : 'Follow'}
                     </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
-                      <Share size={16} />
-                    </button>
-                    <button className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors">
-                      <MoreHorizontal size={16} />
-                    </button>
+                    <div className="relative" ref={shareMenuRef}>
+                      <button 
+                        onClick={handleShare}
+                        className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        <Share size={16} />
+                      </button>
+                      
+                      {/* Share Menu */}
+                      {showShareMenu && (
+                        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[180px]">
+                          <button
+                            onClick={() => shareProfile('copy')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            📋 Copy Profile Link
+                          </button>
+                          <button
+                            onClick={() => shareProfile('twitter')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            🐦 Share on Twitter
+                          </button>
+                          <button
+                            onClick={() => shareProfile('facebook')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            📘 Share on Facebook
+                          </button>
+                          <button
+                            onClick={() => shareProfile('linkedin')}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            💼 Share on LinkedIn
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="relative" ref={moreMenuRef}>
+                      <button 
+                        onClick={handleMore}
+                        className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        <MoreHorizontal size={16} />
+                      </button>
+                      
+                      {/* More Menu */}
+                      {showMoreMenu && (
+                        <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
+                          <button
+                            onClick={() => {
+                              console.log('Send message')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            💬 Send Message
+                          </button>
+                          <button
+                            onClick={() => {
+                              console.log('Report user')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            🚨 Report User
+                          </button>
+                          <hr className="my-1 border-gray-100" />
+                          <button
+                            onClick={() => {
+                              console.log('Block user')
+                              setShowMoreMenu(false)
+                            }}
+                            className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                          >
+                            🚫 Block User
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -184,22 +402,22 @@ export default function ProfileHeader() {
 
               {/* Stats */}
               <div className="flex space-x-8 mb-4">
-                <div>
+                <button className="hover:bg-gray-50 px-2 py-1 rounded transition-colors">
                   <span className="font-bold text-gray-900">{userData.stats.stories}</span>
                   <span className="text-gray-600 ml-1">stories</span>
-                </div>
-                <div>
+                </button>
+                <Link href="/profile/followers" className="hover:bg-gray-50 px-2 py-1 rounded transition-colors">
                   <span className="font-bold text-gray-900">{userData.stats.followers.toLocaleString()}</span>
                   <span className="text-gray-600 ml-1">followers</span>
-                </div>
-                <div>
+                </Link>
+                <Link href="/profile/following" className="hover:bg-gray-50 px-2 py-1 rounded transition-colors">
                   <span className="font-bold text-gray-900">{userData.stats.following}</span>
                   <span className="text-gray-600 ml-1">following</span>
-                </div>
-                <div>
+                </Link>
+                <button className="hover:bg-gray-50 px-2 py-1 rounded transition-colors">
                   <span className="font-bold text-gray-900">{userData.stats.likes.toLocaleString()}</span>
                   <span className="text-gray-600 ml-1">likes</span>
-                </div>
+                </button>
               </div>
 
               {/* Bio */}

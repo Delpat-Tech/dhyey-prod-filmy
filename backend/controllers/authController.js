@@ -1,88 +1,185 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
-const jwt = require('jsonwebtoken');
-const User = require('./../models/userModel');
+const User = require('./../models/User');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const Email = require('./../utils/email');
+const { createSendToken, verifyToken } = require('./../utils/jwt');
 
-const signToken = id => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
-};
-
-const createSendToken = (user, statusCode, req, res,view = false) => {
-  const token = signToken(user._id);
-
-  res.cookie('jwt', token, {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true,
-    secure: req.secure || req.headers['x-forwarded-proto'] === 'https'
-  });
-
-  // Remove password from output
-  user.password = undefined;
-
-  
-  if (view === false)
-  { 
-    res.status(statusCode).json({
-    status: 'success',
-    token,
-    data: {
-      user
-    }
-  });
-  }
-  else{
-    res.status(statusCode);
-   
-  };
-};
+// Remove the old functions since we're using the new JWT utility
 
 exports.signup = catchAsync(async (req, res, next) => {
+  // Validate required fields
+  const { name, username, email, password } = req.body;
+  
+  if (!name || !username || !email || !password) {
+    return next(new AppError('Please provide name, username, email, and password', 400));
+  }
+
+  // Check if user already exists
+  const existingUser = await User.findOne({
+    $or: [{ email }, { username }]
+  });
+  
+  if (existingUser) {
+    const field = existingUser.email === email ? 'email' : 'username';
+    return next(new AppError(`User with this ${field} already exists`, 400));
+  }
+
+  // Create new user
   const newUser = await User.create({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    passwordConfirm: req.body.passwordConfirm
+    name,
+    username,
+    email,
+    password
   });
 
-  // const url = `${req.protocol}://${req.get('host')}/me`;
-  // console.log(url);
-  // await new Email(newUser, url).sendWelcome();
+  // Generate email verification token
+  const verifyToken = newUser.createEmailVerificationToken();
+  await newUser.save({ validateBeforeSave: false });
+
+  // Send verification email
+  try {
+    const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${verifyToken}`;
+    await new Email(newUser, verifyURL).sendEmailVerification();
+  } catch (err) {
+    console.error('Email verification send failed:', err);
+    // Continue with signup even if email fails
+  }
 
   createSendToken(newUser, 201, req, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
+  
   // 1) Check if email and password exist
   if (!email || !password) {
     return next(new AppError('Please provide email and password!', 400));
   }
+  
   // 2) Check if user exists && password is correct
   const user = await User.findOne({ email }).select('+password');
 
   if (!user || !(await user.correctPassword(password, user.password))) {
     return next(new AppError('Incorrect email or password', 401));
   }
-  // 3) If everything ok, send token to client
+
+  // 3) Update login analytics
+  user.loginCount += 1;
+  user.lastActive = new Date();
+  await user.save({ validateBeforeSave: false });
+
+  // 4) If everything ok, send token to client
   createSendToken(user, 200, req, res);
 });
 
-exports.logout = (req, res) => {
-  console.log(res.cookie)
-  res.cookie('jwt', 'loggedout', {
+exports.logout = catchAsync(async (req, res, next) => {
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (refreshToken && req.user) {
+    // Remove refresh token from user's tokens array
+    req.user.removeRefreshToken(refreshToken);
+    await req.user.save({ validateBeforeSave: false });
+  }
+  
+  // Clear cookies
+  res.cookie('refreshToken', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
   });
-  // res.status(200).json({ status: 'success' });
-  res.redirect('/');
-};
+  
+  res.status(200).json({ 
+    status: 'success',
+    message: 'Logged out successfully'
+  });
+});
+
+// Email verification
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  // 1) Get user based on the token
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: { $gt: Date.now() }
+  });
+
+  // 2) If token has not expired, and there is user, verify email
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Email verified successfully!'
+  });
+});
+
+// Resend email verification
+exports.resendVerification = catchAsync(async (req, res, next) => {
+  const user = req.user;
+  
+  if (user.isEmailVerified) {
+    return next(new AppError('Email is already verified', 400));
+  }
+
+  // Generate new verification token
+  const verifyToken = user.createEmailVerificationToken();
+  await user.save({ validateBeforeSave: false });
+
+  // Send verification email
+  try {
+    const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${verifyToken}`;
+    await new Email(user, verifyURL).sendEmailVerification();
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Verification email sent!'
+    });
+  } catch (err) {
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!', 500)
+    );
+  }
+});
+
+// Refresh token
+exports.refreshToken = catchAsync(async (req, res, next) => {
+  const { refreshToken } = req.cookies;
+  
+  if (!refreshToken) {
+    return next(new AppError('No refresh token provided', 401));
+  }
+
+  try {
+    // Verify refresh token
+    const decoded = verifyToken(refreshToken, 'refresh');
+    
+    // Find user and check if refresh token exists
+    const user = await User.findById(decoded.id);
+    if (!user || !user.refreshTokens.some(rt => rt.token === refreshToken)) {
+      return next(new AppError('Invalid refresh token', 401));
+    }
+
+    // Generate new tokens
+    createSendToken(user, 200, req, res);
+  } catch (error) {
+    return next(new AppError('Invalid refresh token', 401));
+  }
+});
 
 // Optional authentication - doesn't fail if no token
 exports.optionalAuth = catchAsync(async (req, res, next) => {
@@ -126,15 +223,13 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
-  // 1) Getting token and check of it's there
+  // 1) Getting token and check if it's there
   let token;
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies.jwt) {
-    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -143,31 +238,39 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  // 2) Verification token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  try {
+    // 2) Verification token
+    const decoded = verifyToken(token, 'access');
 
-  // 3) Check if user still exists
-  const currentUser = await User.findById(decoded.id);
-  if (!currentUser) {
-    return next(
-      new AppError(
-        'The user belonging to this token does no longer exist.',
-        401
-      )
-    );
+    // 3) Check if user still exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser) {
+      return next(
+        new AppError(
+          'The user belonging to this token does no longer exist.',
+          401
+        )
+      );
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next(
+        new AppError('User recently changed password! Please log in again.', 401)
+      );
+    }
+
+    // 5) Update last active
+    currentUser.lastActive = new Date();
+    await currentUser.save({ validateBeforeSave: false });
+
+    // GRANT ACCESS TO PROTECTED ROUTE
+    req.user = currentUser;
+    res.locals.user = currentUser;
+    next();
+  } catch (error) {
+    return next(new AppError('Invalid token. Please log in again.', 401));
   }
-
-  // 4) Check if user changed password after the token was issued
-  if (currentUser.changedPasswordAfter(decoded.iat)) {
-    return next(
-      new AppError('User recently changed password! Please log in again.', 401)
-    );
-  }
-
-  // GRANT ACCESS TO PROTECTED ROUTE
-  req.user = currentUser;
-  res.locals.user = currentUser;
-  next();
 });
 
 // Only for rendered pages, no errors!

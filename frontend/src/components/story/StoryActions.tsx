@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Heart, Bookmark, Share2, MessageCircle, ThumbsUp } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Heart, Bookmark, Share2, MessageCircle, ThumbsUp, MoreHorizontal } from 'lucide-react'
 
 interface StoryActionsProps {
   story: {
@@ -20,6 +20,26 @@ export default function StoryActions({ story }: StoryActionsProps) {
   const [isLiked, setIsLiked] = useState(story.isLiked)
   const [isSaved, setIsSaved] = useState(story.isSaved)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const shareMenuRef = useRef<HTMLDivElement>(null)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false)
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
 
   const handleLike = () => {
     setIsLiked(!isLiked)
@@ -33,14 +53,39 @@ export default function StoryActions({ story }: StoryActionsProps) {
 
   const handleShare = () => {
     setShowShareMenu(!showShareMenu)
+    setShowMoreMenu(false) // Close other menu
   }
 
-  const shareOptions = [
-    { name: 'Copy Link', action: () => navigator.clipboard.writeText(window.location.href) },
-    { name: 'Twitter', action: () => window.open(`https://twitter.com/intent/tweet?url=${window.location.href}`) },
-    { name: 'Facebook', action: () => window.open(`https://facebook.com/sharer/sharer.php?u=${window.location.href}`) },
-    { name: 'LinkedIn', action: () => window.open(`https://linkedin.com/sharing/share-offsite/?url=${window.location.href}`) }
-  ]
+  const handleMore = () => {
+    setShowMoreMenu(!showMoreMenu)
+    setShowShareMenu(false) // Close other menu
+  }
+
+  const shareStory = async (platform: string) => {
+    const url = window.location.href
+    const title = "Check out this amazing story!"
+    
+    try {
+      switch (platform) {
+        case 'copy':
+          await navigator.clipboard.writeText(url)
+          alert('Link copied to clipboard!')
+          break
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'linkedin':
+          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
+          break
+      }
+    } catch (error) {
+      console.error('Share failed:', error)
+    }
+    setShowShareMenu(false)
+  }
 
   return (
     <div className="px-6 py-6 border-t border-gray-100">
@@ -72,7 +117,7 @@ export default function StoryActions({ story }: StoryActionsProps) {
           </button>
 
           {/* Share Button */}
-          <div className="relative">
+          <div className="relative" ref={shareMenuRef}>
             <button
               onClick={handleShare}
               className="flex items-center space-x-2 px-4 py-2 rounded-full text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all"
@@ -83,19 +128,84 @@ export default function StoryActions({ story }: StoryActionsProps) {
 
             {/* Share Menu */}
             {showShareMenu && (
-              <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-10 min-w-[150px]">
-                {shareOptions.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      option.action()
-                      setShowShareMenu(false)
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    {option.name}
-                  </button>
-                ))}
+              <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[180px]">
+                <button
+                  onClick={() => shareStory('copy')}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Copy Link
+                </button>
+                <button
+                  onClick={() => shareStory('twitter')}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Share on Twitter
+                </button>
+                <button
+                  onClick={() => shareStory('facebook')}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Share on Facebook
+                </button>
+                <button
+                  onClick={() => shareStory('linkedin')}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Share on LinkedIn
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* More Options Button */}
+          <div className="relative" ref={moreMenuRef}>
+            <button
+              onClick={handleMore}
+              className="flex items-center space-x-2 px-4 py-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all"
+            >
+              <MoreHorizontal size={20} />
+            </button>
+
+            {/* More Menu */}
+            {showMoreMenu && (
+              <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
+                <button
+                  onClick={() => {
+                    console.log('Report story')
+                    setShowMoreMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Report Story
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Hide story')
+                    setShowMoreMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Hide Story
+                </button>
+                <button
+                  onClick={() => {
+                    console.log('Not interested')
+                    setShowMoreMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Not Interested
+                </button>
+                <hr className="my-1 border-gray-100" />
+                <button
+                  onClick={() => {
+                    console.log('Block author')
+                    setShowMoreMenu(false)
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                >
+                  Block Author
+                </button>
               </div>
             )}
           </div>

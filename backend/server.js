@@ -8,7 +8,7 @@ process.on("uncaughtException", (err) => {
 });
 
 dotenv.config({ path: "./config.env" });
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 const api = require("./api");
 
 const DB = process.env.DATABASE || 'mongodb://localhost:27017/dhyey-production';

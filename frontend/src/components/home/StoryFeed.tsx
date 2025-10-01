@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, Bookmark, Share2, MessageCircle, MoreHorizontal } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 // Mock data - replace with API calls later
 const stories = [
@@ -63,6 +63,38 @@ const stories = [
 export default function StoryFeed() {
   const [likedStories, setLikedStories] = useState<Set<number>>(new Set())
   const [savedStories, setSavedStories] = useState<Set<number>>(new Set())
+  const [showShareMenu, setShowShareMenu] = useState<number | null>(null)
+  const [showMoreMenu, setShowMoreMenu] = useState<number | null>(null)
+  const [displayedStories, setDisplayedStories] = useState(stories)
+  const [isLoading, setIsLoading] = useState(false)
+  const shareMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+  const moreMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Check share menus
+      if (showShareMenu !== null) {
+        const shareRef = shareMenuRefs.current[showShareMenu]
+        if (shareRef && !shareRef.contains(event.target as Node)) {
+          setShowShareMenu(null)
+        }
+      }
+      
+      // Check more menus
+      if (showMoreMenu !== null) {
+        const moreRef = moreMenuRefs.current[showMoreMenu]
+        if (moreRef && !moreRef.contains(event.target as Node)) {
+          setShowMoreMenu(null)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showShareMenu, showMoreMenu])
 
   const toggleLike = (storyId: number) => {
     setLikedStories(prev => {
@@ -88,9 +120,60 @@ export default function StoryFeed() {
     })
   }
 
+  const handleShare = (storyId: number) => {
+    console.log('Share button clicked for story:', storyId) // Debug log
+    setShowShareMenu(showShareMenu === storyId ? null : storyId)
+    setShowMoreMenu(null) // Close other menu
+  }
+
+  const handleMore = (storyId: number) => {
+    setShowMoreMenu(showMoreMenu === storyId ? null : storyId)
+    setShowShareMenu(null) // Close other menu
+  }
+
+  const shareStory = async (platform: string, story: any) => {
+    const url = `${window.location.origin}/story/${story.id}`
+    const title = `Check out "${story.title}" by ${story.author.name}`
+    
+    try {
+      switch (platform) {
+        case 'copy':
+          await navigator.clipboard.writeText(url)
+          alert('Link copied to clipboard!')
+          break
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
+          break
+        case 'linkedin':
+          window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
+          break
+      }
+    } catch (error) {
+      console.error('Share failed:', error)
+    }
+    setShowShareMenu(null)
+  }
+
+  const loadMoreStories = async () => {
+    setIsLoading(true)
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    const newStories = stories.map((story, index) => ({
+      ...story,
+      id: story.id + displayedStories.length + index,
+      timeAgo: Math.floor(Math.random() * 12) + 1 + 'h'
+    }))
+    
+    setDisplayedStories(prev => [...prev, ...newStories])
+    setIsLoading(false)
+  }
+
   return (
     <div className="space-y-6">
-      {stories.map((story, index) => (
+      {displayedStories.map((story, index) => (
         <div 
           key={story.id} 
           className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden story-card transform transition-all duration-500 hover:shadow-lg hover:-translate-y-1"
@@ -117,9 +200,67 @@ export default function StoryFeed() {
                 <p className="text-sm text-gray-500">@{story.author.username} • {story.timeAgo}</p>
               </div>
             </Link>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95">
-              <MoreHorizontal size={16} className="text-gray-500" />
-            </button>
+            <div className="relative" ref={el => { moreMenuRefs.current[story.id] = el }}>
+              <button 
+                onClick={() => handleMore(story.id)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+              >
+                <MoreHorizontal size={16} className="text-gray-500" />
+              </button>
+              
+              {/* More Menu */}
+              {showMoreMenu === story.id && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
+                  <button
+                    onClick={() => {
+                      console.log('Save story:', story.title)
+                      toggleSave(story.id)
+                      setShowMoreMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    {savedStories.has(story.id) ? 'Unsave Story' : 'Save Story'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Report story:', story.title)
+                      setShowMoreMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Report Story
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Hide story:', story.title)
+                      setShowMoreMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Hide Story
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('Not interested in:', story.title)
+                      setShowMoreMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Not Interested
+                  </button>
+                  <hr className="my-1 border-gray-100" />
+                  <button
+                    onClick={() => {
+                      console.log('Block author:', story.author.name)
+                      setShowMoreMenu(null)
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
+                  >
+                    Block Author
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Story Content */}
@@ -186,10 +327,95 @@ export default function StoryFeed() {
                   <span className="text-sm font-medium">{story.comments}</span>
                 </Link>
                 
-                <button className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-all duration-300 hover:scale-110 active:scale-95">
-                  <Share2 size={20} className="transition-transform duration-300 hover:scale-110" />
-                  <span className="text-sm font-medium">Share</span>
-                </button>
+                <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log('Share button clicked - event triggered')
+                      handleShare(story.id)
+                    }}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer"
+                  >
+                    <Share2 size={20} className="transition-transform duration-300 hover:scale-110" />
+                    <span className="text-sm font-medium">Share</span>
+                  </button>
+                  
+                  {/* Debug indicator */}
+                  {showShareMenu === story.id && (
+                    <div className="absolute left-0 top-full mt-1 text-xs text-red-500 bg-yellow-100 px-2 py-1 rounded">
+                      Menu Open: {story.id}
+                    </div>
+                  )}
+                  
+                  {/* Share Menu */}
+                  {showShareMenu === story.id && (
+                    <div 
+                      className="fixed bg-white border border-gray-200 rounded-lg shadow-2xl py-1 min-w-[180px]"
+                      style={{ 
+                        zIndex: 9999,
+                        left: '50%',
+                        top: '50%',
+                        transform: 'translate(-50%, -50%)'
+                      }}
+                    >
+                      <div className="text-xs text-gray-500 px-4 py-2 border-b border-gray-100">
+                        Share "{story.title}"
+                      </div>
+                      <button
+                        onClick={() => {
+                          console.log('Copy link clicked')
+                          shareStory('copy', story)
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        📋 Copy Link
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Twitter share clicked')
+                          shareStory('twitter', story)
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        🐦 Share on Twitter
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Facebook share clicked')
+                          shareStory('facebook', story)
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        📘 Share on Facebook
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('LinkedIn share clicked')
+                          shareStory('linkedin', story)
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        💼 Share on LinkedIn
+                      </button>
+                      <button
+                        onClick={() => setShowShareMenu(null)}
+                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                      >
+                        ❌ Cancel
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Backdrop */}
+                  {showShareMenu === story.id && (
+                    <div 
+                      className="fixed inset-0 bg-black bg-opacity-50"
+                      style={{ zIndex: 9998 }}
+                      onClick={() => setShowShareMenu(null)}
+                    />
+                  )}
+                </div>
               </div>
               
               <button
@@ -208,8 +434,12 @@ export default function StoryFeed() {
       
       {/* Load More Button */}
       <div className="text-center py-8">
-        <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform">
-          Load More Stories
+        <button 
+          onClick={loadMoreStories}
+          disabled={isLoading}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? 'Loading...' : 'Load More Stories'}
         </button>
       </div>
     </div>

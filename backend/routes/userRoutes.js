@@ -1,45 +1,30 @@
 const express = require('express');
 const userController = require('./../controllers/userController');
 const authController = require('./../controllers/authController');
-const storyController = require('./../controllers/storyController');
 
 const router = express.Router();
 
-router.post('/signup', authController.signup);
-router.post('/login', authController.login);
-router.get('/logout', authController.logout);
+// Public routes (no authentication required)
+router.get('/profile/:identifier', userController.getUserProfile); // Can be ID or username
 
-router.post('/forgotPassword', authController.forgotPassword);
-router.patch('/resetPassword/:token', authController.resetPassword);
-
-// Public profile routes
-router.get('/:userId', userController.getUserProfile);
-router.get('/:userId/stories', authController.optionalAuth, storyController.getUserStories);
-
-// Protect all routes after this middleware
+// Protected routes (require authentication)
 router.use(authController.protect);
 
-router.patch('/updateMyPassword', authController.updatePassword);
-router.get('/me', userController.getMe, userController.getUser);
-router.patch(
-  '/updateMe',
+// Current user routes
+router.get('/me', userController.getMe);
+router.patch('/me',
   userController.uploadUserPhoto,
-  userController.resizeUserPhoto,
+  userController.processUserPhoto,
   userController.updateMe
 );
-router.delete('/deleteMe', userController.deleteMe);
 
-router.use(authController.restrictTo('admin'));
+// User interactions
+router.post('/:userId/follow', userController.toggleFollowUser);
+router.get('/:userId/followers', userController.getUserFollowers);
+router.get('/:userId/following', userController.getUserFollowing);
+router.get('/:userId/saved', userController.getUserSavedStories);
 
-router
-  .route('/')
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
-
-router
-  .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+// Admin routes
+router.get('/admin/all', authController.restrictTo('admin'), userController.getAllUsers);
 
 module.exports = router;

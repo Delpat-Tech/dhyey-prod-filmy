@@ -95,6 +95,18 @@ module.exports = class Email {
         <p>Thank you for your understanding.</p>
         <p>The Dhyey Production Team</p>
       `;
+    } else if (template === 'emailVerification') {
+      html = `
+        <h1>Verify Your Email Address</h1>
+        <p>Hello ${this.firstName},</p>
+        <p>Thank you for signing up for Dhyey Production! To complete your registration, please verify your email address.</p>
+        <p>Click the link below to verify your email:</p>
+        <p><a href="${this.url}" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Verify Email Address</a></p>
+        <p>This link is valid for 24 hours.</p>
+        <p>If you didn't create an account with us, please ignore this email.</p>
+        <p>Welcome to our storytelling community!</p>
+        <p>The Dhyey Production Team</p>
+      `;
     }
 
     // 2) Define email options
@@ -144,5 +156,9 @@ module.exports = class Email {
     this.storyTitle = storyTitle;
     this.feedback = feedback;
     await this.send('storyUnpublished', `Your story "${storyTitle}" has been unpublished`);
+  }
+
+  async sendEmailVerification() {
+    await this.send('emailVerification', 'Please verify your email address');
   }
 };

@@ -1,5 +1,35 @@
-# Vue 3 + TypeScript + Vite
+# DHYEY Production Platform
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Full-stack storytelling platform with Vue.js frontend and Node.js backend.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Project Structure
+
+```
+dhyey-prod-filmy/
+├── frontend/          # Vue 3 + TypeScript + Vite
+└── backend/           # Node.js + Express + MongoDB
+```
+
+## Quick Start
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+## Features
+
+- User authentication & authorization
+- Story creation & management
+- Content moderation
+- File uploads with image processing
+- RESTful API with security middleware

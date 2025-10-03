@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { 
-  Plus, Search, Filter, ChevronDown, ChevronUp, 
+  Plus, Search, Filter, ChevronUp, 
   MoreVertical, Edit, Trash2, Eye, TrendingUp, 
   Users, Award, Clock, Calendar, BarChart2, 
   CheckCircle, XCircle, Clock as ClockIcon, AlertCircle,
@@ -15,70 +15,8 @@ import {
   PieChart, Pie, Cell
 } from 'recharts'
 
-// Mock data for competitions
-const mockCompetitions = [
-  {
-    id: 1,
-    title: "Short Story Challenge 2024",
-    status: "active",
-    startDate: "2024-01-15",
-    endDate: "2024-03-15",
-    submissions: 247,
-    participants: 189,
-    prize: "$5,000",
-    categories: ["Fiction", "Drama"],
-    difficulty: "intermediate",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Poetry Slam 2024",
-    status: "upcoming",
-    startDate: "2024-04-01",
-    endDate: "2024-06-30",
-    submissions: 0,
-    participants: 45,
-    prize: "$3,000",
-    categories: ["Poetry"],
-    difficulty: "beginner"
-  },
-  {
-    id: 3,
-    title: "Documentary Film Festival",
-    status: "active",
-    startDate: "2024-02-01",
-    endDate: "2024-05-31",
-    submissions: 156,
-    participants: 98,
-    prize: "$10,000",
-    categories: ["Documentary", "Film"],
-    difficulty: "advanced"
-  },
-  {
-    id: 4,
-    title: "Young Writers Competition",
-    status: "ended",
-    startDate: "2023-11-01",
-    endDate: "2024-01-31",
-    submissions: 432,
-    participants: 389,
-    prize: "$2,500",
-    categories: ["Fiction", "Non-Fiction"],
-    difficulty: "beginner"
-  },
-  {
-    id: 5,
-    title: "Sci-Fi & Fantasy Awards",
-    status: "draft",
-    startDate: "2024-07-01",
-    endDate: "2024-09-30",
-    submissions: 0,
-    participants: 0,
-    prize: "$7,500",
-    categories: ["Science Fiction", "Fantasy"],
-    difficulty: "intermediate"
-  }
-]
+import { mockCompetitions } from '@/data/mockData'
+import CustomSelect from '@/components/ui/CustomSelect'
 
 // Stats cards data
 const stats = [
@@ -148,7 +86,7 @@ export default function EnhancedCompetitionsManager() {
       const query = searchQuery.toLowerCase()
       result = result.filter(comp => 
         comp.title.toLowerCase().includes(query) ||
-        comp.categories.some(cat => cat.toLowerCase().includes(query))
+        comp.categories?.some(cat => cat.toLowerCase().includes(query))
       )
     }
     
@@ -365,20 +303,18 @@ export default function EnhancedCompetitionsManager() {
           </div>
           
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="upcoming">Upcoming</option>
-                <option value="ended">Ended</option>
-                <option value="draft">Draft</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-            </div>
+            <CustomSelect
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value as string)}
+              options={[
+                { label: 'All Status', value: 'all' },
+                { label: 'Active', value: 'active', emoji: '🟢' },
+                { label: 'Upcoming', value: 'upcoming', emoji: '🔵' },
+                { label: 'Ended', value: 'ended', emoji: '🔴' },
+                { label: 'Draft', value: 'draft', emoji: '⚪' }
+              ]}
+              className="w-48"
+            />
             
             <div className="flex border border-gray-200 rounded-lg overflow-hidden">
               <button 
@@ -457,7 +393,7 @@ export default function EnhancedCompetitionsManager() {
                             )}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {competition.categories.join(', ')}
+                            {competition.categories?.join(', ') || competition.category}
                           </div>
                         </div>
                       </div>
@@ -483,7 +419,7 @@ export default function EnhancedCompetitionsManager() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>Start: {new Date(competition.startDate).toLocaleDateString()}</div>
-                      <div>End: {new Date(competition.endDate).toLocaleDateString()}</div>
+                      <div>End: {new Date(competition.deadline).toLocaleDateString()}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
@@ -526,7 +462,7 @@ export default function EnhancedCompetitionsManager() {
                     <div className="ml-4 flex-1 min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900 truncate">{competition.title}</h3>
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {competition.categories.map((cat, i) => (
+                        {(competition.categories || [competition.category]).map((cat, i) => (
                           <span key={i} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
                             {cat}
                           </span>
@@ -547,7 +483,7 @@ export default function EnhancedCompetitionsManager() {
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Difficulty</div>
-                      {getDifficultyBadge(competition.difficulty)}
+                      {competition.difficulty && getDifficultyBadge(competition.difficulty)}
                     </div>
                     <div className="text-right">
                       <div className="text-xs text-gray-500">Prize</div>
@@ -580,7 +516,7 @@ export default function EnhancedCompetitionsManager() {
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">End</span>
                         <span className="font-medium">
-                          {new Date(competition.endDate).toLocaleDateString()}
+                          {new Date(competition.deadline).toLocaleDateString()}
                         </span>
                       </div>
                     </div>

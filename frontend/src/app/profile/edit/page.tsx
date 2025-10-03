@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
-import api from '@/lib/api'
+import { userAPI } from '../../../lib/api'
 
 export default function EditProfilePage() {
   const [formData, setFormData] = useState({
@@ -26,9 +26,9 @@ export default function EditProfilePage() {
 
   const fetchUserData = async () => {
     try {
-      const response = await api.get('/users/me')
+      const response = await userAPI.getMe()
       
-      const user = response.data.data.user
+      const user = response.data.user
       setFormData({
         name: user.name || '',
         username: user.username || '',
@@ -57,7 +57,7 @@ export default function EditProfilePage() {
       }
       
       // Update profile data
-      await api.patch('/users/me', formData)
+      await userAPI.updateMe(formData)
       
       setMessage('Profile updated successfully!')
     } catch (error: any) {
@@ -84,12 +84,8 @@ export default function EditProfilePage() {
     formData.append('avatar', selectedFile)
 
     try {
-      const response = await api.patch('/users/me', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      setAvatar(response.data.data.user.avatar)
+      const response = await userAPI.updateMe(formData)
+      setAvatar(response.data.user.avatar)
       setSelectedFile(null)
     } catch (error) {
       console.error('Photo upload failed:', error)

@@ -14,6 +14,7 @@ import {
 import Link from 'next/link'
 import AdminLoading from './AdminLoading'
 import StatCard from './StatCard'
+import { adminAPI } from '@/lib/api'
 
 // Mock dashboard data with trends and sparkline data
 const dashboardStats = {
@@ -107,12 +108,29 @@ const pendingStories = [
 
 export default function AdminDashboard() {
   const [mounted, setMounted] = useState(false)
+  const [stats, setStats] = useState<any>(dashboardStats)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
+    loadDashboardData()
   }, [])
 
-  if (!mounted) {
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      const response = await adminAPI.getDashboardStats()
+      setStats(response.data || dashboardStats)
+    } catch (error) {
+      console.error('Failed to load dashboard stats:', error)
+      // Fallback to mock data
+      setStats(dashboardStats)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (!mounted || isLoading) {
     return <AdminLoading />
   }
 
@@ -133,46 +151,46 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Stories"
-          value={dashboardStats.totalStories.value}
-          change={dashboardStats.totalStories.change}
+          value={stats.totalStories?.value || 0}
+          change={stats.totalStories?.change || 0}
           changeType="percentage"
-          trend={dashboardStats.totalStories.trend}
+          trend={stats.totalStories?.trend || 'up'}
           icon={FileText}
           gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-          sparklineData={dashboardStats.totalStories.sparklineData}
+          sparklineData={stats.totalStories?.sparklineData || []}
         />
 
         <StatCard
           title="Total Users"
-          value={dashboardStats.totalUsers.value}
-          change={dashboardStats.totalUsers.change}
+          value={stats.totalUsers?.value || 0}
+          change={stats.totalUsers?.change || 0}
           changeType="percentage"
-          trend={dashboardStats.totalUsers.trend}
+          trend={stats.totalUsers?.trend || 'up'}
           icon={Users}
           gradient="bg-gradient-to-br from-green-500 to-green-600"
-          sparklineData={dashboardStats.totalUsers.sparklineData}
+          sparklineData={stats.totalUsers?.sparklineData || []}
         />
 
         <StatCard
           title="Total Views"
-          value={dashboardStats.totalViews.value}
-          change={dashboardStats.totalViews.change}
+          value={stats.totalViews?.value || 0}
+          change={stats.totalViews?.change || 0}
           changeType="percentage"
-          trend={dashboardStats.totalViews.trend}
+          trend={stats.totalViews?.trend || 'up'}
           icon={Eye}
           gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-          sparklineData={dashboardStats.totalViews.sparklineData}
+          sparklineData={stats.totalViews?.sparklineData || []}
         />
 
         <StatCard
           title="Total Likes"
-          value={dashboardStats.totalLikes.value}
-          change={dashboardStats.totalLikes.change}
+          value={stats.totalLikes?.value || 0}
+          change={stats.totalLikes?.change || 0}
           changeType="percentage"
-          trend={dashboardStats.totalLikes.trend}
+          trend={stats.totalLikes?.trend || 'up'}
           icon={Heart}
           gradient="bg-gradient-to-br from-pink-500 to-pink-600"
-          sparklineData={dashboardStats.totalLikes.sparklineData}
+          sparklineData={stats.totalLikes?.sparklineData || []}
         />
       </div>
 

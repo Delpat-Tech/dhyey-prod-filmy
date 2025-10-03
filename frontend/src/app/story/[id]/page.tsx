@@ -1,11 +1,15 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import StoryHeader from '@/components/story/StoryHeader'
 import StoryContent from '@/components/story/StoryContent'
 import StoryActions from '@/components/story/StoryActions'
 import RelatedStories from '@/components/story/RelatedStories'
 import CommentsSection from '@/components/story/CommentsSection'
+import { storyAPI } from '@/lib/api'
 
-// Mock story data - replace with API call
-const getStoryData = (id: string) => {
+// Mock story data - fallback
+const getMockStoryData = (id: string) => {
   return {
     id: parseInt(id),
     title: "The Midnight Train",
@@ -57,7 +61,55 @@ She stepped off the train and into her new life, ready to write the next chapter
 }
 
 export default function StoryPage({ params }: { params: { id: string } }) {
-  const story = getStoryData(params.id)
+  const [story, setStory] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadStory = async () => {
+      try {
+        const response = await storyAPI.getStoryById(params.id)
+        setStory(response.data.story)
+      } catch (error) {
+        console.error('Failed to load story:', error)
+        // Fallback to mock data
+        setStory(getMockStoryData(params.id))
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadStory()
+  }, [params.id])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto p-6">
+          <div className="bg-white rounded-lg p-6 animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
+            <div className="h-64 bg-gray-200 rounded mb-6"></div>
+            <div className="space-y-3">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!story) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Story Not Found</h1>
+          <p className="text-gray-600">The story you're looking for doesn't exist.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

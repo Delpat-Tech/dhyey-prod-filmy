@@ -265,3 +265,115 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
     data: { users }
   });
 });
+
+// Admin Methods
+exports.getAllUsersForAdmin = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+  const skip = (page - 1) * limit;
+  
+  const query = {};
+  
+  // Filter by status if provided
+  if (req.query.status && req.query.status !== 'all') {
+    query.status = req.query.status;
+  }
+  
+  // Filter by role if provided
+  if (req.query.role && req.query.role !== 'all') {
+    query.role = req.query.role;
+  }
+  
+  // Search functionality
+  if (req.query.search) {
+    query.$or = [
+      { name: { $regex: req.query.search, $options: 'i' } },
+      { username: { $regex: req.query.search, $options: 'i' } },
+      { email: { $regex: req.query.search, $options: 'i' } }
+    ];
+  }
+
+  const users = await User.find(query)
+    .select('-password -passwordResetToken -passwordResetExpires')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await User.countDocuments(query);
+
+  res.status(200).json({
+    status: 'success',
+    results: users.length,
+    total,
+    data: { users }
+  });
+});
+
+exports.suspendUser = catchAsync(async (req, res, next) => {
+  const { reason, duration } = req.body;
+  
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'suspended',
+      suspensionReason: reason || 'Suspended by admin',
+      suspendedBy: req.user.id,
+      suspendedAt: new Date(),
+      suspensionDuration: duration // in days
+    },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { user }
+  });
+});
+
+exports.unsuspendUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'active',
+      $unset: { 
+        suspensionReason: 1,
+        suspendedBy: 1,
+        suspendedAt: 1,
+        suspensionDuration: 1
+      }
+    },
+    { new: true, runValidators: true }
+  ).select('-password');
+
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { user }
+  });
+});
+
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+
+  // Delete user's stories
+  await Story.deleteMany({ author: req.params.id });
+
+  // Delete the user
+  await User.findByIdAndDelete(req.params.id);
+
+  res.status(204).json({
+    status: 'success',
+    data: null
+  });
+});

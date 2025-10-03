@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Search, Filter, X } from 'lucide-react'
 import SearchResults from './SearchResults'
+import { searchAPI } from '@/lib/api'
 
 const genres = ['All', 'Fiction', 'Poetry', 'Romance', 'Mystery', 'Sci-Fi', 'Fantasy', 'Drama']
 const sortOptions = ['Latest', 'Most Liked', 'Most Saved', 'Trending']
@@ -13,11 +14,44 @@ export default function SearchInterface() {
   const [sortBy, setSortBy] = useState('Latest')
   const [showFilters, setShowFilters] = useState(false)
   const [searchType, setSearchType] = useState<'all' | 'title' | 'author' | 'hashtag'>('all')
+  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle search logic here
-    console.log('Searching for:', searchQuery, 'Type:', searchType, 'Genre:', selectedGenre)
+    if (!searchQuery.trim()) return
+
+    setIsSearching(true)
+    setHasSearched(true)
+
+    try {
+      let results = []
+      
+      if (searchType === 'all') {
+        const response = await searchAPI.globalSearch(searchQuery)
+        results = response.data.results || []
+      } else if (searchType === 'author') {
+        const response = await searchAPI.searchUsers(searchQuery)
+        results = response.data.users || []
+      } else {
+        // Search stories with filters
+        const filters = {
+          genre: selectedGenre !== 'All' ? selectedGenre : undefined,
+          sortBy: sortBy.toLowerCase().replace(' ', '_'),
+          type: searchType
+        }
+        const response = await searchAPI.searchStories(searchQuery, filters)
+        results = response.data.stories || []
+      }
+
+      setSearchResults(results)
+    } catch (error) {
+      console.error('Search failed:', error)
+      setSearchResults([])
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   const clearSearch = () => {
@@ -35,7 +69,7 @@ export default function SearchInterface() {
             placeholder="Search stories, authors, or hashtags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-12 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
+            className="w-full pl-12 pr-12 py-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg text-gray-900"
           />
           {searchQuery && (
             <button
@@ -95,7 +129,7 @@ export default function SearchInterface() {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+          className="px-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm text-gray-900"
         >
           {sortOptions.map(option => (
             <option key={option} value={option}>{option}</option>
@@ -131,6 +165,9 @@ export default function SearchInterface() {
         searchType={searchType}
         genre={selectedGenre}
         sortBy={sortBy}
+        results={searchResults}
+        isLoading={isSearching}
+        hasSearched={hasSearched}
       />
     </div>
   )

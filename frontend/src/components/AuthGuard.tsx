@@ -11,17 +11,17 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('token') || getCookie('token')
-      const publicRoutes = ['/login', '/register']
+      const token = localStorage.getItem('dhyey_token') || getCookie('dhyey_token')
+      const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password', '/login', '/register']
       const isPublicRoute = publicRoutes.includes(pathname)
 
       if (!token && !isPublicRoute) {
-        router.replace('/login')
+        router.replace('/auth/login')
         return
       }
 
       if (token && isPublicRoute) {
-        router.replace('/')
+        router.replace('/dashboard')
         return
       }
 

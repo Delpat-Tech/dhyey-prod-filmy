@@ -73,7 +73,9 @@ export default function LoginPage() {
                 padding: '10px', 
                 border: '1px solid #ddd', 
                 borderRadius: '4px',
-                fontSize: '14px'
+                fontSize: '14px',
+                color: '#333',
+                backgroundColor: 'white'
               }}
             />
           </div>
@@ -90,7 +92,9 @@ export default function LoginPage() {
                 padding: '10px', 
                 border: '1px solid #ddd', 
                 borderRadius: '4px',
-                fontSize: '14px'
+                fontSize: '14px',
+                color: '#333',
+                backgroundColor: 'white'
               }}
             />
           </div>

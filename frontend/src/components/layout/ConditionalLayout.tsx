@@ -1,20 +1,23 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Navbar from './Navbar'
 import BottomNav from './BottomNav'
-import AuthGuard from '../AuthGuard'
 
 export default function ConditionalLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname()
-  const isAuthPage = pathname === '/login' || pathname === '/register'
+  const [pathname, setPathname] = useState('')
+  
+  useEffect(() => {
+    setPathname(window.location.pathname)
+  }, [])
+  
+  const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/auth/login' || pathname === '/auth/register' || pathname === '/auth/forgot-password'
 
   return (
-    <AuthGuard>
       <div className="flex flex-col min-h-screen">
         {/* Desktop/Tablet Navigation - Hide on auth pages */}
         {!isAuthPage && (
@@ -35,6 +38,5 @@ export default function ConditionalLayout({
           </div>
         )}
       </div>
-    </AuthGuard>
   )
 }

@@ -43,11 +43,21 @@ const storySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['draft', 'review', 'published', 'rejected', 'unpublished'],
+    enum: ['draft', 'pending', 'approved', 'rejected', 'unpublished'],
     default: 'draft'
   },
   publishedAt: {
     type: Date
+  },
+  reviewedBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  },
+  reviewedAt: {
+    type: Date
+  },
+  rejectionReason: {
+    type: String
   },
   readTime: {
     type: Number, // in minutes

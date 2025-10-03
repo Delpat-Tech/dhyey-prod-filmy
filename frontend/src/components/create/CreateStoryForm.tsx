@@ -1,8 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, X, Save, Send, Eye } from 'lucide-react'
+import { Send, Image as ImageIcon, Hash, X, Upload, Save, Eye } from 'lucide-react'
+import CustomSelect from '@/components/ui/CustomSelect'
 import Image from 'next/image'
+import { storyAPI } from '@/lib/api'
+import { showNotification } from '@/lib/errorHandler'
 
 const genres = ['Fiction', 'Poetry', 'Romance', 'Mystery', 'Sci-Fi', 'Fantasy', 'Drama', 'Non-Fiction']
 
@@ -10,7 +13,7 @@ export default function CreateStoryForm() {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    genre: '',
+    genres: [] as string[],
     hashtags: '',
     featuredImage: null as File | null
   })
@@ -21,6 +24,35 @@ export default function CreateStoryForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    setSaveStatus('unsaved')
+  }
+
+  const handleGenreChange = (value: string | string[]) => {
+    const selectedGenres = value as string[]
+    
+    // Generate hashtags from selected genres
+    const genreHashtags = selectedGenres.map(genre => 
+      `#${genre.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+    ).join(' ')
+    
+    // Get existing hashtags (excluding genre-based ones)
+    const currentHashtags = formData.hashtags
+      .split(' ')
+      .filter(tag => tag.trim() && !genres.some(genre => 
+        tag.toLowerCase() === `#${genre.toLowerCase().replace(/[^a-z0-9]/g, '')}`
+      ))
+      .join(' ')
+    
+    // Combine existing hashtags with new genre hashtags
+    const updatedHashtags = [currentHashtags, genreHashtags]
+      .filter(part => part.trim())
+      .join(' ')
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      genres: selectedGenres,
+      hashtags: updatedHashtags
+    }))
     setSaveStatus('unsaved')
   }
 
@@ -53,15 +85,44 @@ export default function CreateStoryForm() {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Handle form submission
-    console.log('Story submitted:', formData)
-    setIsSubmitting(false)
-    
-    // Reset form or redirect
-    alert('Story submitted for review!')
+    try {
+      // Prepare story data with pending status for admin review
+      const storyData = {
+        title: formData.title,
+        content: formData.content,
+        genre: formData.genres[0] || 'Fiction', // Use first selected genre
+        tags: formData.hashtags.split(' ').filter(tag => tag.trim()),
+        status: 'pending', // Set as pending for admin review
+        // Note: Image upload would need special handling with FormData
+      }
+      
+      const response = await storyAPI.createStory(storyData)
+      
+      showNotification({
+        type: 'success',
+        title: 'Story Submitted for Review!',
+        message: 'Your story has been submitted and is pending admin approval. You will be notified once it is reviewed.'
+      })
+      
+      // Reset form
+      setFormData({
+        title: '',
+        content: '',
+        genres: [],
+        hashtags: '',
+        featuredImage: null
+      })
+      setImagePreview(null)
+      
+    } catch (error: any) {
+      showNotification({
+        type: 'error',
+        title: 'Failed to Create Story',
+        message: error.message || 'Something went wrong. Please try again.'
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handlePreview = () => {
@@ -92,22 +153,55 @@ export default function CreateStoryForm() {
         {/* Genre and Hashtags Row */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-2">
-              Genre *
+            <label htmlFor="genres" className="block text-sm font-medium text-gray-700 mb-2">
+              Genres * <span className="text-sm font-normal text-gray-500">(Select multiple)</span>
             </label>
-            <select
-              id="genre"
-              name="genre"
-              value={formData.genre}
-              onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 bg-white"
-              required
-            >
-              <option value="">Select a genre</option>
-              {genres.map(genre => (
-                <option key={genre} value={genre}>{genre}</option>
-              ))}
-            </select>
+            <CustomSelect
+              mode="multiple"
+              value={formData.genres}
+              onChange={handleGenreChange}
+              placeholder="Select genres for your story"
+              options={genres.map(genre => ({
+                label: genre,
+                value: genre,
+                emoji: genre === 'Fiction' ? '📚' : 
+                       genre === 'Poetry' ? '🎭' :
+                       genre === 'Romance' ? '💕' :
+                       genre === 'Mystery' ? '🔍' :
+                       genre === 'Sci-Fi' ? '🚀' :
+                       genre === 'Fantasy' ? '🧙‍♂️' :
+                       genre === 'Drama' ? '🎬' :
+                       genre === 'Non-Fiction' ? '📖' : '📝'
+              }))}
+              className="w-full"
+            />
+            {formData.genres.length > 0 && (
+              <div className="mt-2">
+                <p className="text-xs text-gray-500 mb-1">Selected genres:</p>
+                <div className="flex flex-wrap gap-1">
+                  {formData.genres.map((genre) => (
+                    <span
+                      key={genre}
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700"
+                    >
+                      {genres.find(g => g === genre) && (
+                        <span className="mr-1">
+                          {genre === 'Fiction' ? '📚' : 
+                           genre === 'Poetry' ? '🎭' :
+                           genre === 'Romance' ? '💕' :
+                           genre === 'Mystery' ? '🔍' :
+                           genre === 'Sci-Fi' ? '🚀' :
+                           genre === 'Fantasy' ? '🧙‍♂️' :
+                           genre === 'Drama' ? '🎬' :
+                           genre === 'Non-Fiction' ? '📖' : '📝'}
+                        </span>
+                      )}
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -121,9 +215,26 @@ export default function CreateStoryForm() {
               value={formData.hashtags}
               onChange={handleInputChange}
               placeholder="#fiction #love #mystery"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-gray-900 bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-white bg-gray-800 placeholder-gray-400"
             />
-            <p className="text-xs text-gray-500 mt-1">Separate hashtags with spaces</p>
+            <div className="mt-1">
+              <p className="text-xs text-gray-500">
+                Separate hashtags with spaces • Genre hashtags are added automatically
+              </p>
+              {formData.genres.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  <span className="text-xs text-purple-600">Auto-generated:</span>
+                  {formData.genres.map(genre => (
+                    <span
+                      key={genre}
+                      className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-50 text-purple-600 border border-purple-200"
+                    >
+                      #{genre.toLowerCase().replace(/[^a-z0-9]/g, '')}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -225,7 +336,7 @@ export default function CreateStoryForm() {
           
           <button
             type="submit"
-            disabled={isSubmitting || !formData.title || !formData.content || !formData.genre}
+            disabled={isSubmitting || !formData.title || !formData.content || formData.genres.length === 0}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
           >
             <Send size={16} />
@@ -237,6 +348,8 @@ export default function CreateStoryForm() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h4 className="font-medium text-blue-900 mb-2">Submission Guidelines</h4>
           <ul className="text-sm text-blue-800 space-y-1">
+            <li>• You can select multiple genres to better categorize your story</li>
+            <li>• Genre hashtags are automatically added to help with discoverability</li>
             <li>• Stories will be reviewed by our team before publication</li>
             <li>• Please ensure your content is original and appropriate</li>
             <li>• You'll receive an email notification once your story is reviewed</li>

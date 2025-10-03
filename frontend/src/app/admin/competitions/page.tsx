@@ -1,5 +1,5 @@
-import AdminCompetitionsManager from '@/components/admin/AdminCompetitionsManager'
+import EnhancedCompetitionsManager from '@/components/admin/EnhancedCompetitionsManager'
 
 export default function AdminCompetitionsPage() {
-  return <AdminCompetitionsManager />
+  return <EnhancedCompetitionsManager />
 }

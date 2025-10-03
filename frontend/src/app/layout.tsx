@@ -1,7 +1,8 @@
-import type { Metadata } from 'next'
+// import type { Metadata } from 'next'
 import { Inter, Poppins, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import ConditionalLayout from '@/components/layout/ConditionalLayout'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -22,7 +23,7 @@ const playfairDisplay = Playfair_Display({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'DHYEY - Storytelling Platform',
   description: 'A creative storytelling platform',
 }
@@ -35,7 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} ${playfairDisplay.variable} font-sans bg-gray-50 min-h-screen`}>
-        <ConditionalLayout>{children}</ConditionalLayout>
+        <AuthProvider>
+          <ConditionalLayout>{children}</ConditionalLayout>
+        </AuthProvider>
       </body>
     </html>
   )

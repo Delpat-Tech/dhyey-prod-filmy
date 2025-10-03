@@ -9,6 +9,9 @@ interface SearchResultsProps {
   searchType: 'all' | 'title' | 'author' | 'hashtag'
   genre: string
   sortBy: string
+  results?: any[]
+  isLoading?: boolean
+  hasSearched?: boolean
 }
 
 // Mock search results - replace with API calls later

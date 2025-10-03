@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -16,6 +16,8 @@ import {
   FileText,
   MoreHorizontal
 } from 'lucide-react'
+import { adminAPI } from '@/lib/api'
+import { showNotification } from '@/lib/errorHandler'
 
 // Mock data for stories pending review
 const mockStories = [
@@ -93,13 +95,13 @@ const mockStories = [
   }
 ]
 
-const statusColors = {
+const statusColors: { [key: string]: string } = {
   pending: 'bg-yellow-100 text-yellow-800',
   approved: 'bg-green-100 text-green-800',
   rejected: 'bg-red-100 text-red-800'
 }
 
-const priorityColors = {
+const priorityColors: { [key: string]: string } = {
   high: 'bg-red-100 text-red-800',
   medium: 'bg-yellow-100 text-yellow-800',
   low: 'bg-green-100 text-green-800'
@@ -109,9 +111,55 @@ export default function StoryReviewList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterGenre, setFilterGenre] = useState('all')
-  const [selectedStories, setSelectedStories] = useState<number[]>([])
+  const [selectedStories, setSelectedStories] = useState<string[]>([])
+  const [stories, setStories] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const filteredStories = mockStories.filter(story => {
+  // Load stories from backend
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        setIsLoading(true)
+        const params = new URLSearchParams()
+        if (filterStatus !== 'all') params.append('status', filterStatus)
+        if (filterGenre !== 'all') params.append('genre', filterGenre)
+        if (searchTerm) params.append('search', searchTerm)
+        
+        const response = await adminAPI.getAllStories(params)
+        setStories(response.data.stories || mockStories)
+      } catch (error: any) {
+        console.error('Failed to load stories:', error)
+        
+        // Check if it's a permission error
+        if (error.message.includes('permission') || error.message.includes('403')) {
+          showNotification({
+            type: 'error',
+            title: 'Access Denied',
+            message: 'You need admin privileges to access this page. Please contact an administrator.'
+          })
+          // Redirect to home page after 3 seconds
+          setTimeout(() => {
+            window.location.href = '/'
+          }, 3000)
+        } else {
+          // Fallback to mock data for other errors
+          setStories(mockStories)
+          showNotification({
+            type: 'error',
+            title: 'Failed to load stories',
+            message: 'Using demo data. Please check your connection.'
+          })
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadStories()
+  }, [filterStatus, filterGenre, searchTerm])
+
+  const filteredStories = stories.filter(story => {
     const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          story.author.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || story.status === filterStatus
@@ -119,7 +167,7 @@ export default function StoryReviewList() {
     return matchesSearch && matchesStatus && matchesGenre
   })
 
-  const handleSelectStory = (storyId: number) => {
+  const handleSelectStory = (storyId: string) => {
     setSelectedStories(prev => 
       prev.includes(storyId) 
         ? prev.filter(id => id !== storyId)
@@ -131,14 +179,92 @@ export default function StoryReviewList() {
     setSelectedStories(
       selectedStories.length === filteredStories.length 
         ? [] 
-        : filteredStories.map(story => story.id)
+        : filteredStories.map(story => story.id.toString())
     )
   }
 
-  const handleBulkAction = (action: 'approve' | 'reject') => {
-    console.log(`Bulk ${action} for stories:`, selectedStories)
-    // Here you would implement the actual bulk action
-    setSelectedStories([])
+  const handleBulkAction = async (action: 'approve' | 'reject') => {
+    if (selectedStories.length === 0) return
+    
+    setIsProcessing(true)
+    try {
+      if (action === 'approve') {
+        await adminAPI.bulkApproveStories(selectedStories)
+        showNotification({
+          type: 'success',
+          title: 'Stories Approved',
+          message: `${selectedStories.length} stories have been approved and published. Authors will be notified.`
+        })
+      } else {
+        const reason = 'Stories do not meet community guidelines'
+        await adminAPI.bulkRejectStories(selectedStories, reason)
+        showNotification({
+          type: 'success',
+          title: 'Stories Rejected',
+          message: `${selectedStories.length} stories have been rejected. Authors will be notified with the reason.`
+        })
+      }
+      
+      // Reload stories
+      const params = new URLSearchParams()
+      if (filterStatus !== 'all') params.append('status', filterStatus)
+      if (filterGenre !== 'all') params.append('genre', filterGenre)
+      if (searchTerm) params.append('search', searchTerm)
+      
+      const response = await adminAPI.getAllStories(params)
+      setStories(response.data.stories || [])
+      setSelectedStories([])
+      
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Action Failed',
+        message: `Failed to ${action} stories. Please try again.`
+      })
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleSingleAction = async (storyId: string, action: 'approve' | 'reject') => {
+    setIsProcessing(true)
+    try {
+      if (action === 'approve') {
+        await adminAPI.approveStory(storyId)
+        showNotification({
+          type: 'success',
+          title: 'Story Approved',
+          message: 'The story has been approved and published. The author will be notified.'
+        })
+      } else {
+        // For rejection, we could add a reason input modal in the future
+        const reason = 'Story does not meet community guidelines'
+        await adminAPI.rejectStory(storyId, reason)
+        showNotification({
+          type: 'success',
+          title: 'Story Rejected',
+          message: 'The story has been rejected. The author will be notified with the reason.'
+        })
+      }
+      
+      // Reload stories
+      const params = new URLSearchParams()
+      if (filterStatus !== 'all') params.append('status', filterStatus)
+      if (filterGenre !== 'all') params.append('genre', filterGenre)
+      if (searchTerm) params.append('search', searchTerm)
+      
+      const response = await adminAPI.getAllStories(params)
+      setStories(response.data.stories || [])
+      
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Action Failed',
+        message: `Failed to ${action} story. Please try again.`
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -150,13 +276,40 @@ export default function StoryReviewList() {
     })
   }
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Story Reviews</h1>
+            <p className="text-gray-600">Loading stories...</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex space-x-4">
+                <div className="w-20 h-16 bg-gray-200 rounded"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Story Reviews</h1>
-          <p className="text-gray-600">Review and manage submitted stories</p>
+          <p className="text-gray-600">Review and manage submitted stories ({stories.length} total)</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
@@ -179,7 +332,7 @@ export default function StoryReviewList() {
               placeholder="Search stories or authors..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
             />
           </div>
 
@@ -187,7 +340,7 @@ export default function StoryReviewList() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -199,7 +352,7 @@ export default function StoryReviewList() {
           <select
             value={filterGenre}
             onChange={(e) => setFilterGenre(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
           >
             <option value="all">All Genres</option>
             <option value="Sci-Fi">Sci-Fi</option>
@@ -227,15 +380,17 @@ export default function StoryReviewList() {
             <div className="flex space-x-2">
               <button
                 onClick={() => handleBulkAction('approve')}
-                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                disabled={isProcessing}
+                className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 disabled:opacity-50"
               >
-                Bulk Approve
+                {isProcessing ? 'Processing...' : 'Bulk Approve'}
               </button>
               <button
                 onClick={() => handleBulkAction('reject')}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                disabled={isProcessing}
+                className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
               >
-                Bulk Reject
+                {isProcessing ? 'Processing...' : 'Bulk Reject'}
               </button>
               <button
                 onClick={() => setSelectedStories([])}
@@ -279,14 +434,20 @@ export default function StoryReviewList() {
                 />
 
                 {/* Featured Image */}
-                <div className="flex-shrink-0">
-                  <Image
-                    src={story.featuredImage}
-                    alt={story.title}
-                    width={80}
-                    height={60}
-                    className="rounded-lg object-cover"
-                  />
+                <div className="flex-shrink-0 w-20 h-16">
+                  {story.featuredImage || story.image ? (
+                    <Image
+                      src={story.featuredImage || story.image}
+                      alt={story.title}
+                      width={80}
+                      height={64}
+                      className="rounded-lg object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                      <span className="text-purple-500 text-2xl">📖</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Story Info */}
@@ -302,13 +463,19 @@ export default function StoryReviewList() {
                       
                       {/* Author Info */}
                       <div className="flex items-center mt-1 space-x-2">
-                        <Image
-                          src={story.author.avatar}
-                          alt={story.author.name}
-                          width={20}
-                          height={20}
-                          className="rounded-full"
-                        />
+                        {story.author?.avatar ? (
+                          <Image
+                            src={story.author.avatar}
+                            alt={story.author?.name || 'Author'}
+                            width={20}
+                            height={20}
+                            className="rounded-full w-5 h-5 object-cover"
+                          />
+                        ) : (
+                          <div className="w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                            {story.author?.name?.charAt(0)?.toUpperCase() || 'U'}
+                          </div>
+                        )}
                         <span className="text-sm text-gray-600">by {story.author.name}</span>
                         <span className="text-gray-400">•</span>
                         <span className="text-sm text-gray-500">{story.genre}</span>
@@ -323,7 +490,7 @@ export default function StoryReviewList() {
 
                       {/* Hashtags */}
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {story.hashtags.map((tag, index) => (
+                        {story.hashtags?.map((tag: string, index: number) => (
                           <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                             {tag}
                           </span>
@@ -367,13 +534,17 @@ export default function StoryReviewList() {
                           <Eye size={16} />
                         </Link>
                         <button
-                          className="p-2 text-green-400 hover:text-green-600 hover:bg-green-50 rounded"
+                          onClick={() => handleSingleAction(story.id.toString(), 'approve')}
+                          disabled={isProcessing}
+                          className="p-2 text-green-400 hover:text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
                           title="Approve Story"
                         >
                           <CheckCircle size={16} />
                         </button>
                         <button
-                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded"
+                          onClick={() => handleSingleAction(story.id.toString(), 'reject')}
+                          disabled={isProcessing}
+                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
                           title="Reject Story"
                         >
                           <XCircle size={16} />

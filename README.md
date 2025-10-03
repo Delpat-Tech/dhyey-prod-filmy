@@ -12,18 +12,23 @@ dhyey-prod-filmy/
 
 ## Quick Start
 
-### Frontend
+### Install All Dependencies
 ```bash
-cd frontend
 npm install
+```
+
+### Run Both Services
+```bash
 npm run dev
 ```
 
-### Backend
+### Run Individual Services
 ```bash
-cd backend
-npm install
-npm run dev
+# Frontend only
+npm run dev:frontend
+
+# Backend only
+npm run dev:backend
 ```
 
 ## Features

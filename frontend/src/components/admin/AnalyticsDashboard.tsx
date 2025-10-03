@@ -21,6 +21,7 @@ import {
   Target
 } from 'lucide-react'
 import Link from 'next/link'
+import { adminAPI } from '@/lib/api'
 
 // Mock analytics data
 const analyticsData = {
@@ -71,22 +72,26 @@ export default function AnalyticsDashboard() {
   const [mounted, setMounted] = useState(false)
   const [timeRange, setTimeRange] = useState('7d')
   const [activeTab, setActiveTab] = useState('overview')
+  const [analytics, setAnalytics] = useState<any>(analyticsData)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+    loadAnalytics()
+  }, [timeRange])
 
-  if (!mounted) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-          ))}
-        </div>
-      </div>
-    )
+  const loadAnalytics = async () => {
+    try {
+      setIsLoading(true)
+      const response = await adminAPI.getAnalytics()
+      setAnalytics(response.data || analyticsData)
+    } catch (error) {
+      console.error('Failed to load analytics:', error)
+      // Fallback to mock data
+      setAnalytics(analyticsData)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const formatNumber = (num: number) => {

@@ -1,0 +1,22 @@
+{
+  "name": "dhyey-prod-filmy",
+  "version": "1.0.0",
+  "description": "Full-stack storytelling platform with Vue.js frontend and Node.js backend",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspaces",
+    "start": "npm run start --workspaces",
+    "install:all": "npm install"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=7.0.0"
+  }
+}

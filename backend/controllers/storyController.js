@@ -1,6 +1,5 @@
 const Story = require('../models/Story');
 const User = require('../models/User');
-const Comment = require('../models/Comment');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { uploadStoryImage, processStoryImage, validateImageUpload } = require('../utils/fileUpload');
@@ -10,6 +9,148 @@ const analyticsService = require('../utils/analytics');
 exports.uploadStoryImage = uploadStoryImage;
 exports.processStoryImage = processStoryImage;
 
+// Admin Methods
+exports.getAllStoriesForAdmin = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+  const skip = (page - 1) * limit;
+  
+  const query = {};
+  
+  // Filter by status if provided
+  if (req.query.status && req.query.status !== 'all') {
+    query.status = req.query.status;
+  }
+  
+  // Filter by genre if provided
+  if (req.query.genre && req.query.genre !== 'all') {
+    query.genre = req.query.genre;
+  }
+  
+  // Search functionality
+  if (req.query.search) {
+    query.$or = [
+      { title: { $regex: req.query.search, $options: 'i' } },
+      { 'author.name': { $regex: req.query.search, $options: 'i' } }
+    ];
+  }
+
+  const stories = await Story.find(query)
+    .populate('author', 'name username avatar email')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Story.countDocuments(query);
+
+  res.status(200).json({
+    status: 'success',
+    results: stories.length,
+    total,
+    data: { stories }
+  });
+});
+
+exports.approveStory = catchAsync(async (req, res, next) => {
+  const story = await Story.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'approved',
+      publishedAt: new Date(),
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    },
+    { new: true, runValidators: true }
+  ).populate('author', 'name username email');
+
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  // TODO: Send notification to author about approval
+  // await notificationService.sendStoryApprovalNotification(story.author, story);
+
+  res.status(200).json({
+    status: 'success',
+    data: { story }
+  });
+});
+
+exports.rejectStory = catchAsync(async (req, res, next) => {
+  const { reason } = req.body;
+  
+  const story = await Story.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'rejected',
+      rejectionReason: reason || 'Story does not meet community guidelines',
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    },
+    { new: true, runValidators: true }
+  ).populate('author', 'name username email');
+
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  // TODO: Send notification to author about rejection
+  // await notificationService.sendStoryRejectionNotification(story.author, story, reason);
+
+  res.status(200).json({
+    status: 'success',
+    data: { story }
+  });
+});
+
+exports.bulkApproveStories = catchAsync(async (req, res, next) => {
+  const { storyIds } = req.body;
+  
+  if (!storyIds || !Array.isArray(storyIds)) {
+    return next(new AppError('Please provide an array of story IDs', 400));
+  }
+
+  const result = await Story.updateMany(
+    { _id: { $in: storyIds } },
+    { 
+      status: 'approved',
+      publishedAt: new Date(),
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: `${result.modifiedCount} stories approved successfully`,
+    data: { modifiedCount: result.modifiedCount }
+  });
+});
+
+exports.bulkRejectStories = catchAsync(async (req, res, next) => {
+  const { storyIds, reason } = req.body;
+  
+  if (!storyIds || !Array.isArray(storyIds)) {
+    return next(new AppError('Please provide an array of story IDs', 400));
+  }
+
+  const result = await Story.updateMany(
+    { _id: { $in: storyIds } },
+    { 
+      status: 'rejected',
+      rejectionReason: reason || 'Stories do not meet community guidelines',
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: `${result.modifiedCount} stories rejected successfully`,
+    data: { modifiedCount: result.modifiedCount }
+  });
+});
+
 // Get all published stories for public feed
 exports.getPublicStories = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
@@ -17,7 +158,7 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const sortBy = req.query.sortBy || 'newest';
 
-  const query = { status: 'published' };
+  const query = { status: 'approved' };
   
   if (req.query.genre) {
     query.genre = req.query.genre;
@@ -109,7 +250,7 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
 
 // Create new story
 exports.createStory = catchAsync(async (req, res, next) => {
-  const { title, content, genre, tags, hashtags } = req.body;
+  const { title, content, genre, tags, hashtags, status } = req.body;
   
   if (!title || !content || !genre) {
     return next(new AppError('Title, content, and genre are required', 400));
@@ -122,7 +263,7 @@ exports.createStory = catchAsync(async (req, res, next) => {
     tags: tags || [],
     hashtags: hashtags || [],
     author: req.user._id,
-    status: 'draft'
+    status: status || 'pending' // Default to pending for review
   };
 
   // Add image if uploaded
@@ -186,12 +327,11 @@ exports.updateStory = catchAsync(async (req, res, next) => {
 
 // Delete story
 exports.deleteStory = catchAsync(async (req, res, next) => {
-  const story = await Story.findById(req.params.id);
+  const story = await Story.findByIdAndDelete(req.params.id);
 
   if (!story) {
     return next(new AppError('No story found with that ID', 404));
   }
-
   // Check if user owns the story or is admin
   if (story.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
     return next(new AppError('You can only delete your own stories', 403));
@@ -338,5 +478,141 @@ exports.searchStories = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     ...results
+  });
+});
+
+// Admin Methods
+exports.getAllStoriesForAdmin = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+  const skip = (page - 1) * limit;
+  
+  const query = {};
+  
+  // Filter by status if provided
+  if (req.query.status && req.query.status !== 'all') {
+    query.status = req.query.status;
+  }
+  
+  // Filter by genre if provided
+  if (req.query.genre && req.query.genre !== 'all') {
+    query.genre = req.query.genre;
+  }
+  
+  // Search functionality
+  if (req.query.search) {
+    query.$or = [
+      { title: { $regex: req.query.search, $options: 'i' } },
+      { 'author.name': { $regex: req.query.search, $options: 'i' } }
+    ];
+  }
+
+  const stories = await Story.find(query)
+    .populate('author', 'name username avatar email')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Story.countDocuments(query);
+
+  res.status(200).json({
+    status: 'success',
+    results: stories.length,
+    total,
+    data: { stories }
+  });
+});
+
+exports.approveStory = catchAsync(async (req, res, next) => {
+  const story = await Story.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'approved',
+      publishedAt: new Date(),
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    },
+    { new: true, runValidators: true }
+  ).populate('author', 'name username email');
+
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { story }
+  });
+});
+
+exports.rejectStory = catchAsync(async (req, res, next) => {
+  const { reason } = req.body;
+  
+  const story = await Story.findByIdAndUpdate(
+    req.params.id,
+    { 
+      status: 'rejected',
+      rejectionReason: reason || 'Story does not meet community guidelines',
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    },
+    { new: true, runValidators: true }
+  ).populate('author', 'name username email');
+
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { story }
+  });
+});
+
+exports.bulkApproveStories = catchAsync(async (req, res, next) => {
+  const { storyIds } = req.body;
+  
+  if (!storyIds || !Array.isArray(storyIds)) {
+    return next(new AppError('Please provide an array of story IDs', 400));
+  }
+
+  const result = await Story.updateMany(
+    { _id: { $in: storyIds } },
+    { 
+      status: 'approved',
+      publishedAt: new Date(),
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: `${result.modifiedCount} stories approved successfully`,
+    data: { modifiedCount: result.modifiedCount }
+  });
+});
+
+exports.bulkRejectStories = catchAsync(async (req, res, next) => {
+  const { storyIds, reason } = req.body;
+  
+  if (!storyIds || !Array.isArray(storyIds)) {
+    return next(new AppError('Please provide an array of story IDs', 400));
+  }
+
+  const result = await Story.updateMany(
+    { _id: { $in: storyIds } },
+    { 
+      status: 'rejected',
+      rejectionReason: reason || 'Stories do not meet community guidelines',
+      reviewedBy: req.user.id,
+      reviewedAt: new Date()
+    }
+  );
+
+  res.status(200).json({
+    status: 'success',
+    message: `${result.modifiedCount} stories rejected successfully`,
+    data: { modifiedCount: result.modifiedCount }
   });
 });

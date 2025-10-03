@@ -4,9 +4,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, Bookmark, Share2, MessageCircle, MoreHorizontal } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
+import { storyAPI } from '@/lib/api'
 
-// Mock data - replace with API calls later
-const stories = [
+// Mock data - fallback for when API is not available
+const mockStories = [
   {
     id: 1,
     title: "The Midnight Train",
@@ -61,14 +62,38 @@ const stories = [
 ]
 
 export default function StoryFeed() {
-  const [likedStories, setLikedStories] = useState<Set<number>>(new Set())
-  const [savedStories, setSavedStories] = useState<Set<number>>(new Set())
-  const [showShareMenu, setShowShareMenu] = useState<number | null>(null)
-  const [showMoreMenu, setShowMoreMenu] = useState<number | null>(null)
-  const [displayedStories, setDisplayedStories] = useState(stories)
+  const [likedStories, setLikedStories] = useState<Set<string>>(new Set())
+  const [savedStories, setSavedStories] = useState<Set<string>>(new Set())
+  const [showShareMenu, setShowShareMenu] = useState<string | null>(null)
+  const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null)
+  const [displayedStories, setDisplayedStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const shareMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
-  const moreMenuRefs = useRef<{ [key: number]: HTMLDivElement | null }>({})
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
+  const shareMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  const moreMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+
+  // Load initial stories from API (only approved stories)
+  useEffect(() => {
+    const loadStories = async () => {
+      try {
+        setIsInitialLoading(true)
+        // Add filter to only get approved stories
+        const params = new URLSearchParams()
+        params.append('status', 'approved')
+        
+        const response = await storyAPI.getPublicStories(params)
+        setDisplayedStories(response.data.stories || mockStories)
+      } catch (error) {
+        console.error('Failed to load stories:', error)
+        // Fallback to mock data
+        setDisplayedStories(mockStories)
+      } finally {
+        setIsInitialLoading(false)
+      }
+    }
+
+    loadStories()
+  }, [])
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -96,37 +121,47 @@ export default function StoryFeed() {
     }
   }, [showShareMenu, showMoreMenu])
 
-  const toggleLike = (storyId: number) => {
-    setLikedStories(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(storyId)) {
-        newSet.delete(storyId)
-      } else {
-        newSet.add(storyId)
-      }
-      return newSet
-    })
+  const toggleLike = async (storyId: string) => {
+    try {
+      await storyAPI.likeStory(storyId)
+      setLikedStories(prev => {
+        const newSet = new Set(prev)
+        if (newSet.has(storyId)) {
+          newSet.delete(storyId)
+        } else {
+          newSet.add(storyId)
+        }
+        return newSet
+      })
+    } catch (error) {
+      console.error('Failed to like story:', error)
+    }
   }
 
-  const toggleSave = (storyId: number) => {
-    setSavedStories(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(storyId)) {
-        newSet.delete(storyId)
-      } else {
-        newSet.add(storyId)
-      }
-      return newSet
-    })
+  const toggleSave = async (storyId: string) => {
+    try {
+      await storyAPI.saveStory(storyId)
+      setSavedStories(prev => {
+        const newSet = new Set(prev)
+        if (newSet.has(storyId)) {
+          newSet.delete(storyId)
+        } else {
+          newSet.add(storyId)
+        }
+        return newSet
+      })
+    } catch (error) {
+      console.error('Failed to save story:', error)
+    }
   }
 
-  const handleShare = (storyId: number) => {
+  const handleShare = (storyId: string) => {
     console.log('Share button clicked for story:', storyId) // Debug log
     setShowShareMenu(showShareMenu === storyId ? null : storyId)
     setShowMoreMenu(null) // Close other menu
   }
 
-  const handleMore = (storyId: number) => {
+  const handleMore = (storyId: string) => {
     setShowMoreMenu(showMoreMenu === storyId ? null : storyId)
     setShowShareMenu(null) // Close other menu
   }
@@ -159,21 +194,53 @@ export default function StoryFeed() {
 
   const loadMoreStories = async () => {
     setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    const newStories = stories.map((story, index) => ({
-      ...story,
-      id: story.id + displayedStories.length + index,
-      timeAgo: Math.floor(Math.random() * 12) + 1 + 'h'
-    }))
-    
-    setDisplayedStories(prev => [...prev, ...newStories])
-    setIsLoading(false)
+    try {
+      // In a real app, you'd pass pagination parameters
+      // Only load approved stories
+      const params = new URLSearchParams()
+      params.append('status', 'approved')
+      
+      const response = await storyAPI.getPublicStories(params)
+      const newStories = response.data.stories || mockStories.map((story: any, index: number) => ({
+        ...story,
+        id: story.id + displayedStories.length + index,
+        timeAgo: Math.floor(Math.random() * 12) + 1 + 'h'
+      }))
+      
+      setDisplayedStories(prev => [...prev, ...newStories])
+    } catch (error) {
+      console.error('Failed to load more stories:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isInitialLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                <div className="h-3 bg-gray-200 rounded w-16"></div>
+              </div>
+            </div>
+            <div className="space-y-2 mb-4">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+            <div className="h-48 bg-gray-200 rounded"></div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {displayedStories.map((story, index) => (
+      {displayedStories.map((story: any, index: number) => (
         <div 
           key={story.id} 
           className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden story-card transform transition-all duration-500 hover:shadow-lg hover:-translate-y-1"
@@ -274,7 +341,7 @@ export default function StoryFeed() {
                   {story.genre}
                 </span>
                 <div className="flex space-x-1">
-                  {story.hashtags.map((tag, index) => (
+                  {story.hashtags?.map((tag: string, index: number) => (
                     <span key={index} className="text-purple-600 text-sm hover:underline cursor-pointer transition-all duration-200 hover:text-purple-800 hover:scale-105">
                       {tag}
                     </span>

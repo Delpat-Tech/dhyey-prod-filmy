@@ -1,8 +1,8 @@
 const fs = require('fs');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-const User = require('../models/userModel');
-const Story = require('../models/storyModel');
+const User = require('../models/User');
+const Story = require('../models/Story');
 const Category = require('../models/categoryModel');
 const Page = require('../models/pageModel');
 

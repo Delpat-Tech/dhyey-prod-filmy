@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -18,6 +18,9 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react'
+import CustomSelect from '@/components/ui/CustomSelect'
+import { adminAPI } from '@/lib/api'
+import { showNotification } from '@/lib/errorHandler'
 
 // Mock user data
 const mockUsers = [
@@ -113,11 +116,43 @@ export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterRole, setFilterRole] = useState('all')
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([])
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([])
   const [showActionModal, setShowActionModal] = useState(false)
   const [actionType, setActionType] = useState<'suspend' | 'activate' | 'delete' | null>(null)
+  const [users, setUsers] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const filteredUsers = mockUsers.filter(user => {
+  // Load users from backend
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setIsLoading(true)
+        const params = new URLSearchParams()
+        if (filterStatus !== 'all') params.append('status', filterStatus)
+        if (filterRole !== 'all') params.append('role', filterRole)
+        if (searchTerm) params.append('search', searchTerm)
+        
+        const response = await adminAPI.getAllUsers(params)
+        setUsers(response.data.users || mockUsers)
+      } catch (error) {
+        console.error('Failed to load users:', error)
+        // Fallback to mock data
+        setUsers(mockUsers)
+        showNotification({
+          type: 'error',
+          title: 'Failed to load users',
+          message: 'Using demo data. Please check your connection.'
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUsers()
+  }, [filterStatus, filterRole, searchTerm])
+
+  const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -126,7 +161,7 @@ export default function UserManagement() {
     return matchesSearch && matchesStatus && matchesRole
   })
 
-  const handleSelectUser = (userId: number) => {
+  const handleSelectUser = (userId: string) => {
     setSelectedUsers(prev => 
       prev.includes(userId) 
         ? prev.filter(id => id !== userId)
@@ -138,7 +173,7 @@ export default function UserManagement() {
     setSelectedUsers(
       selectedUsers.length === filteredUsers.length 
         ? [] 
-        : filteredUsers.map(user => user.id)
+        : filteredUsers.map(user => user.id.toString())
     )
   }
 
@@ -147,11 +182,94 @@ export default function UserManagement() {
     setShowActionModal(true)
   }
 
-  const confirmBulkAction = () => {
-    console.log(`Bulk ${actionType} for users:`, selectedUsers)
-    setShowActionModal(false)
-    setActionType(null)
-    setSelectedUsers([])
+  const confirmBulkAction = async () => {
+    if (selectedUsers.length === 0 || !actionType) return
+    
+    setIsProcessing(true)
+    try {
+      for (const userId of selectedUsers) {
+        if (actionType === 'suspend') {
+          await adminAPI.suspendUser(userId, 'Bulk suspension by admin')
+        } else if (actionType === 'activate') {
+          await adminAPI.unsuspendUser(userId)
+        } else if (actionType === 'delete') {
+          await adminAPI.deleteUser(userId)
+        }
+      }
+      
+      showNotification({
+        type: 'success',
+        title: 'Action Completed',
+        message: `${selectedUsers.length} users have been ${actionType}d.`
+      })
+      
+      // Reload users
+      const params = new URLSearchParams()
+      if (filterStatus !== 'all') params.append('status', filterStatus)
+      if (filterRole !== 'all') params.append('role', filterRole)
+      if (searchTerm) params.append('search', searchTerm)
+      
+      const response = await adminAPI.getAllUsers(params)
+      setUsers(response.data.users || [])
+      
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Action Failed',
+        message: `Failed to ${actionType} users. Please try again.`
+      })
+    } finally {
+      setIsProcessing(false)
+      setShowActionModal(false)
+      setActionType(null)
+      setSelectedUsers([])
+    }
+  }
+
+  const handleSingleUserAction = async (userId: string, action: 'suspend' | 'activate' | 'delete') => {
+    setIsProcessing(true)
+    try {
+      if (action === 'suspend') {
+        await adminAPI.suspendUser(userId, 'Suspended by admin')
+        showNotification({
+          type: 'success',
+          title: 'User Suspended',
+          message: 'The user has been suspended.'
+        })
+      } else if (action === 'activate') {
+        await adminAPI.unsuspendUser(userId)
+        showNotification({
+          type: 'success',
+          title: 'User Activated',
+          message: 'The user has been activated.'
+        })
+      } else if (action === 'delete') {
+        await adminAPI.deleteUser(userId)
+        showNotification({
+          type: 'success',
+          title: 'User Deleted',
+          message: 'The user has been deleted.'
+        })
+      }
+      
+      // Reload users
+      const params = new URLSearchParams()
+      if (filterStatus !== 'all') params.append('status', filterStatus)
+      if (filterRole !== 'all') params.append('role', filterRole)
+      if (searchTerm) params.append('search', searchTerm)
+      
+      const response = await adminAPI.getAllUsers(params)
+      setUsers(response.data.users || [])
+      
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Action Failed',
+        message: `Failed to ${action} user. Please try again.`
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -247,29 +365,29 @@ export default function UserManagement() {
               placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
             />
           </div>
-          <select
+          <CustomSelect
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="pending">Pending</option>
-          </select>
-          <select
+            onChange={(value) => setFilterStatus(value as string)}
+            options={[
+              { label: 'All Status', value: 'all' },
+              { label: 'Active', value: 'active', emoji: '✅' },
+              { label: 'Suspended', value: 'suspended', emoji: '⛔' },
+              { label: 'Pending', value: 'pending', emoji: '⏳' }
+            ]}
+          />
+          <CustomSelect
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            <option value="all">All Roles</option>
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-            <option value="moderator">Moderator</option>
-          </select>
+            onChange={(value) => setFilterRole(value as string)}
+            options={[
+              { label: 'All Roles', value: 'all' },
+              { label: 'User', value: 'user', emoji: '👤' },
+              { label: 'Admin', value: 'admin', emoji: '👑' },
+              { label: 'Moderator', value: 'moderator', emoji: '🛡️' }
+            ]}
+          />
           <button className="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
             <Filter size={16} className="mr-2" />
             More Filters

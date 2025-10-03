@@ -121,7 +121,7 @@ export default function SubmissionForm({ competition, onClose }: SubmissionFormP
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                 errors.title ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Give your entry a compelling title"
@@ -143,7 +143,7 @@ export default function SubmissionForm({ competition, onClose }: SubmissionFormP
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows={4}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none text-gray-900 bg-white ${
                 errors.description ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Provide a brief description of your entry (max 500 characters)"
@@ -170,7 +170,7 @@ export default function SubmissionForm({ competition, onClose }: SubmissionFormP
               type="text"
               value={formData.authorName}
               onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                 errors.authorName ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="Your full name"
@@ -192,9 +192,9 @@ export default function SubmissionForm({ competition, onClose }: SubmissionFormP
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
+              }}`
               placeholder="your.email@example.com"
             />
             {errors.email && (

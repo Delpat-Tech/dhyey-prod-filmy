@@ -366,7 +366,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
               value={approvalNote}
               onChange={(e) => setApprovalNote(e.target.value)}
               placeholder="Add a note (optional)"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 bg-white"
               rows={3}
             />
             <div className="flex justify-end space-x-3 mt-4">
@@ -399,7 +399,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="Reason for rejection (required)"
-              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-gray-900 bg-white"
               rows={4}
               required
             />

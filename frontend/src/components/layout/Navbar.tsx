@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Search, Plus, User, Menu, X } from 'lucide-react'
+import NotificationCenter from '@/components/notifications/NotificationCenter'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -50,6 +51,7 @@ export default function Navbar() {
               <Plus size={16} />
               <span>Create</span>
             </Link>
+            <NotificationCenter />
             <Link 
               href="/profile" 
               className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all duration-300 hover:scale-110 active:scale-95"

@@ -227,7 +227,7 @@ export default function AddAdminForm() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                     errors.name ? 'border-red-300' : 'border-gray-200'
                   }`}
                   placeholder="Enter full name"
@@ -253,7 +253,7 @@ export default function AddAdminForm() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                     errors.email ? 'border-red-300' : 'border-gray-200'
                   }`}
                   placeholder="Enter email address"
@@ -277,7 +277,7 @@ export default function AddAdminForm() {
                 name="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                   errors.username ? 'border-red-300' : 'border-gray-200'
                 }`}
                 placeholder="Enter username"
@@ -299,7 +299,7 @@ export default function AddAdminForm() {
                 name="department"
                 value={formData.department}
                 onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
                   errors.department ? 'border-red-300' : 'border-gray-200'
                 }`}
               >
@@ -424,7 +424,7 @@ export default function AddAdminForm() {
                   value={formData.customMessage}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
                   placeholder="Add a personal message to the invitation email..."
                 />
               </div>

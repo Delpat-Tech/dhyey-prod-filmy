@@ -1,63 +1,60 @@
 'use client'
 
 import Image from 'next/image'
-import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { Settings, Edit, MapPin, Calendar, Link as LinkIcon } from 'lucide-react'
-import api from '@/lib/api'
-
-interface UserData {
-  _id: string
-  name: string
-  username: string
-  avatar?: string
-  bio?: string
-  location?: string
-  website?: string
-  updatedAt: string
-  stats: {
-    storiesCount: number
-    followersCount: number
-    followingCount: number
-    likesCount: number
-  }
-}
+import ProfileActions from './ProfileActions'
+import ProfileStats from './ProfileStats'
+import ProfileBio from './ProfileBio'
+import { shareProfile } from '@/lib/errorHandler'
+import { useAuth } from '@/contexts/AuthContext'
+import { userAPI } from '@/lib/api'
 
 export default function ProfileHeader() {
-  const [userData, setUserData] = useState<UserData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const [profileData, setProfileData] = useState<any>(null)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetchUserData()
-  }, [])
-
-  const fetchUserData = async () => {
-    try {
-      const response = await api.get('/users/me')
-      setUserData(response.data.data.user)
-    } catch (error: any) {
-      console.error('Failed to fetch user data:', error)
-      if (error.response?.status === 401) {
-        localStorage.removeItem('token')
-        window.location.href = '/login'
+    const loadProfileData = async () => {
+      try {
+        if (user) {
+          // Load current user's profile
+          const response = await userAPI.getMe()
+          setProfileData(response.data.user)
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error)
+        // Fallback to user data from context
+        setProfileData(user)
+      } finally {
+        setIsLoading(false)
       }
-    } finally {
-      setLoading(false)
+    }
+
+    loadProfileData()
+  }, [user])
+
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing)
+  }
+
+  const handleShare = (platform: string) => {
+    if (profileData) {
+      shareProfile(platform, profileData)
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 py-6">
-          <div className="animate-pulse">
-            <div className="flex items-start space-x-4">
-              <div className="w-20 h-20 md:w-32 md:h-32 bg-gray-300 rounded-full"></div>
-              <div className="flex-1">
-                <div className="h-6 bg-gray-300 rounded w-48 mb-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-32 mb-4"></div>
-                <div className="h-10 bg-gray-300 rounded w-32"></div>
-              </div>
+          <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+            <div className="w-20 h-20 md:w-[150px] md:h-[150px] bg-gray-200 rounded-full animate-pulse mb-4 md:mb-0"></div>
+            <div className="flex-1">
+              <div className="h-6 bg-gray-200 rounded w-48 mb-2 animate-pulse"></div>
+              <div className="h-4 bg-gray-200 rounded w-32 mb-4 animate-pulse"></div>
+              <div className="h-10 bg-gray-200 rounded w-24 animate-pulse"></div>
             </div>
           </div>
         </div>
@@ -65,100 +62,64 @@ export default function ProfileHeader() {
     )
   }
 
-  if (!userData) {
+  if (!profileData) {
     return (
       <div className="bg-white border-b border-gray-200">
         <div className="px-4 py-6 text-center">
-          <p className="text-gray-500">Failed to load profile data</p>
+          <p className="text-gray-600">Please log in to view your profile.</p>
         </div>
       </div>
     )
-  }
-
-  const formatJoinDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long'
-    })
   }
 
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="px-4 py-6">
-        <div className="flex items-start space-x-4 mb-4">
+        {/* Responsive Layout */}
+        <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
+          {/* Avatar */}
           <Image
-            src={userData.avatar?.startsWith('http') ? userData.avatar : `http://localhost:5000/${userData.avatar || 'uploads/avatars/default.jpg'}`}
-            alt={userData.name}
+            src={profileData.avatar || '/default-avatar.png'}
+            alt={profileData.name || 'User'}
             width={80}
             height={80}
-            className="rounded-full"
+            className="rounded-full md:w-[150px] md:h-[150px] mb-4 md:mb-0"
           />
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-gray-900 truncate">
-              {userData.name}
-            </h1>
-            <p className="text-gray-600 mb-2">@{userData.username}</p>
+
+          {/* Profile Info */}
+          <div className="flex-1">
+            {/* Name and Username */}
+            <div className="mb-4">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
+                {profileData.name || 'User'}
+              </h1>
+              <p className="text-gray-600 mb-3 md:mb-4">@{profileData.username || 'username'}</p>
+              
+              {/* Action Buttons */}
+              <ProfileActions
+                isOwnProfile={true}
+                isFollowing={isFollowing}
+                onFollow={handleFollow}
+                onShare={handleShare}
+                userData={profileData}
+              />
+            </div>
+
+            {/* Stats */}
+            <ProfileStats stats={profileData.stats || {}} isMobile={false} />
             
-            <div className="flex space-x-2">
-              <Link 
-                href="/profile/edit"
-                className="flex-1 bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors text-center"
-              >
-                <Edit size={16} className="inline mr-2" />
-                Edit Profile
-              </Link>
-              <Link 
-                href="/settings"
-                className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors inline-flex items-center justify-center"
-              >
-                <Settings size={16} />
-              </Link>
+            {/* Mobile Stats */}
+            <div className="md:hidden">
+              <ProfileStats stats={profileData.stats || {}} isMobile={true} />
             </div>
-          </div>
-        </div>
 
-        <div className="flex justify-around py-4 border-y border-gray-100 mb-4">
-          <div className="text-center">
-            <div className="font-bold text-lg text-gray-900">{userData.stats.storiesCount}</div>
-            <div className="text-sm text-gray-600">Stories</div>
-          </div>
-          <Link href="/profile/followers" className="text-center">
-            <div className="font-bold text-lg text-gray-900">{userData.stats.followersCount.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Followers</div>
-          </Link>
-          <Link href="/profile/following" className="text-center">
-            <div className="font-bold text-lg text-gray-900">{userData.stats.followingCount}</div>
-            <div className="text-sm text-gray-600">Following</div>
-          </Link>
-          <div className="text-center">
-            <div className="font-bold text-lg text-gray-900">{userData.stats.likesCount.toLocaleString()}</div>
-            <div className="text-sm text-gray-600">Likes</div>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {userData.bio && (
-            <p className="text-gray-900 whitespace-pre-line">{userData.bio}</p>
-          )}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            {userData.location && (
-              <div className="flex items-center space-x-1">
-                <MapPin size={14} />
-                <span>{userData.location}</span>
-              </div>
-            )}
-            <div className="flex items-center space-x-1">
-              <Calendar size={14} />
-              <span>Joined {formatJoinDate(userData.updatedAt)}</span>
-            </div>
-            {userData.website && (
-              <div className="flex items-center space-x-1">
-                <LinkIcon size={14} />
-                <a href={`https://${userData.website}`} className="text-purple-600 hover:underline">
-                  {userData.website}
-                </a>
-              </div>
-            )}
+            {/* Bio */}
+            <ProfileBio
+              bio={profileData.bio || ''}
+              location={profileData.location || ''}
+              joinDate={profileData.joinDate || new Date().toISOString()}
+              website={profileData.website || ''}
+            />
           </div>
         </div>
       </div>

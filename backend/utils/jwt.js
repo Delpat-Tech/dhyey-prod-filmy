@@ -9,13 +9,13 @@ const signToken = (id, type = 'access') => {
   });
 };
 
-const createSendToken = (user, statusCode, req, res) => {
+const createSendToken = async (user, statusCode, req, res) => {
   const accessToken = signToken(user._id, 'access');
   const refreshToken = signToken(user._id, 'refresh');
   
   // Add refresh token to user's refresh tokens array
   user.addRefreshToken(refreshToken);
-  user.save({ validateBeforeSave: false });
+  await user.save({ validateBeforeSave: false });
   
   const cookieOptions = {
     expires: new Date(
@@ -34,7 +34,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
   res.status(statusCode).json({
     status: 'success',
-    accessToken,
+    token: accessToken,
     data: {
       user,
     },

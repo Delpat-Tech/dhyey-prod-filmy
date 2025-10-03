@@ -6,6 +6,7 @@ import axios from 'axios'
 
 export default function RegisterPage() {
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -19,11 +20,11 @@ export default function RegisterPage() {
     setMessage('')
 
     try {
-      const response = await axios.post('/api/v1/users/signup', {
+      const response = await axios.post('/api/v1/auth/signup', {
         name,
+        username,
         email,
-        password,
-        passwordConfirm
+        password
       })
       
       setMessage('Registration successful! Redirecting...')
@@ -81,6 +82,23 @@ export default function RegisterPage() {
           </div>
           
           <div style={{ marginBottom: '15px' }}>
+            <label style={{ color: '#333', display: 'block', marginBottom: '5px' }}>Username:</label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              style={{ 
+                width: '100%', 
+                padding: '10px', 
+                border: '1px solid #ddd', 
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          
+          <div style={{ marginBottom: '15px' }}>
             <label style={{ color: '#333', display: 'block', marginBottom: '5px' }}>Email:</label>
             <input
               type="email"
@@ -115,12 +133,13 @@ export default function RegisterPage() {
           </div>
           
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ color: '#333', display: 'block', marginBottom: '5px' }}>Confirm Password:</label>
+            <label style={{ color: '#333', display: 'block', marginBottom: '5px' }}>Password:</label>
             <input
               type="password"
-              value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={8}
               style={{ 
                 width: '100%', 
                 padding: '10px', 

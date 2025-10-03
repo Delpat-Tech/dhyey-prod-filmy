@@ -1,23 +1,107 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
+import api from '@/lib/api'
 
 export default function EditProfilePage() {
   const [formData, setFormData] = useState({
-    name: 'Sarah Johnson',
-    username: 'sarahjwrites',
-    bio: 'Storyteller | Fiction Writer | Coffee Enthusiast ☕\nLove crafting tales that touch hearts and minds ✨',
-    location: 'New York, NY',
-    website: 'sarahjohnson.com'
+    name: '',
+    username: '',
+    bio: '',
+    location: '',
+    website: ''
   })
+  const [avatar, setAvatar] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const response = await api.get('/users/me')
+      
+      const user = response.data.data.user
+      setFormData({
+        name: user.name || '',
+        username: user.username || '',
+        bio: user.bio || '',
+        location: user.location || '',
+        website: user.website || ''
+      })
+      setAvatar(user.avatar || '')
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+      setMessage('Failed to load user data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Profile updated:', formData)
-    alert('Profile updated successfully!')
+    setSaving(true)
+    setMessage('')
+
+    try {
+      // Upload photo first if selected
+      if (selectedFile) {
+        await uploadPhoto()
+      }
+      
+      // Update profile data
+      await api.patch('/users/me', formData)
+      
+      setMessage('Profile updated successfully!')
+    } catch (error: any) {
+      setMessage(error.response?.data?.message || 'Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setAvatar(previewUrl)
+    }
+  }
+
+  const uploadPhoto = async () => {
+    if (!selectedFile) return
+
+    const formData = new FormData()
+    formData.append('avatar', selectedFile)
+
+    try {
+      const response = await api.patch('/users/me', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      setAvatar(response.data.data.user.avatar)
+      setSelectedFile(null)
+    } catch (error) {
+      console.error('Photo upload failed:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    )
   }
 
   return (
@@ -34,10 +118,11 @@ export default function EditProfilePage() {
             </div>
             <button
               onClick={handleSubmit}
-              className="bg-purple-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-600 transition-colors flex items-center space-x-2"
+              disabled={saving}
+              className="bg-purple-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save size={16} />
-              <span>Save</span>
+              <span>{saving ? 'Saving...' : 'Save'}</span>
             </button>
           </div>
         </div>
@@ -49,7 +134,7 @@ export default function EditProfilePage() {
             <div className="flex items-center space-x-6">
               <div className="relative">
                 <Image
-                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
+                  src={avatar?.startsWith('http') || avatar?.startsWith('blob:') ? avatar : `http://localhost:5000/${avatar || 'uploads/avatars/default.jpg'}`}
                   alt="Profile"
                   width={100}
                   height={100}
@@ -60,7 +145,7 @@ export default function EditProfilePage() {
                   id="profilePhoto"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => console.log('Photo selected:', e.target.files?.[0])}
+                  onChange={handlePhotoChange}
                 />
                 <button 
                   type="button"
@@ -144,6 +229,17 @@ export default function EditProfilePage() {
               />
             </div>
           </form>
+          
+          {/* Message */}
+          {message && (
+            <div className={`mt-4 p-3 rounded-lg text-center ${
+              message.includes('successfully') 
+                ? 'bg-green-100 text-green-700 border border-green-200' 
+                : 'bg-red-100 text-red-700 border border-red-200'
+            }`}>
+              {message}
+            </div>
+          )}
         </div>
       </div>
     </div>

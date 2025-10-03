@@ -17,7 +17,7 @@ export default function LoginPage() {
     setMessage('')
 
     try {
-      const response = await axios.post('/api/v1/users/login', {
+      const response = await axios.post('/api/v1/auth/login', {
         email,
         password
       })

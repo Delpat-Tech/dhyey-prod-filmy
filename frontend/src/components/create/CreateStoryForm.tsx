@@ -74,11 +74,7 @@ export default function CreateStoryForm() {
   }
 
   const handleSaveDraft = async () => {
-    setSaveStatus('saving')
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setSaveStatus('saved')
-    setTimeout(() => setSaveStatus('unsaved'), 3000)
+    alert('Coming Soon!')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

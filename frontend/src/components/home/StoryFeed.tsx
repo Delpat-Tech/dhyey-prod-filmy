@@ -359,10 +359,11 @@ export default function StoryFeed() {
             <Link href={`/story/${story.id}`} className="block overflow-hidden">
               <div className="relative h-64 md:h-80 group">
                 <Image
-                  src={story.image}
+                  src={story.image.startsWith('http') ? story.image : `http://localhost:5000${story.image}`}
                   alt={story.title}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+
                 />
                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </div>
@@ -382,7 +383,7 @@ export default function StoryFeed() {
                     className={`transition-all duration-300 ${likedStories.has(story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`} 
                   />
                   <span className="text-sm font-medium">
-                    {story.likes + (likedStories.has(story.id) ? 1 : 0)}
+                    {(story.likes || 0) + (likedStories.has(story.id) ? 1 : 0)}
                   </span>
                 </button>
                 
@@ -391,7 +392,7 @@ export default function StoryFeed() {
                   className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
                   <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
-                  <span className="text-sm font-medium">{story.comments}</span>
+                  <span className="text-sm font-medium">{story.comments || 0}</span>
                 </Link>
                 
                 <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>

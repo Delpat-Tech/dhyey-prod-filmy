@@ -11,6 +11,7 @@ router.use(authController.restrictTo('admin', 'moderator'));
 
 // Admin Story Management
 router.get('/stories', storyController.getAllStoriesForAdmin); // Get ALL stories including pending
+router.get('/stories/:id', storyController.getStoryForAdmin); // Get single story for admin review
 router.patch('/stories/:id/approve', storyController.approveStory);
 router.patch('/stories/:id/reject', storyController.rejectStory);
 router.patch('/stories/bulk-approve', storyController.bulkApproveStories);

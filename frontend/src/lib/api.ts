@@ -194,7 +194,7 @@ export const adminAPI = {
   getAllStories: (params?: URLSearchParams) => 
     apiRequest(`/admin/stories${params ? `?${params}` : ''}`),
   
-  getStoryForReview: (id: string) => apiRequest(`/stories/${id}`),
+  getStoryForReview: (id: string) => apiRequest(`/admin/stories/${id}`),
   
   approveStory: (id: string) =>
     apiRequest(`/admin/stories/${id}/approve`, { method: 'PATCH' }),

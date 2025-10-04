@@ -245,7 +245,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
                 {story.author.name}
               </h3>
               <p className="text-sm text-gray-600">
-                @{story.author.username} • {story.author.followers.toLocaleString()} followers
+                @{story.author.username} • {(story.author.followers || 0).toLocaleString()} followers
               </p>
             </div>
           </Link>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -109,12 +109,32 @@ const priorityColors: { [key: string]: string } = {
 
 export default function StoryReviewList() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterGenre, setFilterGenre] = useState('all')
   const [selectedStories, setSelectedStories] = useState<string[]>([])
   const [stories, setStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isProcessing, setIsProcessing] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [wasFocused, setWasFocused] = useState(false)
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  // Restore focus after re-render
+  useEffect(() => {
+    if (wasFocused && searchInputRef.current && !isLoading) {
+      searchInputRef.current.focus()
+      setWasFocused(false)
+    }
+  }, [stories, wasFocused, isLoading])
 
   // Load stories from backend
   useEffect(() => {
@@ -122,9 +142,9 @@ export default function StoryReviewList() {
       try {
         setIsLoading(true)
         const params = new URLSearchParams()
-        if (filterStatus !== 'all') params.append('status', filterStatus)
+        params.append('status', filterStatus)
         if (filterGenre !== 'all') params.append('genre', filterGenre)
-        if (searchTerm) params.append('search', searchTerm)
+        if (debouncedSearchTerm) params.append('search', debouncedSearchTerm)
         
         const response = await adminAPI.getAllStories(params)
         setStories(response.data.stories || mockStories)
@@ -157,7 +177,7 @@ export default function StoryReviewList() {
     }
 
     loadStories()
-  }, [filterStatus, filterGenre, searchTerm])
+  }, [filterStatus, filterGenre, debouncedSearchTerm])
 
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -207,9 +227,9 @@ export default function StoryReviewList() {
       
       // Reload stories
       const params = new URLSearchParams()
-      if (filterStatus !== 'all') params.append('status', filterStatus)
+      params.append('status', filterStatus)
       if (filterGenre !== 'all') params.append('genre', filterGenre)
-      if (searchTerm) params.append('search', searchTerm)
+      if (debouncedSearchTerm) params.append('search', debouncedSearchTerm)
       
       const response = await adminAPI.getAllStories(params)
       setStories(response.data.stories || [])
@@ -249,9 +269,9 @@ export default function StoryReviewList() {
       
       // Reload stories
       const params = new URLSearchParams()
-      if (filterStatus !== 'all') params.append('status', filterStatus)
+      params.append('status', filterStatus)
       if (filterGenre !== 'all') params.append('genre', filterGenre)
-      if (searchTerm) params.append('search', searchTerm)
+      if (debouncedSearchTerm) params.append('search', debouncedSearchTerm)
       
       const response = await adminAPI.getAllStories(params)
       setStories(response.data.stories || [])
@@ -328,10 +348,13 @@ export default function StoryReviewList() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search stories or authors..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => setWasFocused(true)}
+              onBlur={() => setWasFocused(false)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
             />
           </div>
@@ -435,16 +458,25 @@ export default function StoryReviewList() {
 
                 {/* Featured Image */}
                 <div className="flex-shrink-0 w-20 h-16">
-                  {story.featuredImage || story.image ? (
-                    <Image
-                      src={story.featuredImage || story.image}
-                      alt={story.title}
-                      width={80}
-                      height={64}
-                      className="rounded-lg object-cover w-full h-full"
-                    />
+                  {(story.featuredImage || story.image) ? (
+                    <>
+                      <img
+                        src={(story.featuredImage || story.image).startsWith('http') ? (story.featuredImage || story.image) : `http://localhost:5000${story.featuredImage || story.image}`}
+                        alt={story.title}
+                        className="rounded-lg object-cover w-full h-full"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.parentElement?.querySelector('.fallback-image') as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
+                      />
+                      <div className="fallback-image w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg items-center justify-center hidden">
+                        <span className="text-purple-500 text-2xl">📖</span>
+                      </div>
+                    </>
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                    <div className="fallback-image w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
                       <span className="text-purple-500 text-2xl">📖</span>
                     </div>
                   )}
@@ -464,18 +496,21 @@ export default function StoryReviewList() {
                       {/* Author Info */}
                       <div className="flex items-center mt-1 space-x-2">
                         {story.author?.avatar ? (
-                          <Image
+                          <img
                             src={story.author.avatar}
                             alt={story.author?.name || 'Author'}
-                            width={20}
-                            height={20}
                             className="rounded-full w-5 h-5 object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
                           />
-                        ) : (
-                          <div className="w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                            {story.author?.name?.charAt(0)?.toUpperCase() || 'U'}
-                          </div>
-                        )}
+                        ) : null}
+                        <div className={`w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold ${story.author?.avatar ? 'hidden' : ''}`}>
+                          {story.author?.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
                         <span className="text-sm text-gray-600">by {story.author.name}</span>
                         <span className="text-gray-400">•</span>
                         <span className="text-sm text-gray-500">{story.genre}</span>

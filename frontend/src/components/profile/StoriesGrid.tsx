@@ -188,7 +188,11 @@ export default function StoriesGrid() {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Drafts</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {draftStories.map((story) => (
-              <Link key={story.id} href={`/create?draft=${story.id}`} className="group">
+              <button 
+                key={story.id} 
+                onClick={() => alert('Coming Soon!')} 
+                className="group text-left w-full"
+              >
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
                   <Image
                     src={story.image}
@@ -218,7 +222,7 @@ export default function StoriesGrid() {
                   </h4>
                   <p className="text-sm text-gray-500 mt-1">Continue editing</p>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </div>

@@ -17,9 +17,15 @@ exports.getAllStoriesForAdmin = catchAsync(async (req, res, next) => {
   
   const query = {};
   
-  // Filter by status if provided
-  if (req.query.status && req.query.status !== 'all') {
-    query.status = req.query.status;
+  // Filter by status if provided, default to pending stories for approval
+  if (req.query.status) {
+    if (req.query.status !== 'all') {
+      query.status = req.query.status;
+    }
+    // If status is 'all', don't add any status filter to show all stories
+  } else {
+    // Default to pending stories when no status parameter is provided
+    query.status = { $in: ['pending', 'in_review'] };
   }
   
   // Filter by genre if provided
@@ -27,21 +33,50 @@ exports.getAllStoriesForAdmin = catchAsync(async (req, res, next) => {
     query.genre = req.query.genre;
   }
   
-  // Search functionality
+  let stories;
+  let total;
+
   if (req.query.search) {
-    query.$or = [
-      { title: { $regex: req.query.search, $options: 'i' } },
-      { 'author.name': { $regex: req.query.search, $options: 'i' } }
+    // Use aggregation for author name search
+    const pipeline = [
+      { $match: query },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'author'
+        }
+      },
+      { $unwind: '$author' },
+      {
+        $match: {
+          $or: [
+            { title: { $regex: req.query.search, $options: 'i' } },
+            { 'author.name': { $regex: req.query.search, $options: 'i' } }
+          ]
+        }
+      },
+      { $sort: { createdAt: -1 } }
     ];
+
+    const totalPipeline = [...pipeline, { $count: 'total' }];
+    const totalResult = await Story.aggregate(totalPipeline);
+    total = totalResult.length > 0 ? totalResult[0].total : 0;
+
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    stories = await Story.aggregate(pipeline);
+  } else {
+    stories = await Story.find(query)
+      .populate('author', 'name username avatar email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    total = await Story.countDocuments(query);
   }
-
-  const stories = await Story.find(query)
-    .populate('author', 'name username avatar email')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-
-  const total = await Story.countDocuments(query);
 
   res.status(200).json({
     status: 'success',
@@ -67,9 +102,6 @@ exports.approveStory = catchAsync(async (req, res, next) => {
     return next(new AppError('No story found with that ID', 404));
   }
 
-  // TODO: Send notification to author about approval
-  // await notificationService.sendStoryApprovalNotification(story.author, story);
-
   res.status(200).json({
     status: 'success',
     data: { story }
@@ -93,9 +125,6 @@ exports.rejectStory = catchAsync(async (req, res, next) => {
   if (!story) {
     return next(new AppError('No story found with that ID', 404));
   }
-
-  // TODO: Send notification to author about rejection
-  // await notificationService.sendStoryRejectionNotification(story.author, story, reason);
 
   res.status(200).json({
     status: 'success',
@@ -148,6 +177,28 @@ exports.bulkRejectStories = catchAsync(async (req, res, next) => {
     status: 'success',
     message: `${result.modifiedCount} stories rejected successfully`,
     data: { modifiedCount: result.modifiedCount }
+  });
+});
+
+// Get single story for admin review
+exports.getStoryForAdmin = catchAsync(async (req, res, next) => {
+  const story = await Story.findById(req.params.id)
+    .populate('author', 'name username avatar email stats')
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'author',
+        select: 'name username avatar'
+      }
+    });
+
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { story }
   });
 });
 
@@ -221,8 +272,8 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
     return next(new AppError('No story found with that ID', 404));
   }
 
-  // Only allow access to published stories for public access
-  if (story.status !== 'published' && (!req.user || req.user._id.toString() !== story.author._id.toString())) {
+  // Only allow access to approved stories for public access (except for admins and story authors)
+  if (story.status !== 'approved' && (!req.user || (req.user._id.toString() !== story.author._id.toString() && req.user.role !== 'admin'))) {
     return next(new AppError('Story not available', 404));
   }
 
@@ -481,138 +532,4 @@ exports.searchStories = catchAsync(async (req, res, next) => {
   });
 });
 
-// Admin Methods
-exports.getAllStoriesForAdmin = catchAsync(async (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = Math.min(parseInt(req.query.limit) || 20, 100);
-  const skip = (page - 1) * limit;
-  
-  const query = {};
-  
-  // Filter by status if provided
-  if (req.query.status && req.query.status !== 'all') {
-    query.status = req.query.status;
-  }
-  
-  // Filter by genre if provided
-  if (req.query.genre && req.query.genre !== 'all') {
-    query.genre = req.query.genre;
-  }
-  
-  // Search functionality
-  if (req.query.search) {
-    query.$or = [
-      { title: { $regex: req.query.search, $options: 'i' } },
-      { 'author.name': { $regex: req.query.search, $options: 'i' } }
-    ];
-  }
 
-  const stories = await Story.find(query)
-    .populate('author', 'name username avatar email')
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit);
-
-  const total = await Story.countDocuments(query);
-
-  res.status(200).json({
-    status: 'success',
-    results: stories.length,
-    total,
-    data: { stories }
-  });
-});
-
-exports.approveStory = catchAsync(async (req, res, next) => {
-  const story = await Story.findByIdAndUpdate(
-    req.params.id,
-    { 
-      status: 'approved',
-      publishedAt: new Date(),
-      reviewedBy: req.user.id,
-      reviewedAt: new Date()
-    },
-    { new: true, runValidators: true }
-  ).populate('author', 'name username email');
-
-  if (!story) {
-    return next(new AppError('No story found with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: { story }
-  });
-});
-
-exports.rejectStory = catchAsync(async (req, res, next) => {
-  const { reason } = req.body;
-  
-  const story = await Story.findByIdAndUpdate(
-    req.params.id,
-    { 
-      status: 'rejected',
-      rejectionReason: reason || 'Story does not meet community guidelines',
-      reviewedBy: req.user.id,
-      reviewedAt: new Date()
-    },
-    { new: true, runValidators: true }
-  ).populate('author', 'name username email');
-
-  if (!story) {
-    return next(new AppError('No story found with that ID', 404));
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: { story }
-  });
-});
-
-exports.bulkApproveStories = catchAsync(async (req, res, next) => {
-  const { storyIds } = req.body;
-  
-  if (!storyIds || !Array.isArray(storyIds)) {
-    return next(new AppError('Please provide an array of story IDs', 400));
-  }
-
-  const result = await Story.updateMany(
-    { _id: { $in: storyIds } },
-    { 
-      status: 'approved',
-      publishedAt: new Date(),
-      reviewedBy: req.user.id,
-      reviewedAt: new Date()
-    }
-  );
-
-  res.status(200).json({
-    status: 'success',
-    message: `${result.modifiedCount} stories approved successfully`,
-    data: { modifiedCount: result.modifiedCount }
-  });
-});
-
-exports.bulkRejectStories = catchAsync(async (req, res, next) => {
-  const { storyIds, reason } = req.body;
-  
-  if (!storyIds || !Array.isArray(storyIds)) {
-    return next(new AppError('Please provide an array of story IDs', 400));
-  }
-
-  const result = await Story.updateMany(
-    { _id: { $in: storyIds } },
-    { 
-      status: 'rejected',
-      rejectionReason: reason || 'Stories do not meet community guidelines',
-      reviewedBy: req.user.id,
-      reviewedAt: new Date()
-    }
-  );
-
-  res.status(200).json({
-    status: 'success',
-    message: `${result.modifiedCount} stories rejected successfully`,
-    data: { modifiedCount: result.modifiedCount }
-  });
-});

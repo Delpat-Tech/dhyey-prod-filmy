@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   Edit
 } from 'lucide-react'
+import { storyAPI, adminAPI } from '@/lib/api'
+import { showNotification } from '@/lib/errorHandler'
 
 interface StoryReviewDetailProps {
   storyId: string
@@ -86,22 +88,84 @@ As the digital walls began to shimmer and crack under the Grid's relentless assa
 }
 
 export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
+  const [story, setStory] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'content' | 'author' | 'reports' | 'history'>('content')
   const [approvalNote, setApprovalNote] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
   const [showApprovalModal, setShowApprovalModal] = useState(false)
   const [showRejectionModal, setShowRejectionModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const handleApprove = () => {
-    console.log('Approving story with note:', approvalNote)
-    setShowApprovalModal(false)
-    setApprovalNote('')
+  useEffect(() => {
+    const loadStory = async () => {
+      try {
+        setIsLoading(true)
+        const response = await adminAPI.getStoryForReview(storyId)
+        setStory(response.data.story)
+      } catch (error: any) {
+        console.error('Failed to load story:', error)
+        showNotification({
+          type: 'error',
+          title: 'Failed to load story',
+          message: 'Story not available'
+        })
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadStory()
+  }, [storyId])
+
+  const handleApprove = async () => {
+    setIsProcessing(true)
+    try {
+      await adminAPI.approveStory(storyId)
+      showNotification({
+        type: 'success',
+        title: 'Story Approved',
+        message: 'The story has been approved and published. The author will be notified.'
+      })
+      setShowApprovalModal(false)
+      setApprovalNote('')
+      // Reload story data
+      const response = await adminAPI.getStoryForReview(storyId)
+      setStory(response.data.story)
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Approval Failed',
+        message: 'Failed to approve story. Please try again.'
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
-  const handleReject = () => {
-    console.log('Rejecting story with reason:', rejectionReason)
-    setShowRejectionModal(false)
-    setRejectionReason('')
+  const handleReject = async () => {
+    setIsProcessing(true)
+    try {
+      await adminAPI.rejectStory(storyId, rejectionReason)
+      showNotification({
+        type: 'success',
+        title: 'Story Rejected',
+        message: 'The story has been rejected. The author will be notified with the reason.'
+      })
+      setShowRejectionModal(false)
+      setRejectionReason('')
+      // Reload story data
+      const response = await adminAPI.getStoryForReview(storyId)
+      setStory(response.data.story)
+    } catch (error) {
+      showNotification({
+        type: 'error',
+        title: 'Rejection Failed',
+        message: 'Failed to reject story. Please try again.'
+      })
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -112,6 +176,34 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="animate-pulse">
+            <div className="flex space-x-4">
+              <div className="w-48 h-32 bg-gray-200 rounded"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!story) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900">Story not found</h3>
+        <p className="text-gray-500">The requested story could not be loaded.</p>
+      </div>
+    )
   }
 
   return (
@@ -133,79 +225,128 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
 
         {/* Action Buttons */}
         <div className="flex space-x-3">
-          <button
-            onClick={() => setShowRejectionModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50"
-          >
-            <XCircle size={16} />
-            <span>Reject</span>
-          </button>
-          <button
-            onClick={() => setShowApprovalModal(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            <CheckCircle size={16} />
-            <span>Approve</span>
-          </button>
+          {story.status === 'approved' ? (
+            <>
+              <div className="flex items-center space-x-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg">
+                <CheckCircle size={16} />
+                <span>Approved</span>
+              </div>
+              <button
+                onClick={() => setShowRejectionModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50"
+              >
+                <XCircle size={16} />
+                <span>Reject</span>
+              </button>
+            </>
+          ) : story.status === 'rejected' ? (
+            <>
+              <div className="flex items-center space-x-2 px-4 py-2 bg-red-100 text-red-700 rounded-lg">
+                <XCircle size={16} />
+                <span>Rejected</span>
+              </div>
+              <button
+                onClick={() => setShowApprovalModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <CheckCircle size={16} />
+                <span>Approve</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setShowRejectionModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50"
+              >
+                <XCircle size={16} />
+                <span>Reject</span>
+              </button>
+              <button
+                onClick={() => setShowApprovalModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                <CheckCircle size={16} />
+                <span>Approve</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Story Info Card */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-start space-x-6">
-          <Image
-            src={mockStory.featuredImage}
-            alt={mockStory.title}
-            width={200}
-            height={120}
-            className="rounded-lg object-cover"
-          />
+          {story.image ? (
+            <Image
+              src={story.image}
+              alt={story.title}
+              width={200}
+              height={120}
+              className="rounded-lg object-cover"
+            />
+          ) : (
+            <div className="w-48 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+              <span className="text-purple-500 text-4xl">📖</span>
+            </div>
+          )}
           <div className="flex-1">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{mockStory.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900">{story.title}</h2>
                 <div className="flex items-center mt-2 space-x-4 text-sm text-gray-600">
                   <div className="flex items-center space-x-2">
                     <Image
-                      src={mockStory.author.avatar}
-                      alt={mockStory.author.name}
+                      src={story.author?.avatar || '/default-avatar.png'}
+                      alt={story.author?.name || 'Author'}
                       width={20}
                       height={20}
                       className="rounded-full"
                     />
-                    <span>by {mockStory.author.name}</span>
+                    <span>by {story.author?.name || 'Unknown Author'}</span>
                   </div>
                   <span>•</span>
-                  <span>{mockStory.genre}</span>
+                  <span>{story.genre || 'Unknown Genre'}</span>
                   <span>•</span>
-                  <span>{mockStory.wordCount} words</span>
-                  <span>•</span>
-                  <span>{mockStory.readTime}</span>
+                  <span>{story.content?.split(' ').length || 0} words</span>
                 </div>
-                <p className="mt-3 text-gray-700">{mockStory.excerpt}</p>
+                <p className="mt-3 text-gray-700">{story.excerpt || story.content?.substring(0, 200) + '...' || 'No excerpt available'}</p>
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {mockStory.hashtags.map((tag, index) => (
+                  {(story.hashtags || story.tags || []).map((tag, index) => (
                     <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded">
-                      {tag}
+                      {tag.startsWith('#') ? tag : `#${tag}`}
                     </span>
                   ))}
                 </div>
               </div>
               <div className="text-right">
                 <div className="flex items-center space-x-2 mb-2">
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
-                    Pending Review
+                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    story.status === 'pending' || story.status === 'in_review' 
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : story.status === 'approved' || story.status === 'published'
+                      ? 'bg-green-100 text-green-800'
+                      : story.status === 'rejected'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {story.status === 'pending' ? 'Pending Review' 
+                     : story.status === 'in_review' ? 'In Review'
+                     : story.status === 'approved' ? 'Approved'
+                     : story.status === 'published' ? 'Published'
+                     : story.status === 'rejected' ? 'Rejected'
+                     : story.status || 'Unknown Status'}
                   </span>
                 </div>
                 <div className="text-sm text-gray-500">
                   <div className="flex items-center justify-end space-x-1 mb-1">
                     <Calendar size={14} />
-                    <span>Submitted {formatDate(mockStory.submittedAt)}</span>
+                    <span>Submitted {formatDate(story.createdAt || story.submittedAt || new Date().toISOString())}</span>
                   </div>
-                  {mockStory.reports.length > 0 && (
+                  {(story.reports?.length || 0) > 0 && (
                     <div className="flex items-center justify-end space-x-1 text-red-600">
                       <AlertTriangle size={14} />
-                      <span>{mockStory.reports.length} report(s)</span>
+                      <span>{story.reports?.length || 0} report(s)</span>
                     </div>
                   )}
                 </div>
@@ -221,7 +362,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           {[
             { id: 'content', label: 'Content', icon: FileText },
             { id: 'author', label: 'Author Info', icon: User },
-            { id: 'reports', label: 'Reports', icon: Flag, badge: mockStory.reports.length },
+            { id: 'reports', label: 'Reports', icon: Flag, badge: story.reports?.length || 0 },
             { id: 'history', label: 'History', icon: Clock }
           ].map((tab) => (
             <button
@@ -251,7 +392,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           <div className="p-6">
             <div className="prose max-w-none">
               <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                {mockStory.content}
+                {story.content}
               </div>
             </div>
           </div>
@@ -261,44 +402,44 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           <div className="p-6">
             <div className="flex items-start space-x-6">
               <Image
-                src={mockStory.author.avatar}
-                alt={mockStory.author.name}
+                src={story.author?.avatar || '/default-avatar.png'}
+                alt={story.author?.name || 'Author'}
                 width={80}
                 height={80}
                 className="rounded-full"
               />
               <div className="flex-1">
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-lg font-semibold text-gray-900">{mockStory.author.name}</h3>
-                  {mockStory.author.verified && (
+                  <h3 className="text-lg font-semibold text-gray-900">{story.author?.name || 'Unknown Author'}</h3>
+                  {story.author?.verified && (
                     <CheckCircle className="h-5 w-5 text-blue-500" />
                   )}
                 </div>
-                <p className="text-gray-600">@{mockStory.author.username}</p>
-                <p className="text-gray-600">{mockStory.author.email}</p>
-                <p className="mt-2 text-gray-700">{mockStory.author.bio}</p>
+                <p className="text-gray-600">@{story.author?.username || 'unknown'}</p>
+                <p className="text-gray-600">{story.author?.email || 'No email available'}</p>
+                <p className="mt-2 text-gray-700">{story.author?.bio || 'No bio available'}</p>
                 
                 <div className="grid grid-cols-4 gap-4 mt-4">
                   <div className="text-center">
-                    <div className="text-xl font-bold text-gray-900">{mockStory.author.stats.stories}</div>
+                    <div className="text-xl font-bold text-gray-900">{story.author?.stats?.stories || 0}</div>
                     <div className="text-sm text-gray-600">Stories</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-gray-900">{mockStory.author.stats.followers}</div>
+                    <div className="text-xl font-bold text-gray-900">{story.author?.stats?.followers || 0}</div>
                     <div className="text-sm text-gray-600">Followers</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-gray-900">{mockStory.author.stats.following}</div>
+                    <div className="text-xl font-bold text-gray-900">{story.author?.stats?.following || 0}</div>
                     <div className="text-sm text-gray-600">Following</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-gray-900">{mockStory.author.stats.likes}</div>
+                    <div className="text-xl font-bold text-gray-900">{story.author?.stats?.likes || 0}</div>
                     <div className="text-sm text-gray-600">Total Likes</div>
                   </div>
                 </div>
 
                 <div className="mt-4 text-sm text-gray-500">
-                  Joined {formatDate(mockStory.author.joinDate)}
+                  Joined {formatDate(story.author?.createdAt || story.author?.joinDate || new Date().toISOString())}
                 </div>
               </div>
             </div>
@@ -307,24 +448,24 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
 
         {activeTab === 'reports' && (
           <div className="p-6">
-            {mockStory.reports.length > 0 ? (
+            {(story.reports?.length || 0) > 0 ? (
               <div className="space-y-4">
-                {mockStory.reports.map((report) => (
-                  <div key={report.id} className="border border-red-200 rounded-lg p-4 bg-red-50">
+                {story.reports?.map((report, index) => (
+                  <div key={report.id || index} className="border border-red-200 rounded-lg p-4 bg-red-50">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h4 className="font-medium text-red-900">{report.reason}</h4>
-                        <p className="text-sm text-red-700 mt-1">{report.description}</p>
+                        <h4 className="font-medium text-red-900">{report.reason || 'No reason provided'}</h4>
+                        <p className="text-sm text-red-700 mt-1">{report.description || 'No description provided'}</p>
                         <div className="text-xs text-red-600 mt-2">
-                          Reported by {report.reportedBy} on {formatDate(report.reportedAt)}
+                          Reported by {report.reportedBy || 'Anonymous'} on {formatDate(report.reportedAt || report.createdAt || new Date().toISOString())}
                         </div>
                       </div>
                       <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
-                        {report.status}
+                        {report.status || 'pending'}
                       </span>
                     </div>
                   </div>
-                ))}
+                )) || []}
               </div>
             ) : (
               <div className="text-center py-8">
@@ -343,9 +484,18 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
                 <div className="flex-shrink-0 w-2 h-2 mt-2 bg-blue-400 rounded-full" />
                 <div>
                   <p className="text-sm text-gray-900">Story submitted for review</p>
-                  <p className="text-xs text-gray-500">{formatDate(mockStory.submittedAt)}</p>
+                  <p className="text-xs text-gray-500">{formatDate(story.createdAt || story.submittedAt || new Date().toISOString())}</p>
                 </div>
               </div>
+              {story.reviewedAt && (
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-green-400 rounded-full" />
+                  <div>
+                    <p className="text-sm text-gray-900">Story reviewed</p>
+                    <p className="text-xs text-gray-500">{formatDate(story.reviewedAt)}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -357,7 +507,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Approve Story</h3>
             <p className="text-gray-600 mb-4">
-              Are you sure you want to approve "{mockStory.title}"? This will make it visible to all users.
+              Are you sure you want to approve "{story.title}"? This will make it visible to all users.
             </p>
             <textarea
               value={approvalNote}
@@ -390,7 +540,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Reject Story</h3>
             <p className="text-gray-600 mb-4">
-              Please provide a reason for rejecting "{mockStory.title}". This will be sent to the author.
+              Please provide a reason for rejecting "{story.title}". This will be sent to the author.
             </p>
             <textarea
               value={rejectionReason}

@@ -50,20 +50,6 @@ const mockAdmins = [
   },
   {
     id: 3,
-    name: "Mike Johnson",
-    username: "mikejohnson",
-    email: "mike.johnson@dheyproductions.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-    role: "moderator",
-    status: "active",
-    joinDate: "2023-06-10T09:30:00Z",
-    lastActive: "2024-01-15T12:10:00Z",
-    permissions: ["content_moderation"],
-    addedBy: "Sarah Wilson",
-    department: "Moderation"
-  },
-  {
-    id: 4,
     name: "Emma Davis",
     username: "emmadavis",
     email: "emma.davis@dheyproductions.com",
@@ -80,8 +66,7 @@ const mockAdmins = [
 
 const roleColors = {
   super_admin: 'bg-purple-100 text-purple-800',
-  admin: 'bg-blue-100 text-blue-800',
-  moderator: 'bg-green-100 text-green-800'
+  admin: 'bg-blue-100 text-blue-800'
 }
 
 const statusColors = {
@@ -92,8 +77,7 @@ const statusColors = {
 
 const roleIcons = {
   super_admin: Crown,
-  admin: Shield,
-  moderator: Settings
+  admin: Shield
 }
 
 export default function AdminUserList() {
@@ -148,7 +132,6 @@ export default function AdminUserList() {
     switch (role) {
       case 'super_admin': return 'Super Admin'
       case 'admin': return 'Admin'
-      case 'moderator': return 'Moderator'
       default: return role
     }
   }
@@ -179,7 +162,7 @@ export default function AdminUserList() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -207,18 +190,7 @@ export default function AdminUserList() {
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Moderators</p>
-              <p className="text-3xl font-bold text-gray-900">{mockAdmins.filter(a => a.role === 'moderator').length}</p>
-            </div>
-            <Settings className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
       </div>
-
-      {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
@@ -239,7 +211,6 @@ export default function AdminUserList() {
             <option value="all">All Roles</option>
             <option value="super_admin">Super Admin</option>
             <option value="admin">Admin</option>
-            <option value="moderator">Moderator</option>
           </select>
           <select
             value={filterStatus}
@@ -267,7 +238,7 @@ export default function AdminUserList() {
 
         <div className="divide-y divide-gray-200">
           {filteredAdmins.map((admin) => {
-            const RoleIcon = roleIcons[admin.role]
+            const RoleIcon = roleIcons[admin.role as keyof typeof roleIcons]
             return (
               <div key={admin.id} className="p-6 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
@@ -288,10 +259,10 @@ export default function AdminUserList() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h3 className="text-sm font-medium text-gray-900">{admin.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[admin.role]}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[admin.role as keyof typeof roleColors]}`}>
                           {getRoleDisplayName(admin.role)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[admin.status]}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[admin.status as keyof typeof statusColors]}`}>
                           {admin.status}
                         </span>
                       </div>

@@ -19,18 +19,6 @@ const roleOptions = [
     label: 'Admin',
     description: 'Can manage content, users, and basic settings',
     permissions: ['content_management', 'user_management', 'basic_settings']
-  },
-  {
-    value: 'moderator',
-    label: 'Moderator',
-    description: 'Can moderate content and manage user reports',
-    permissions: ['content_moderation', 'user_reports']
-  },
-  {
-    value: 'content_manager',
-    label: 'Content Manager',
-    description: 'Can manage stories, competitions, and DHEY content',
-    permissions: ['story_management', 'competition_management', 'dhey_content']
   }
 ]
 

@@ -324,16 +324,10 @@ export default function AdminUserList() {
                 {/* Permissions */}
                 <div className="mt-4 pl-16">
                   <div className="flex flex-wrap gap-2">
-                    {admin.permissions.includes('all') ? (
+                    {admin.permissions.includes('all') && (
                       <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
                         All Permissions
                       </span>
-                    ) : (
-                      admin.permissions.map((permission, index) => (
-                        <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                          {permission.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                        </span>
-                      ))
                     )}
                   </div>
                 </div>

@@ -64,13 +64,6 @@ const navigationItems: NavSection[] = [
       { name: 'Competitions', href: '/admin/competitions', icon: Trophy },
       { name: 'Portfolio', href: '/admin/portfolio', icon: Building },
     ]
-  },
-  {
-    title: 'System',
-    items: [
-      { name: 'Settings', href: '/admin/settings', icon: Settings },
-      { name: 'Security', href: '/admin/security', icon: Shield },
-    ]
   }
 ]
 

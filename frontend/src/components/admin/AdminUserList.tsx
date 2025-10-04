@@ -274,7 +274,7 @@ export default function AdminUserList() {
                         @{admin.username} • {admin.email}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        {admin.department} • Added by {admin.addedBy} on {formatDate(admin.joinDate)}
+                        • Added by {admin.addedBy} on {formatDate(admin.joinDate)}
                       </div>
                     </div>
                   </div>

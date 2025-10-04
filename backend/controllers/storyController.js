@@ -1,5 +1,6 @@
 const Story = require('../models/Story');
 const User = require('../models/User');
+const Comment = require('../models/Comment');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { uploadStoryImage, processStoryImage, validateImageUpload } = require('../utils/fileUpload');
@@ -273,8 +274,18 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
   }
 
   // Only allow access to approved stories for public access (except for admins and story authors)
-  if (story.status !== 'approved' && (!req.user || (req.user._id.toString() !== story.author._id.toString() && req.user.role !== 'admin'))) {
-    return next(new AppError('Story not available', 404));
+  if (story.status !== 'approved') {
+    if (!req.user) {
+      return next(new AppError('Story not available', 404));
+    }
+    
+    // Allow access if user is admin or story author
+    const isAuthor = req.user._id.toString() === story.author._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isAuthor && !isAdmin) {
+      return next(new AppError('Story not available', 404));
+    }
   }
 
   // Track view if user is authenticated
@@ -409,6 +420,11 @@ exports.toggleLikeStory = catchAsync(async (req, res, next) => {
     return next(new AppError('No story found with that ID', 404));
   }
 
+  // Prevent interactions with stories under review
+  if (story.status !== 'approved') {
+    return next(new AppError('Cannot interact with stories under review', 403));
+  }
+
   await story.toggleLike(req.user._id);
 
   // Track analytics
@@ -435,6 +451,7 @@ exports.toggleSaveStory = catchAsync(async (req, res, next) => {
     return next(new AppError('No story found with that ID', 404));
   }
 
+  // Allow saving even for stories under review (users can save for later)
   await story.toggleSave(req.user._id);
 
   // Track analytics
@@ -460,6 +477,11 @@ exports.shareStory = catchAsync(async (req, res, next) => {
 
   if (!story) {
     return next(new AppError('No story found with that ID', 404));
+  }
+
+  // Prevent sharing stories under review
+  if (story.status !== 'approved') {
+    return next(new AppError('Cannot share stories under review', 403));
   }
 
   // Track analytics
@@ -488,9 +510,9 @@ exports.getUserStories = catchAsync(async (req, res, next) => {
     query.status = status;
   }
 
-  // If not the author or admin, only show published stories
+  // If not the author or admin, only show approved stories
   if (req.params.userId !== req.user?._id.toString() && req.user?.role !== 'admin') {
-    query.status = 'published';
+    query.status = 'approved';
   }
 
   const stories = await Story.find(query)
@@ -529,6 +551,102 @@ exports.searchStories = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     ...results
+  });
+});
+
+// Comment-related endpoints
+
+// Get comments for a story
+exports.getStoryComments = catchAsync(async (req, res, next) => {
+  const story = await Story.findById(req.params.id);
+  
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  // Don't allow comments for stories under review
+  if (story.status !== 'approved') {
+    return res.status(200).json({
+      status: 'success',
+      results: 0,
+      data: { comments: [] }
+    });
+  }
+
+  const comments = await Comment.find({ 
+    story: req.params.id, 
+    parentComment: null,
+    isHidden: false 
+  })
+    .populate('author', 'name username avatar')
+    .populate({
+      path: 'replies',
+      match: { isHidden: false },
+      populate: {
+        path: 'author',
+        select: 'name username avatar'
+      }
+    })
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: 'success',
+    results: comments.length,
+    data: { comments }
+  });
+});
+
+// Add comment to story
+exports.addComment = catchAsync(async (req, res, next) => {
+  const { content, parentComment } = req.body;
+  const story = await Story.findById(req.params.id);
+  
+  if (!story) {
+    return next(new AppError('No story found with that ID', 404));
+  }
+
+  // Prevent commenting on stories under review
+  if (story.status !== 'approved') {
+    return next(new AppError('Cannot comment on stories under review', 403));
+  }
+
+  const comment = await Comment.create({
+    content,
+    author: req.user._id,
+    story: req.params.id,
+    parentComment: parentComment || null
+  });
+
+  await comment.populate('author', 'name username avatar');
+
+  res.status(201).json({
+    status: 'success',
+    data: { comment }
+  });
+});
+
+// Like/Unlike comment
+exports.toggleLikeComment = catchAsync(async (req, res, next) => {
+  const comment = await Comment.findById(req.params.commentId);
+  
+  if (!comment) {
+    return next(new AppError('No comment found with that ID', 404));
+  }
+
+  // Check if the story is approved
+  const story = await Story.findById(comment.story);
+  if (story.status !== 'approved') {
+    return next(new AppError('Cannot interact with comments on stories under review', 403));
+  }
+
+  await comment.toggleLike(req.user._id);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      isLiked: comment.likedBy.includes(req.user._id),
+      likesCount: comment.likes
+    }
   });
 });
 

@@ -9,6 +9,7 @@ interface StoryHeaderProps {
   story: {
     id: number
     title: string
+    status?: string
     author: {
       name: string
       username: string
@@ -34,6 +35,9 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
   const moreMenuRef = useRef<HTMLDivElement>(null)
+
+  // Check if story is under review
+  const isUnderReview = story.status && !['approved'].includes(story.status)
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
@@ -107,44 +111,46 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
         </Link>
         
         <div className="flex items-center space-x-2 relative">
-          <div className="relative" ref={shareMenuRef}>
-            <button 
-              onClick={handleShare}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <Share2 size={20} />
-            </button>
-            
-            {/* Share Menu */}
-            {showShareMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-48 z-50">
-                <button 
-                  onClick={() => shareStory('copy')}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Copy Link
-                </button>
-                <button 
-                  onClick={() => shareStory('twitter')}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Share on Twitter
-                </button>
-                <button 
-                  onClick={() => shareStory('facebook')}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Share on Facebook
-                </button>
-                <button 
-                  onClick={() => shareStory('linkedin')}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Share on LinkedIn
-                </button>
-              </div>
-            )}
-          </div>
+          {!isUnderReview && (
+            <div className="relative" ref={shareMenuRef}>
+              <button 
+                onClick={handleShare}
+                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Share2 size={20} />
+              </button>
+              
+              {/* Share Menu */}
+              {showShareMenu && (
+                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-48 z-50">
+                  <button 
+                    onClick={() => shareStory('copy')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
+                  >
+                    Copy Link
+                  </button>
+                  <button 
+                    onClick={() => shareStory('twitter')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
+                  >
+                    Share on Twitter
+                  </button>
+                  <button 
+                    onClick={() => shareStory('facebook')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
+                  >
+                    Share on Facebook
+                  </button>
+                  <button 
+                    onClick={() => shareStory('linkedin')}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
+                  >
+                    Share on LinkedIn
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           
           <div className="relative" ref={moreMenuRef}>
             <button 
@@ -227,40 +233,48 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
           ))}
         </div>
 
-        {/* Author Info */}
-        <div className="flex items-center justify-between mb-6">
-          <Link 
-            href={`/profile/${story.author.username}`} 
-            className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
-          >
-            <Image
-              src={story.author.avatar}
-              alt={story.author.name}
-              width={50}
-              height={50}
-              className="rounded-full object-cover border-2 border-transparent hover:border-purple-200 transition-colors"
-            />
-            <div>
-              <h3 className="font-semibold text-gray-900 hover:text-purple-600 transition-colors">
-                {story.author.name}
-              </h3>
-              <p className="text-sm text-gray-600">
-                @{story.author.username} • {(story.author.followers || 0).toLocaleString()} followers
-              </p>
-            </div>
-          </Link>
+        {/* Author Info - Hidden for stories under review */}
+        {!isUnderReview && (
+          <div className="flex items-center justify-between mb-6">
+            <Link 
+              href={`/profile/${story.author.username}`} 
+              className="flex items-center space-x-4 hover:opacity-80 transition-opacity"
+            >
+              {story.author.avatar ? (
+                <Image
+                  src={story.author.avatar}
+                  alt={story.author.name}
+                  width={50}
+                  height={50}
+                  className="rounded-full object-cover border-2 border-transparent hover:border-purple-200 transition-colors"
+                />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center border-2 border-transparent hover:border-purple-200 transition-colors">
+                  <span className="text-white font-bold text-lg">{story.author.name.charAt(0)}</span>
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-gray-900 hover:text-purple-600 transition-colors">
+                  {story.author.name}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  @{story.author.username} • {(story.author.followers || 0).toLocaleString()} followers
+                </p>
+              </div>
+            </Link>
 
-          <button
-            onClick={handleFollow}
-            className={`px-6 py-2 rounded-full font-medium transition-colors ${
-              isFollowing
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                : 'bg-purple-500 text-white hover:bg-purple-600'
-            }`}
-          >
-            {isFollowing ? 'Following' : 'Follow'}
-          </button>
-        </div>
+            <button
+              onClick={handleFollow}
+              className={`px-6 py-2 rounded-full font-medium transition-colors ${
+                isFollowing
+                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-purple-500 text-white hover:bg-purple-600'
+              }`}
+            >
+              {isFollowing ? 'Following' : 'Follow'}
+            </button>
+          </div>
+        )}
 
         {/* Story Meta */}
         <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600 mb-6">

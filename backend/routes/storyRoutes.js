@@ -32,6 +32,11 @@ router.post('/:id/like', storyController.toggleLikeStory);
 router.post('/:id/save', storyController.toggleSaveStory);
 router.post('/:id/share', storyController.shareStory);
 
+// Comment routes
+router.get('/:id/comments', storyController.getStoryComments);
+router.post('/:id/comments', storyController.addComment);
+router.post('/:id/comments/:commentId/like', storyController.toggleLikeComment);
+
 // User's stories
 router.get('/user/:userId', storyController.getUserStories);
 

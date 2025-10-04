@@ -161,6 +161,18 @@ export const storyAPI = {
     const params = new URLSearchParams({ q: query, ...filters })
     return apiRequest(`/stories/search?${params}`)
   },
+
+  // Comment-related endpoints
+  getStoryComments: (storyId: string) => apiRequest(`/stories/${storyId}/comments`),
+  
+  addComment: (storyId: string, content: string, parentComment?: string) =>
+    apiRequest(`/stories/${storyId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify({ content, parentComment }),
+    }),
+
+  likeComment: (storyId: string, commentId: string) =>
+    apiRequest(`/stories/${storyId}/comments/${commentId}/like`, { method: 'POST' }),
 }
 
 // Search API

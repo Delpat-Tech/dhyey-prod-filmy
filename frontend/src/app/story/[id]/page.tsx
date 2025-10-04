@@ -69,10 +69,15 @@ export default function StoryPage({ params }: { params: { id: string } }) {
       try {
         const response = await storyAPI.getStoryById(params.id)
         setStory(response.data.story)
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to load story:', error)
-        // Fallback to mock data
-        setStory(getMockStoryData(params.id))
+        // Don't fallback to mock data for real story IDs
+        if (error.message?.includes('Story not available')) {
+          setStory(null)
+        } else {
+          // Only use mock data for clearly mock IDs
+          setStory(getMockStoryData(params.id))
+        }
       } finally {
         setIsLoading(false)
       }
@@ -104,8 +109,14 @@ export default function StoryPage({ params }: { params: { id: string } }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Story Not Found</h1>
-          <p className="text-gray-600">The story you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Story Not Available</h1>
+          <p className="text-gray-600 mb-4">This story is currently under review or not accessible.</p>
+          <button 
+            onClick={() => window.history.back()}
+            className="text-purple-600 hover:text-purple-700 font-medium"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     )
@@ -118,7 +129,7 @@ export default function StoryPage({ params }: { params: { id: string } }) {
         <div className="bg-white">
           <StoryContent story={story} />
           <StoryActions story={story} />
-          <CommentsSection storyId={story.id} />
+          <CommentsSection storyId={story.id} storyStatus={story.status} />
         </div>
         <RelatedStories currentStoryId={story.id} genre={story.genre} />
       </div>

@@ -189,7 +189,7 @@ exports.optionalAuth = catchAsync(async (req, res, next) => {
 
   try {
     // Verification token
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token, 'access');
 
     // Check if user still exists
     const currentUser = await User.findById(decoded.id);

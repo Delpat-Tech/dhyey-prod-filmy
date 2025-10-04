@@ -188,9 +188,9 @@ storySchema.pre('save', function(next) {
   next();
 });
 
-// Update published date when status changes to published
+// Update published date when status changes to approved
 storySchema.pre('save', function(next) {
-  if (this.isModified('status') && this.status === 'published' && !this.publishedAt) {
+  if (this.isModified('status') && this.status === 'approved' && !this.publishedAt) {
     this.publishedAt = new Date();
   }
   next();
@@ -211,7 +211,7 @@ storySchema.pre('save', function(next) {
 storySchema.statics.getTrending = function(limit = 10) {
   return this.aggregate([
     {
-      $match: { status: 'published' }
+      $match: { status: 'approved' }
     },
     {
       $addFields: {

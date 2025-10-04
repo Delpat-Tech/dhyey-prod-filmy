@@ -1,11 +1,13 @@
 'use client'
 
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Heart, Send } from 'lucide-react'
+import { storyAPI } from '@/lib/api'
 
 interface CommentsSectionProps {
   storyId: number
+  storyStatus?: string
 }
 
 // Mock comments data
@@ -64,100 +66,156 @@ const mockComments = [
   }
 ]
 
-export default function CommentsSection({ storyId }: CommentsSectionProps) {
+export default function CommentsSection({ storyId, storyStatus }: CommentsSectionProps) {
+  // Check if story is under review
+  const isUnderReview = storyStatus && !['approved'].includes(storyStatus)
+  
+  // Don't render comments section for stories under review
+  if (isUnderReview) {
+    return null
+  }
   const [comments, setComments] = useState(mockComments)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Load comments from API
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setIsLoading(true)
+        const response = await storyAPI.getStoryComments(storyId.toString())
+        setComments(response.data.comments || [])
+      } catch (error) {
+        console.error('Failed to load comments:', error)
+        // Keep mock comments as fallback
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadComments()
+  }, [storyId])
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<number | null>(null)
   const [replyText, setReplyText] = useState('')
   const [showAllComments, setShowAllComments] = useState(false)
   const [likedReplies, setLikedReplies] = useState<Set<number>>(new Set())
 
-  const handleLikeComment = (commentId: number) => {
-    setComments(prev => prev.map(comment => 
-      comment.id === commentId 
-        ? { 
-            ...comment, 
-            isLiked: !comment.isLiked,
-            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-          }
-        : comment
-    ))
-  }
-
-  const handleLikeReply = (replyId: number) => {
-    const newLikedReplies = new Set(likedReplies)
-    if (likedReplies.has(replyId)) {
-      newLikedReplies.delete(replyId)
-    } else {
-      newLikedReplies.add(replyId)
-    }
-    setLikedReplies(newLikedReplies)
-
-    setComments(prev => prev.map(comment => ({
-      ...comment,
-      replies: comment.replies.map(reply => 
-        reply.id === replyId 
+  const handleLikeComment = async (commentId: number) => {
+    try {
+      await storyAPI.likeComment(storyId.toString(), commentId.toString())
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId 
           ? { 
-              ...reply, 
-              isLiked: !reply.isLiked,
-              likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+              ...comment, 
+              isLiked: !comment.isLiked,
+              likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
             }
-          : reply
-      )
-    })))
+          : comment
+      ))
+    } catch (error) {
+      console.error('Failed to like comment:', error)
+    }
   }
 
-  const handleSubmitComment = (e: React.FormEvent) => {
+  const handleLikeReply = async (replyId: number) => {
+    try {
+      await storyAPI.likeComment(storyId.toString(), replyId.toString())
+      const newLikedReplies = new Set(likedReplies)
+      if (likedReplies.has(replyId)) {
+        newLikedReplies.delete(replyId)
+      } else {
+        newLikedReplies.add(replyId)
+      }
+      setLikedReplies(newLikedReplies)
+
+      setComments(prev => prev.map(comment => ({
+        ...comment,
+        replies: comment.replies.map(reply => 
+          reply.id === replyId 
+            ? { 
+                ...reply, 
+                isLiked: !reply.isLiked,
+                likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+              }
+            : reply
+        )
+      })))
+    } catch (error) {
+      console.error('Failed to like reply:', error)
+    }
+  }
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Submit comment:', newComment) // Debug log
     if (!newComment.trim()) return
 
-    const comment = {
-      id: Date.now(),
-      author: {
-        name: "You",
-        username: "currentuser",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=32&h=32&fit=crop&crop=face"
-      },
-      content: newComment,
-      likes: 0,
-      timeAgo: "now",
-      isLiked: false,
-      replies: []
-    }
+    try {
+      const response = await storyAPI.addComment(storyId.toString(), newComment)
+      const comment = {
+        id: response.data.comment._id,
+        author: response.data.comment.author,
+        content: response.data.comment.content,
+        likes: 0,
+        timeAgo: "now",
+        isLiked: false,
+        replies: []
+      }
 
-    setComments(prev => [comment, ...prev])
-    setNewComment('')
+      setComments(prev => [comment, ...prev])
+      setNewComment('')
+    } catch (error) {
+      console.error('Failed to add comment:', error)
+    }
   }
 
-  const handleSubmitReply = (e: React.FormEvent, commentId: number) => {
+  const handleSubmitReply = async (e: React.FormEvent, commentId: number) => {
     e.preventDefault()
     if (!replyText.trim()) return
 
-    const reply = {
-      id: Date.now(),
-      author: {
-        name: "You",
-        username: "currentuser",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=24&h=24&fit=crop&crop=face"
-      },
-      content: replyText,
-      likes: 0,
-      timeAgo: "now",
-      isLiked: false
-    }
+    try {
+      const response = await storyAPI.addComment(storyId.toString(), replyText, commentId.toString())
+      const reply = {
+        id: response.data.comment._id,
+        author: response.data.comment.author,
+        content: response.data.comment.content,
+        likes: 0,
+        timeAgo: "now",
+        isLiked: false
+      }
 
-    setComments(prev => prev.map(comment => 
-      comment.id === commentId 
-        ? { ...comment, replies: [...comment.replies, reply] }
-        : comment
-    ))
-    
-    setReplyText('')
-    setReplyingTo(null)
+      setComments(prev => prev.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, replies: [...comment.replies, reply] }
+          : comment
+      ))
+      
+      setReplyText('')
+      setReplyingTo(null)
+    } catch (error) {
+      console.error('Failed to add reply:', error)
+    }
   }
 
   const visibleComments = showAllComments ? comments : comments.slice(0, 3)
+
+  if (isLoading) {
+    return (
+      <div className="bg-white px-4 py-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            <div className="flex space-x-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white">

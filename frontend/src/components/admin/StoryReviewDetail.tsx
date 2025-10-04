@@ -196,9 +196,6 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
                   <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
                     Pending Review
                   </span>
-                  <span className="px-3 py-1 bg-red-100 text-red-800 text-sm font-medium rounded-full">
-                    High Priority
-                  </span>
                 </div>
                 <div className="text-sm text-gray-500">
                   <div className="flex items-center justify-end space-x-1 mb-1">

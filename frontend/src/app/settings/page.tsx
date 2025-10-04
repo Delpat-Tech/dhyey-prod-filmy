@@ -3,8 +3,10 @@
 import Link from 'next/link'
 import { ArrowLeft, Bell, Shield, Eye, Palette, HelpCircle, LogOut } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function SettingsPage() {
+  const { logout } = useAuth()
   const [notifications, setNotifications] = useState({
     email: true,
     push: false,
@@ -18,6 +20,14 @@ export default function SettingsPage() {
     showEmail: false,
     showStats: true
   })
+
+  const handleSignOut = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -163,7 +173,10 @@ export default function SettingsPage() {
                 </div>
               </button>
 
-              <button className="w-full flex items-center space-x-3 p-4 hover:bg-red-50 transition-colors text-red-600">
+              <button 
+                onClick={handleSignOut}
+                className="w-full flex items-center space-x-3 p-4 hover:bg-red-50 transition-colors text-red-600"
+              >
                 <LogOut size={20} />
                 <div className="text-left">
                   <h3 className="font-medium">Sign Out</h3>

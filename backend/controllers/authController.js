@@ -34,18 +34,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     password
   });
 
-  // Generate email verification token
-  const verifyToken = newUser.createEmailVerificationToken();
-  await newUser.save({ validateBeforeSave: false });
-
-  // Send verification email
-  try {
-    const verifyURL = `${req.protocol}://${req.get('host')}/api/v1/auth/verify-email/${verifyToken}`;
-    await new Email(newUser, verifyURL).sendEmailVerification();
-  } catch (err) {
-    console.error('Email verification send failed:', err);
-    // Continue with signup even if email fails
-  }
+  // Skip email verification for now
+  console.log('User created successfully:', newUser.email);
 
   await createSendToken(newUser, 201, req, res);
 });

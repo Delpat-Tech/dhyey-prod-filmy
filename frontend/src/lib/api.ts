@@ -27,7 +27,7 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
       ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
-    credentials: 'include',
+    ...(token && { credentials: 'include' }),
   }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
@@ -57,15 +57,26 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 // Authentication API
 export const authAPI = {
   login: (email: string, password: string) =>
-    apiRequest('/auth/login', {
+    fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
+    }).then(res => {
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return res.json();
     }),
 
   register: (userData: { name: string; username: string; email: string; password: string }) =>
-    apiRequest('/auth/signup', {
+    fetch(`${API_BASE_URL}/auth/signup`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
+    }).then(async res => {
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || `HTTP error! status: ${res.status}`);
+      }
+      return data;
     }),
 
   forgotPassword: (email: string) =>

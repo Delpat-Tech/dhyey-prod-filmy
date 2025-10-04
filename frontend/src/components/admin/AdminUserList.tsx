@@ -88,6 +88,10 @@ export default function AdminUserList() {
   const [showRevokeModal, setShowRevokeModal] = useState(false)
   const [adminToRevoke, setAdminToRevoke] = useState<number | null>(null)
 
+  // Modular input styles
+  const inputStyles = "w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+  const selectStyles = "px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+
   const filteredAdmins = mockAdmins.filter(admin => {
     const matchesSearch = admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          admin.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -200,13 +204,13 @@ export default function AdminUserList() {
               placeholder="Search admins..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`${inputStyles} pl-10`}
             />
           </div>
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={selectStyles}
           >
             <option value="all">All Roles</option>
             <option value="super_admin">Super Admin</option>
@@ -215,7 +219,7 @@ export default function AdminUserList() {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={selectStyles}
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -259,10 +263,10 @@ export default function AdminUserList() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h3 className="text-sm font-medium text-gray-900">{admin.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${roleColors[admin.role as keyof typeof roleColors]}`}>
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">
                           {getRoleDisplayName(admin.role)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[admin.status as keyof typeof statusColors]}`}>
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">
                           {admin.status}
                         </span>
                       </div>

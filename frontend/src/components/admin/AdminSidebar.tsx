@@ -55,7 +55,7 @@ const navigationItems: NavSection[] = [
       { name: 'All Users', href: '/admin/users', icon: Users },
       { name: 'Admin Users', href: '/admin/admins', icon: UserCheck },
       { name: 'Add Admin', href: '/admin/admins/add', icon: Plus },
-      { name: 'Suspended Users', href: '/admin/users/suspended', icon: UserMinus },
+      { name: 'Suspended Users', href: '/admin/users/suspend', icon: UserMinus },
     ]
   },
   {

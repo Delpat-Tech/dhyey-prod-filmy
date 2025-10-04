@@ -505,9 +505,6 @@ export default function StoryReviewList() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[story.status]}`}>
                           {story.status.charAt(0).toUpperCase() + story.status.slice(1)}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[story.priority]}`}>
-                          {story.priority} priority
-                        </span>
                       </div>
 
                       {/* Report Count */}

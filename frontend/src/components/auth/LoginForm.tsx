@@ -10,7 +10,6 @@ interface LoginFormData {
   email: string
   password: string
   rememberMe: boolean
-  loginAs: 'user' | 'admin'
 }
 
 export default function LoginForm() {
@@ -18,8 +17,7 @@ export default function LoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
-    rememberMe: false,
-    loginAs: 'user'
+    rememberMe: false
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -71,40 +69,25 @@ export default function LoginForm() {
       const storedUser = localStorage.getItem('dhyey_user')
       const user = storedUser ? JSON.parse(storedUser) : null
       
-      if (formData.loginAs === 'admin') {
-        // Check if user has admin role
-        if (!user || user.role !== 'admin') {
-          showNotification({
-            type: 'error',
-            title: 'Access Denied',
-            message: 'You do not have admin privileges. Please login as a regular user.'
-          })
-          // Logout and stay on login page
-          localStorage.removeItem('dhyey_user')
-          localStorage.removeItem('dhyey_token')
-          localStorage.removeItem('dhyey_token_expiry')
-          return
-        }
-        
+      if (user && user.role === 'admin') {
+        // Admin user - redirect to admin panel
         showNotification({
           type: 'success',
           title: 'Admin Login Successful!',
           message: 'Welcome to the admin panel'
         })
         
-        // Redirect to admin dashboard
         setTimeout(() => {
           window.location.href = '/admin'
         }, 1000)
       } else {
-        // Regular user login
+        // Regular user - redirect to dashboard
         showNotification({
           type: 'success',
           title: 'Login Successful!',
           message: 'Welcome back to Dhyey'
         })
         
-        // Redirect to dashboard
         setTimeout(() => {
           window.location.href = '/dashboard'
         }, 1000)
@@ -203,36 +186,7 @@ export default function LoginForm() {
               )}
             </div>
 
-            {/* Login Type Selection - Tab Layout */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Login as
-              </label>
-              <div className="flex rounded-lg bg-gray-100 p-1">
-                <button
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, loginAs: 'user' }))}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                    formData.loginAs === 'user'
-                      ? 'bg-white text-purple-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  User
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData(prev => ({ ...prev, loginAs: 'admin' }))}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-200 ${
-                    formData.loginAs === 'admin'
-                      ? 'bg-white text-purple-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Admin
-                </button>
-              </div>
-            </div>
+
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">

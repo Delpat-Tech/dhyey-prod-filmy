@@ -3,19 +3,44 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Bell, Search, Settings, LogOut, User, Menu, X } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function AdminHeader() {
   const [showNotifications, setShowNotifications] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { logout, user } = useAuth()
+  const router = useRouter()
 
-  // Mock admin data
+  // Use only actual user data from backend
   const admin = {
-    name: "Admin User",
-    email: "admin@dheyproductions.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    role: "Super Admin"
+    name: user?.name || "Loading...",
+    email: user?.email || "Loading...",
+    avatar: user?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+    role: user?.role === 'admin' ? "Admin" : "User"
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout failed:', error)
+      // Force redirect even if logout fails
+      router.push('/auth/login')
+    }
+  }
+
+  const handleNotificationClick = (notificationId: number) => {
+    // Handle notification click
+    console.log('Notification clicked:', notificationId)
+    setShowNotifications(false)
+  }
+
+  const handleViewAllNotifications = () => {
+    router.push('/admin/reports')
+    setShowNotifications(false)
   }
 
   const notifications = [
@@ -93,6 +118,7 @@ export default function AdminHeader() {
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
+                        onClick={() => handleNotificationClick(notification.id)}
                         className={`p-4 border-b border-gray-50 hover:bg-gray-50 cursor-pointer ${
                           notification.unread ? 'bg-blue-50' : ''
                         }`}
@@ -103,7 +129,10 @@ export default function AdminHeader() {
                     ))}
                   </div>
                   <div className="p-3 text-center border-t border-gray-100">
-                    <button className="text-sm text-purple-600 hover:text-purple-700">
+                    <button 
+                      onClick={handleViewAllNotifications}
+                      className="text-sm text-purple-600 hover:text-purple-700"
+                    >
                       View All Notifications
                     </button>
                   </div>
@@ -161,7 +190,10 @@ export default function AdminHeader() {
                       <span>Admin Settings</span>
                     </Link>
                     <hr className="my-1" />
-                    <button className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">
+                    <button 
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
+                    >
                       <LogOut size={16} />
                       <span>Sign Out</span>
                     </button>

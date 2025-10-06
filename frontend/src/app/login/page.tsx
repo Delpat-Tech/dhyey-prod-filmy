@@ -27,6 +27,7 @@ export default function LoginPage() {
       // Store token if needed
       if (response.data.token) {
         localStorage.setItem('token', response.data.token)
+        console.log('Token stored:', response.data.token)
         // Set cookie for middleware
         document.cookie = `token=${response.data.token}; path=/; max-age=2592000` // 30 days
       }

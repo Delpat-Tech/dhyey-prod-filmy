@@ -119,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('dhyey_remember_me', rememberMe.toString())
       
       setUser(userData)
+    } catch (error: any) {
+      // Re-throw the error with proper message for suspended accounts
+      if (error.message && error.message.includes('suspended')) {
+        throw new Error('Your account has been suspended. Please contact administration for further details.')
+      }
+      throw error
     } finally {
       setIsLoading(false)
     }

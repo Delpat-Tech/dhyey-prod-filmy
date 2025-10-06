@@ -23,6 +23,25 @@ router.patch('/users/:id/suspend', userController.suspendUser);
 router.patch('/users/:id/unsuspend', userController.unsuspendUser);
 router.delete('/users/:id', userController.deleteUser);
 
+// Test token endpoint
+router.get('/test-auth', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    message: 'Authentication successful',
+    user: {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role
+    }
+  });
+});
+
+// Admin User Management
+router.get('/admins', userController.getAllAdmins);
+router.post('/create-admin', authController.createAdmin);
+router.patch('/users/:id/suspend', userController.suspendUser);
+router.patch('/users/:id/unsuspend', userController.unsuspendUser);
+
 // Admin Analytics
 router.get('/analytics', (req, res) => {
   // Mock analytics data for now

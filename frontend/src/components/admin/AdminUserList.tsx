@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -17,52 +17,19 @@ import {
   CheckCircle,
   Edit
 } from 'lucide-react'
+import { adminAPI } from '@/lib/api'
 
-// Mock admin data
-const mockAdmins = [
-  {
-    id: 1,
-    name: "John Smith",
-    username: "johnsmith",
-    email: "john.smith@dheyproductions.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    role: "super_admin",
-    status: "active",
-    joinDate: "2023-01-15T10:30:00Z",
-    lastActive: "2024-01-15T16:20:00Z",
-    permissions: ["all"],
-    addedBy: "System",
-    department: "Technology"
-  },
-  {
-    id: 2,
-    name: "Sarah Wilson",
-    username: "sarahwilson",
-    email: "sarah.wilson@dheyproductions.com",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face",
-    role: "admin",
-    status: "active",
-    joinDate: "2023-03-20T14:15:00Z",
-    lastActive: "2024-01-15T15:45:00Z",
-    permissions: ["content_management", "user_management"],
-    addedBy: "John Smith",
-    department: "Content"
-  },
-  {
-    id: 3,
-    name: "Emma Davis",
-    username: "emmadavis",
-    email: "emma.davis@dheyproductions.com",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-    role: "admin",
-    status: "inactive",
-    joinDate: "2023-08-05T11:20:00Z",
-    lastActive: "2024-01-10T08:30:00Z",
-    permissions: ["analytics", "reporting"],
-    addedBy: "John Smith",
-    department: "Analytics"
-  }
-]
+interface AdminUser {
+  _id: string
+  name: string
+  username: string
+  email: string
+  avatar?: string
+  role: string
+  status: string
+  createdAt: string
+  lastActive: string
+}
 
 const roleColors = {
   super_admin: 'bg-purple-100 text-purple-800',
@@ -81,36 +48,60 @@ const roleIcons = {
 }
 
 export default function AdminUserList() {
+  const [admins, setAdmins] = useState<AdminUser[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
-  const [selectedAdmins, setSelectedAdmins] = useState<number[]>([])
+  const [selectedAdmins, setSelectedAdmins] = useState<string[]>([])
   const [showRevokeModal, setShowRevokeModal] = useState(false)
-  const [adminToRevoke, setAdminToRevoke] = useState<number | null>(null)
+  const [adminToRevoke, setAdminToRevoke] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadAdmins()
+  }, [])
+
+  const loadAdmins = async () => {
+    try {
+      setLoading(true)
+      const response = await adminAPI.getAllAdmins()
+      setAdmins(response.data.admins)
+    } catch (err: any) {
+      setError(err.message || 'Failed to load admin users')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Modular input styles
   const inputStyles = "w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
   const selectStyles = "px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
 
-  const filteredAdmins = mockAdmins.filter(admin => {
-    const matchesSearch = admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         admin.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         admin.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAdmins = admins.filter(admin => {
+    const matchesSearch = admin.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         admin.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         admin.email?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = filterRole === 'all' || admin.role === filterRole
     const matchesStatus = filterStatus === 'all' || admin.status === filterStatus
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  const handleRevokeAccess = (adminId: number) => {
-    setAdminToRevoke(adminId)
-    setShowRevokeModal(true)
+  const handleSuspendToggle = async (adminId: string, currentStatus: string) => {
+    try {
+      if (currentStatus === 'suspended') {
+        await adminAPI.unsuspendUser(adminId)
+      } else {
+        await adminAPI.suspendUser(adminId, 'Suspended by admin')
+      }
+      // Reload admin list
+      loadAdmins()
+    } catch (error: any) {
+      console.error('Failed to update user status:', error)
+    }
   }
 
-  const confirmRevokeAccess = () => {
-    console.log('Revoking access for admin:', adminToRevoke)
-    setShowRevokeModal(false)
-    setAdminToRevoke(null)
-  }
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -171,7 +162,7 @@ export default function AdminUserList() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Admins</p>
-              <p className="text-3xl font-bold text-gray-900">{mockAdmins.length}</p>
+              <p className="text-3xl font-bold text-gray-900">{admins.length}</p>
             </div>
             <Shield className="h-8 w-8 text-purple-600" />
           </div>
@@ -180,7 +171,7 @@ export default function AdminUserList() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Super Admins</p>
-              <p className="text-3xl font-bold text-gray-900">{mockAdmins.filter(a => a.role === 'super_admin').length}</p>
+              <p className="text-3xl font-bold text-gray-900">{admins.filter(a => a.role === 'super_admin').length}</p>
             </div>
             <Crown className="h-8 w-8 text-purple-600" />
           </div>
@@ -189,7 +180,7 @@ export default function AdminUserList() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Admins</p>
-              <p className="text-3xl font-bold text-gray-900">{mockAdmins.filter(a => a.status === 'active').length}</p>
+              <p className="text-3xl font-bold text-gray-900">{admins.filter(a => a.status === 'active').length}</p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
@@ -232,24 +223,43 @@ export default function AdminUserList() {
         </div>
       </div>
 
-      {/* Admins List */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
-          <span className="text-sm font-medium text-gray-900">
-            Admin Users ({filteredAdmins.length})
-          </span>
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading admin users...</p>
         </div>
+      )}
 
-        <div className="divide-y divide-gray-200">
-          {filteredAdmins.map((admin) => {
-            const RoleIcon = roleIcons[admin.role as keyof typeof roleIcons]
-            return (
-              <div key={admin.id} className="p-6 hover:bg-gray-50">
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Admins List */}
+      {!loading && !error && (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+            <span className="text-sm font-medium text-gray-900">
+              Admin Users ({filteredAdmins.length})
+            </span>
+          </div>
+
+          <div className="divide-y divide-gray-200">
+            {filteredAdmins.map((admin) => {
+              const RoleIcon = roleIcons[admin.role as keyof typeof roleIcons] || Shield
+              return (
+                <div key={admin._id} className="p-6 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div className="relative">
                       <Image
-                        src={admin.avatar}
+                        src={admin.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face"}
                         alt={admin.name}
                         width={48}
                         height={48}
@@ -274,7 +284,7 @@ export default function AdminUserList() {
                         @{admin.username} • {admin.email}
                       </div>
                       <div className="text-xs text-gray-400 mt-1">
-                        • Added by {admin.addedBy} on {formatDate(admin.joinDate)}
+                        • Created on {formatDate(admin.createdAt)}
                       </div>
                     </div>
                   </div>
@@ -282,10 +292,10 @@ export default function AdminUserList() {
                   <div className="flex items-center space-x-4">
                     <div className="text-right text-sm">
                       <div className="text-gray-900 font-medium">
-                        {admin.permissions.includes('all') ? 'All Permissions' : `${admin.permissions.length} Permission(s)`}
+                        Admin Permissions
                       </div>
                       <div className="text-gray-500">
-                        Last active: {formatLastActive(admin.lastActive)}
+                        Last active: {admin.lastActive ? formatLastActive(admin.lastActive) : 'Never'}
                       </div>
                     </div>
 
@@ -304,9 +314,13 @@ export default function AdminUserList() {
                       </button>
                       {admin.role !== 'super_admin' && (
                         <button
-                          onClick={() => handleRevokeAccess(admin.id)}
-                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                          title="Revoke Access"
+                          onClick={() => handleSuspendToggle(admin._id, admin.status)}
+                          className={`p-2 rounded-lg ${
+                            admin.status === 'suspended' 
+                              ? 'text-green-400 hover:text-green-600 hover:bg-green-50' 
+                              : 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                          }`}
+                          title={admin.status === 'suspended' ? 'Unsuspend User' : 'Suspend User'}
                         >
                           <UserX size={16} />
                         </button>
@@ -324,60 +338,30 @@ export default function AdminUserList() {
                 {/* Permissions */}
                 <div className="mt-4 pl-16">
                   <div className="flex flex-wrap gap-2">
-                    {admin.permissions.includes('all') && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
-                        All Permissions
-                      </span>
-                    )}
+                    <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded">
+                      Admin Access
+                    </span>
                   </div>
                 </div>
               </div>
             )
           })}
-        </div>
-
-        {/* Empty State */}
-        {filteredAdmins.length === 0 && (
-          <div className="text-center py-12">
-            <Shield className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No admins found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Try adjusting your search or filter criteria.
-            </p>
           </div>
-        )}
-      </div>
 
-      {/* Revoke Access Modal */}
-      {showRevokeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-2 bg-red-100 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">Revoke Admin Access</h3>
+          {/* Empty State */}
+          {filteredAdmins.length === 0 && (
+            <div className="text-center py-12">
+              <Shield className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No admins found</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Try adjusting your search or filter criteria.
+              </p>
             </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to revoke admin access for this user? They will lose all administrative privileges immediately.
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowRevokeModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmRevokeAccess}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-              >
-                Revoke Access
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
+
+
     </div>
   )
 }

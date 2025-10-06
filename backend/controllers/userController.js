@@ -266,6 +266,19 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
   });
 });
 
+// Get all admin users
+exports.getAllAdmins = catchAsync(async (req, res, next) => {
+  const admins = await User.find({ role: { $in: ['admin', 'super_admin'] } })
+    .select('-password -passwordResetToken -passwordResetExpires -refreshTokens')
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    status: 'success',
+    results: admins.length,
+    data: { admins }
+  });
+});
+
 // Admin Methods
 exports.getAllUsersForAdmin = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;

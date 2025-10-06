@@ -61,8 +61,11 @@ export const authAPI = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
-    }).then(res => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    }).then(async res => {
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+      }
       return res.json();
     }),
 
@@ -234,16 +237,26 @@ export const adminAPI = {
     apiRequest(`/users/admin/all${params ? `?${params}` : ''}`),
   
   suspendUser: (userId: string, reason: string, duration?: number) =>
-    apiRequest(`/users/${userId}/suspend`, {
+    apiRequest(`/admin/users/${userId}/suspend`, {
       method: 'PATCH',
       body: JSON.stringify({ reason, duration }),
     }),
 
   unsuspendUser: (userId: string) =>
-    apiRequest(`/users/${userId}/unsuspend`, { method: 'PATCH' }),
+    apiRequest(`/admin/users/${userId}/unsuspend`, { method: 'PATCH' }),
 
   deleteUser: (userId: string) =>
     apiRequest(`/users/${userId}`, { method: 'DELETE' }),
+
+  // Admin user management
+  getAllAdmins: () => apiRequest('/admin/admins'),
+  suspendUser: (userId: string, reason: string) =>
+    apiRequest(`/admin/users/${userId}/suspend`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reason }),
+    }),
+  unsuspendUser: (userId: string) =>
+    apiRequest(`/admin/users/${userId}/unsuspend`, { method: 'PATCH' }),
 
   // Analytics
   getAnalytics: () => apiRequest('/admin/analytics'),

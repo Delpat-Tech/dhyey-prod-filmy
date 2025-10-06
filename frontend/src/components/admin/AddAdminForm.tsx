@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import axios from 'axios'
 import { 
   ArrowLeft, 
   Mail, 
@@ -10,7 +11,8 @@ import {
   CheckCircle, 
   AlertCircle,
   Plus,
-  X
+  X,
+  Lock
 } from 'lucide-react'
 
 const roleOptions = [
@@ -26,6 +28,7 @@ export default function AddAdminForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     username: '',
     role: '',
     permissions: [] as string[],
@@ -92,18 +95,10 @@ export default function AddAdminForm() {
       newErrors.email = 'Please enter a valid email address'
     }
 
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required'
-    } else if (formData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters'
-    }
-
-    if (!formData.role) {
-      newErrors.role = 'Please select a role'
-    }
-
-    if (formData.permissions.length === 0) {
-      newErrors.permissions = 'At least one permission must be selected'
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required'
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     setErrors(newErrors)
@@ -120,24 +115,50 @@ export default function AddAdminForm() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      const token = localStorage.getItem('dhyey_token')
       
-      console.log('Adding new admin:', formData)
+      console.log('Token from localStorage:', token)
+      console.log('Sending request to create admin:', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      })
+      
+      if (!token) {
+        setErrors({ submit: 'No authentication token found. Please log in again.' })
+        return
+      }
+      
+      const response = await axios.post('/api/v1/admin/create-admin', {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      console.log('Admin created successfully:', response.data)
       setShowSuccess(true)
       
       // Reset form
       setFormData({
         name: '',
         email: '',
+        password: '',
         username: '',
         role: '',
         permissions: [],
         sendInvite: true,
         customMessage: ''
       })
-    } catch (error) {
+      
+      // Clear any previous errors
+      setErrors({})
+    } catch (error: any) {
       console.error('Error adding admin:', error)
+      setErrors({ submit: error.response?.data?.message || 'Failed to create admin' })
     } finally {
       setIsSubmitting(false)
     }
@@ -169,7 +190,7 @@ export default function AddAdminForm() {
             <div>
               <h3 className="text-sm font-medium text-green-800">Admin Added Successfully!</h3>
               <p className="text-sm text-green-700 mt-1">
-                An invitation email has been sent to {formData.email}
+                Admin user has been created successfully!
               </p>
             </div>
             <button
@@ -241,143 +262,54 @@ export default function AddAdminForm() {
             </div>
 
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username *
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password *
               </label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
-                  errors.username ? 'border-red-300' : 'border-gray-200'
-                }`}
-                placeholder="Enter username"
-              />
-              {errors.username && (
-                <p className="mt-1 text-sm text-red-600 flex items-center">
-                  <AlertCircle size={14} className="mr-1" />
-                  {errors.username}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Role Selection */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Role & Permissions</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Select Role *
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {roleOptions.map(role => (
-                  <div
-                    key={role.value}
-                    className={`border rounded-lg p-4 cursor-pointer transition-colors ${
-                      formData.role === role.value
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    onClick={() => handleRoleChange(role.value)}
-                  >
-                    <div className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="radio"
-                        name="role"
-                        value={role.value}
-                        checked={formData.role === role.value}
-                        onChange={() => handleRoleChange(role.value)}
-                        className="text-purple-600 focus:ring-purple-500"
-                      />
-                      <Shield className="h-4 w-4 text-purple-600" />
-                      <span className="font-medium text-gray-900">{role.label}</span>
-                    </div>
-                    <p className="text-sm text-gray-600">{role.description}</p>
-                  </div>
-                ))}
-              </div>
-              {errors.role && (
-                <p className="mt-2 text-sm text-red-600 flex items-center">
-                  <AlertCircle size={14} className="mr-1" />
-                  {errors.role}
-                </p>
-              )}
-            </div>
-
-            {/* Permissions */}
-            {selectedRole && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Permissions *
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {selectedRole.permissions.map(permission => (
-                    <label
-                      key={permission}
-                      className="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.permissions.includes(permission)}
-                        onChange={() => handlePermissionToggle(permission)}
-                        className="text-purple-600 focus:ring-purple-500 rounded"
-                      />
-                      <span className="text-sm text-gray-900">
-                        {permission.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                {errors.permissions && (
-                  <p className="mt-2 text-sm text-red-600 flex items-center">
-                    <AlertCircle size={14} className="mr-1" />
-                    {errors.permissions}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Invitation Settings */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Invitation Settings</h2>
-          
-          <div className="space-y-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="sendInvite"
-                checked={formData.sendInvite}
-                onChange={handleInputChange}
-                className="text-purple-600 focus:ring-purple-500 rounded"
-              />
-              <span className="text-sm text-gray-900">Send invitation email immediately</span>
-            </label>
-
-            {formData.sendInvite && (
-              <div>
-                <label htmlFor="customMessage" className="block text-sm font-medium text-gray-700 mb-2">
-                  Custom Message (Optional)
-                </label>
-                <textarea
-                  id="customMessage"
-                  name="customMessage"
-                  value={formData.customMessage}
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
                   onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
-                  placeholder="Add a personal message to the invitation email..."
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white ${
+                    errors.password ? 'border-red-300' : 'border-gray-200'
+                  }`}
+                  placeholder="Enter password"
                 />
               </div>
-            )}
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle size={14} className="mr-1" />
+                  {errors.password}
+                </p>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Admin Role Info */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Admin Role</h2>
+          <div className="flex items-center space-x-3 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <Shield className="h-5 w-5 text-purple-600" />
+            <div>
+              <p className="font-medium text-purple-900">Administrator</p>
+              <p className="text-sm text-purple-700">Full access to manage content, users, and system settings</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {errors.submit && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <p className="text-sm text-red-800">{errors.submit}</p>
+            </div>
+          </div>
+        )}
 
         {/* Form Actions */}
         <div className="flex items-center justify-end space-x-4">
@@ -395,12 +327,12 @@ export default function AddAdminForm() {
             {isSubmitting ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Adding Admin...</span>
+                <span>Creating Admin...</span>
               </>
             ) : (
               <>
                 <Plus size={16} />
-                <span>Add Admin</span>
+                <span>Create Admin</span>
               </>
             )}
           </button>

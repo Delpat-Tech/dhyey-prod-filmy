@@ -55,6 +55,11 @@ exports.login = catchAsync(async (req, res, next) => {
     return next(new AppError('Incorrect email or password', 401));
   }
 
+  // 2.5) Check if user is suspended
+  if (user.status === 'suspended') {
+    return next(new AppError('Your account has been suspended. Please contact administration for further details.', 403));
+  }
+
   // 3) Update login analytics
   user.loginCount += 1;
   user.lastActive = new Date();
@@ -390,4 +395,42 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
   // 4) Log user in, send JWT
   await createSendToken(user, 200, req, res);
+});
+
+// Admin only - Create another admin
+exports.createAdmin = catchAsync(async (req, res, next) => {
+  const { email, password, name } = req.body;
+  
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password', 400));
+  }
+
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new AppError('User with this email already exists', 400));
+  }
+
+  // Create admin user
+  const adminUser = await User.create({
+    name: name || 'Admin User',
+    username: email.split('@')[0] + '_admin',
+    email,
+    password,
+    role: 'admin',
+    isEmailVerified: true
+  });
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Admin user created successfully',
+    data: {
+      user: {
+        id: adminUser._id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role
+      }
+    }
+  });
 });

@@ -22,89 +22,7 @@ import CustomSelect from '@/components/ui/CustomSelect'
 import { adminAPI } from '@/lib/api'
 import { showNotification } from '@/lib/errorHandler'
 
-// Mock user data
-const mockUsers = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    username: "sarahjohnson",
-    email: "sarah.johnson@email.com",
-    avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face",
-    role: "user",
-    status: "active",
-    joinDate: "2023-12-15T10:30:00Z",
-    lastActive: "2024-01-15T14:20:00Z",
-    verified: true,
-    stats: {
-      stories: 8,
-      followers: 234,
-      following: 156,
-      likes: 1247
-    },
-    location: "New York, USA",
-    reportCount: 0
-  },
-  {
-    id: 2,
-    name: "Marcus Chen",
-    username: "marcuschen",
-    email: "marcus.chen@email.com",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-    role: "user",
-    status: "active",
-    joinDate: "2023-11-20T08:15:00Z",
-    lastActive: "2024-01-15T09:45:00Z",
-    verified: false,
-    stats: {
-      stories: 15,
-      followers: 567,
-      following: 89,
-      likes: 2134
-    },
-    location: "San Francisco, USA",
-    reportCount: 1
-  },
-  {
-    id: 3,
-    name: "Emma Wilson",
-    username: "emmawilson",
-    email: "emma.wilson@email.com",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
-    role: "user",
-    status: "suspended",
-    joinDate: "2023-10-05T16:45:00Z",
-    lastActive: "2024-01-10T11:30:00Z",
-    verified: true,
-    stats: {
-      stories: 3,
-      followers: 45,
-      following: 78,
-      likes: 234
-    },
-    location: "London, UK",
-    reportCount: 3
-  },
-  {
-    id: 4,
-    name: "Alex Thompson",
-    username: "alexthompson",
-    email: "alex.thompson@email.com",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
-    role: "user",
-    status: "active",
-    joinDate: "2023-09-12T14:20:00Z",
-    lastActive: "2024-01-15T16:10:00Z",
-    verified: true,
-    stats: {
-      stories: 22,
-      followers: 1234,
-      following: 345,
-      likes: 5678
-    },
-    location: "Toronto, Canada",
-    reportCount: 0
-  }
-]
+
 
 const statusColors = {
   active: 'bg-green-100 text-green-800',
@@ -134,15 +52,14 @@ export default function UserManagement() {
         if (searchTerm) params.append('search', searchTerm)
         
         const response = await adminAPI.getAllUsers(params)
-        setUsers(response.data.users || mockUsers)
+        setUsers(response.data.users || [])
       } catch (error) {
         console.error('Failed to load users:', error)
-        // Fallback to mock data
-        setUsers(mockUsers)
+        setUsers([])
         showNotification({
           type: 'error',
           title: 'Failed to load users',
-          message: 'Using demo data. Please check your connection.'
+          message: 'Please check your connection and try again.'
         })
       } finally {
         setIsLoading(false)
@@ -321,7 +238,7 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-3xl font-bold text-gray-900">{mockUsers.length}</p>
+              <p className="text-3xl font-bold text-gray-900">{users.length}</p>
             </div>
             <UserCheck className="h-8 w-8 text-blue-600" />
           </div>
@@ -330,7 +247,7 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Active Users</p>
-              <p className="text-3xl font-bold text-gray-900">{mockUsers.filter(u => u.status === 'active').length}</p>
+              <p className="text-3xl font-bold text-gray-900">{users.filter(u => u.status === 'active').length}</p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
@@ -339,7 +256,7 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Suspended</p>
-              <p className="text-3xl font-bold text-gray-900">{mockUsers.filter(u => u.status === 'suspended').length}</p>
+              <p className="text-3xl font-bold text-gray-900">{users.filter(u => u.status === 'suspended').length}</p>
             </div>
             <Ban className="h-8 w-8 text-red-600" />
           </div>
@@ -348,7 +265,7 @@ export default function UserManagement() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Reported Users</p>
-              <p className="text-3xl font-bold text-gray-900">{mockUsers.filter(u => u.reportCount > 0).length}</p>
+              <p className="text-3xl font-bold text-gray-900">{users.filter(u => u.reportCount > 0).length}</p>
             </div>
             <AlertTriangle className="h-8 w-8 text-yellow-600" />
           </div>

@@ -25,6 +25,6 @@ router.get('/:userId/following', userController.getUserFollowing);
 router.get('/:userId/saved', userController.getUserSavedStories);
 
 // Admin routes
-router.get('/admin/all', authController.restrictTo('admin'), userController.getAllUsers);
+router.get('/admin/all', authController.restrictTo('admin'), userController.getAllUsersForAdmin);
 
 module.exports = router;

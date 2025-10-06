@@ -56,10 +56,21 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  status: {
+    type: String,
+    enum: ['active', 'suspended', 'pending'],
+    default: 'active'
+  },
   isEmailVerified: {
     type: Boolean,
     default: false
   },
+  suspensionReason: String,
+  suspendedBy: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'User'
+  },
+  suspendedAt: Date,
   emailVerificationToken: String,
   emailVerificationExpires: Date,
   passwordResetToken: String,

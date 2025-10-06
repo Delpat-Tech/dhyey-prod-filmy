@@ -8,32 +8,45 @@ import ProfileBio from './ProfileBio'
 import { shareProfile } from '@/lib/errorHandler'
 import { useAuth } from '@/contexts/AuthContext'
 import { userAPI } from '@/lib/api'
+import { getAvatarUrl } from '@/lib/imageUtils'
 
-export default function ProfileHeader() {
-  const { user } = useAuth()
-  const [profileData, setProfileData] = useState<any>(null)
+interface ProfileHeaderProps {
+  username?: string
+}
+
+export default function ProfileHeader({ username }: ProfileHeaderProps) {
+  const { user, isLoading: authLoading } = useAuth()
   const [isFollowing, setIsFollowing] = useState(false)
+  const [profileData, setProfileData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const loadProfileData = async () => {
-      try {
-        if (user) {
-          // Load current user's profile
-          const response = await userAPI.getMe()
-          setProfileData(response.data.user)
-        }
-      } catch (error) {
-        console.error('Failed to load profile:', error)
-        // Fallback to user data from context
-        setProfileData(user)
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  // If no username provided, show current user's profile
+  const isOwnProfile = !username || username === user?.username
 
-    loadProfileData()
-  }, [user])
+  useEffect(() => {
+    if (isOwnProfile) {
+      setProfileData(user)
+      setIsLoading(authLoading)
+    } else if (username) {
+      // Fetch other user's profile data
+      // For now, use mock data
+      setProfileData({
+        name: username === 'nikeceo1' ? 'Nike CEO' : 'User Name',
+        username: username,
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        bio: 'Storyteller and creative writer',
+        location: 'New York, NY',
+        joinDate: '2023-01-01',
+        website: '',
+        stats: {
+          stories: 12,
+          followers: 1234,
+          following: 567
+        }
+      })
+      setIsLoading(false)
+    }
+  }, [user, username, authLoading, isOwnProfile])
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing)
@@ -79,7 +92,7 @@ export default function ProfileHeader() {
         <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
           {/* Avatar */}
           <Image
-            src={profileData.avatar || '/default-avatar.png'}
+            src={getAvatarUrl(profileData.avatar)}
             alt={profileData.name || 'User'}
             width={80}
             height={80}
@@ -97,7 +110,7 @@ export default function ProfileHeader() {
               
               {/* Action Buttons */}
               <ProfileActions
-                isOwnProfile={true}
+                isOwnProfile={isOwnProfile}
                 isFollowing={isFollowing}
                 onFollow={handleFollow}
                 onShare={handleShare}

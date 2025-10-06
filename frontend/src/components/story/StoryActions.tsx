@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Heart, Bookmark, Share2, MessageCircle, ThumbsUp, MoreHorizontal } from 'lucide-react'
 import { storyAPI } from '@/lib/api'
+import { toast } from '@/lib/toast'
 
 interface StoryActionsProps {
   story: {
@@ -82,7 +83,7 @@ export default function StoryActions({ story }: StoryActionsProps) {
       switch (platform) {
         case 'copy':
           await navigator.clipboard.writeText(url)
-          alert('Link copied to clipboard!')
+          toast.success('Link copied to clipboard!')
           break
         case 'twitter':
           window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Heart, Bookmark, Share2, MessageCircle, MoreHorizontal } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { storyAPI } from '@/lib/api'
+import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
+import { toast } from '@/lib/toast'
 
 // Mock data - fallback for when API is not available
 const mockStories = [
@@ -61,7 +63,11 @@ const mockStories = [
   },
 ]
 
-export default function StoryFeed() {
+interface StoryFeedProps {
+  genreFilter?: string | null
+}
+
+export default function StoryFeed({ genreFilter }: StoryFeedProps) {
   const [likedStories, setLikedStories] = useState<Set<string>>(new Set())
   const [savedStories, setSavedStories] = useState<Set<string>>(new Set())
   const [showShareMenu, setShowShareMenu] = useState<string | null>(null)
@@ -72,28 +78,45 @@ export default function StoryFeed() {
   const shareMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const moreMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
-  // Load initial stories from API (only approved stories)
+  // Load stories from API with genre filter
   useEffect(() => {
     const loadStories = async () => {
       try {
         setIsInitialLoading(true)
-        // Add filter to only get approved stories
         const params = new URLSearchParams()
         params.append('status', 'approved')
         
+        if (genreFilter) {
+          params.append('genre', genreFilter)
+        }
+        
         const response = await storyAPI.getPublicStories(params)
-        setDisplayedStories(response.data.stories || mockStories)
+        const stories = response.data.stories || mockStories
+        
+        // Initialize liked/saved state from backend data
+        const newLiked = new Set()
+        const newSaved = new Set()
+        stories.forEach(story => {
+          const storyId = story._id || story.id
+          if (story.isLiked) newLiked.add(storyId)
+          if (story.isSaved) newSaved.add(storyId)
+        })
+        setLikedStories(newLiked)
+        setSavedStories(newSaved)
+        setDisplayedStories(stories)
       } catch (error) {
         console.error('Failed to load stories:', error)
-        // Fallback to mock data
-        setDisplayedStories(mockStories)
+        const filtered = genreFilter 
+          ? mockStories.filter(story => story.genre === genreFilter)
+          : mockStories
+        setDisplayedStories(filtered)
       } finally {
         setIsInitialLoading(false)
       }
     }
 
     loadStories()
-  }, [])
+  }, [genreFilter])
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -124,6 +147,7 @@ export default function StoryFeed() {
   const toggleLike = async (storyId: string) => {
     try {
       await storyAPI.likeStory(storyId)
+      const isLiked = likedStories.has(storyId)
       setLikedStories(prev => {
         const newSet = new Set(prev)
         if (newSet.has(storyId)) {
@@ -133,6 +157,16 @@ export default function StoryFeed() {
         }
         return newSet
       })
+      setDisplayedStories(prev => prev.map(story => {
+        if (story.id === storyId || story._id === storyId) {
+          return {
+            ...story,
+            likes: (story.likes || 0) + (isLiked ? -1 : 1),
+            isLiked: !isLiked
+          }
+        }
+        return story
+      }))
     } catch (error) {
       console.error('Failed to like story:', error)
     }
@@ -141,6 +175,7 @@ export default function StoryFeed() {
   const toggleSave = async (storyId: string) => {
     try {
       await storyAPI.saveStory(storyId)
+      const isSaved = savedStories.has(storyId)
       setSavedStories(prev => {
         const newSet = new Set(prev)
         if (newSet.has(storyId)) {
@@ -150,6 +185,16 @@ export default function StoryFeed() {
         }
         return newSet
       })
+      setDisplayedStories(prev => prev.map(story => {
+        if (story.id === storyId || story._id === storyId) {
+          return {
+            ...story,
+            saves: (story.saves || 0) + (isSaved ? -1 : 1),
+            isSaved: !isSaved
+          }
+        }
+        return story
+      }))
     } catch (error) {
       console.error('Failed to save story:', error)
     }
@@ -174,7 +219,7 @@ export default function StoryFeed() {
       switch (platform) {
         case 'copy':
           await navigator.clipboard.writeText(url)
-          alert('Link copied to clipboard!')
+          toast.success('Link copied to clipboard!')
           break
         case 'twitter':
           window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
@@ -254,7 +299,7 @@ export default function StoryFeed() {
             <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group">
               <div className="relative">
                 <Image
-                  src={story.author.avatar}
+                  src={getAvatarUrl(story.author.avatar)}
                   alt={story.author.name}
                   width={40}
                   height={40}
@@ -359,7 +404,7 @@ export default function StoryFeed() {
             <Link href={`/story/${story.id}`} className="block overflow-hidden">
               <div className="relative h-64 md:h-80 group">
                 <Image
-                  src={story.image.startsWith('http') ? story.image : `http://localhost:5000${story.image}`}
+                  src={getImageUrl(story.image)}
                   alt={story.title}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
@@ -383,7 +428,7 @@ export default function StoryFeed() {
                     className={`transition-all duration-300 ${likedStories.has(story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`} 
                   />
                   <span className="text-sm font-medium">
-                    {(story.likes || 0) + (likedStories.has(story.id) ? 1 : 0)}
+                    {story.likes || 0}
                   </span>
                 </button>
                 

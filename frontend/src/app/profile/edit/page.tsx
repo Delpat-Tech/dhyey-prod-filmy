@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
 import { userAPI } from '../../../lib/api'
+import { getAvatarUrl } from '../../../lib/imageUtils'
 
 export default function EditProfilePage() {
   const [formData, setFormData] = useState({
@@ -130,7 +131,7 @@ export default function EditProfilePage() {
             <div className="flex items-center space-x-6">
               <div className="relative">
                 <Image
-                  src={avatar?.startsWith('http') || avatar?.startsWith('blob:') ? avatar : `http://localhost:5000/${avatar || 'uploads/avatars/default.jpg'}`}
+                  src={getAvatarUrl(avatar)}
                   alt="Profile"
                   width={100}
                   height={100}

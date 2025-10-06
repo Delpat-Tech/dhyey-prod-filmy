@@ -244,6 +244,19 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
 
   const total = await Story.countDocuments(query);
 
+  // Add isLiked and isSaved status for authenticated users
+  const storiesWithStatus = stories.map(story => {
+    const storyObj = story.toObject();
+    if (req.user) {
+      storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+    } else {
+      storyObj.isLiked = false;
+      storyObj.isSaved = false;
+    }
+    return storyObj;
+  });
+
   res.status(200).json({
     status: 'success',
     results: stories.length,
@@ -253,7 +266,7 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
       total,
       pages: Math.ceil(total / limit)
     },
-    data: { stories }
+    data: { stories: storiesWithStatus }
   });
 });
 
@@ -304,9 +317,19 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
     await story.incrementView();
   }
 
+  // Add isLiked and isSaved status
+  const storyObj = story.toObject();
+  if (req.user) {
+    storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
+    storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+  } else {
+    storyObj.isLiked = false;
+    storyObj.isSaved = false;
+  }
+
   res.status(200).json({
     status: 'success',
-    data: { story }
+    data: { story: storyObj }
   });
 });
 
@@ -524,6 +547,19 @@ exports.getUserStories = catchAsync(async (req, res, next) => {
 
   const total = await Story.countDocuments(query);
 
+  // Add isLiked and isSaved status for authenticated users
+  const storiesWithStatus = stories.map(story => {
+    const storyObj = story.toObject();
+    if (req.user) {
+      storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+    } else {
+      storyObj.isLiked = false;
+      storyObj.isSaved = false;
+    }
+    return storyObj;
+  });
+
   res.status(200).json({
     status: 'success',
     results: stories.length,
@@ -533,7 +569,7 @@ exports.getUserStories = catchAsync(async (req, res, next) => {
       total,
       pages: Math.ceil(total / limit)
     },
-    data: { stories }
+    data: { stories: storiesWithStatus }
   });
 });
 

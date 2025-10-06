@@ -1,8 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, MessageCircle, Bookmark, Clock } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { storyAPI } from '@/lib/api'
+import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 
 // Mock liked stories data
 const likedStories = [
@@ -54,7 +58,34 @@ const likedStories = [
 ]
 
 export default function LikedStories() {
-  if (likedStories.length === 0) {
+  const { user } = useAuth()
+  const [stories, setStories] = useState<any[]>(likedStories)
+  const [loading, setLoading] = useState(false)
+
+  const handleUnlike = async (storyId: string) => {
+    try {
+      await storyAPI.likeStory(storyId)
+      setStories(stories.filter(story => story._id !== storyId && story.id !== storyId))
+    } catch (error) {
+      console.error('Error unliking story:', error)
+    }
+  }
+
+  const handleSave = async (storyId: string) => {
+    try {
+      await storyAPI.saveStory(storyId)
+      setStories(stories.map(story => {
+        if (story._id === storyId || story.id === storyId) {
+          return { ...story, isSaved: !story.isSaved }
+        }
+        return story
+      }))
+    } catch (error) {
+      console.error('Error saving story:', error)
+    }
+  }
+
+  if (stories.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -68,14 +99,16 @@ export default function LikedStories() {
 
   return (
     <div className="space-y-4">
-      {likedStories.map((story) => (
-        <div key={story.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+      {stories.map((story) => {
+        const storyId = story._id || story.id
+        return (
+        <div key={storyId} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
           <div className="md:flex">
             {/* Story Image */}
             <div className="md:w-48 h-48 md:h-auto relative flex-shrink-0">
-              <Link href={`/story/${story.id}`}>
+              <Link href={`/story/${storyId}`}>
                 <Image
-                  src={story.image}
+                  src={getImageUrl(story.image)}
                   alt={story.title}
                   fill
                   className="object-cover hover:scale-105 transition-transform duration-300"
@@ -87,10 +120,10 @@ export default function LikedStories() {
             <div className="flex-1 p-4 md:p-6">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <Link href={`/profile/${story.author.username}`}>
+                  <Link href={`/profile/${story.author?.username || 'user'}`}>
                     <Image
-                      src={story.author.avatar}
-                      alt={story.author.name}
+                      src={getAvatarUrl(story.author?.avatar)}
+                      alt={story.author?.name || 'User'}
                       width={32}
                       height={32}
                       className="rounded-full"
@@ -98,13 +131,13 @@ export default function LikedStories() {
                   </Link>
                   <div>
                     <Link 
-                      href={`/profile/${story.author.username}`}
+                      href={`/profile/${story.author?.username || 'user'}`}
                       className="font-medium text-gray-900 hover:text-purple-600"
                     >
-                      {story.author.name}
+                      {story.author?.name || 'User'}
                     </Link>
                     <div className="flex items-center space-x-2 text-sm text-gray-500">
-                      <span>@{story.author.username}</span>
+                      <span>@{story.author?.username || 'user'}</span>
                       <span>•</span>
                       <div className="flex items-center space-x-1">
                         <Clock size={12} />
@@ -118,33 +151,41 @@ export default function LikedStories() {
                 </span>
               </div>
 
-              <Link href={`/story/${story.id}`}>
+              <Link href={`/story/${storyId}`}>
                 <h3 className="font-bold text-lg text-gray-900 mb-2 hover:text-purple-600 transition-colors">
                   {story.title}
                 </h3>
                 <p className="text-gray-700 mb-3 line-clamp-2">
-                  {story.excerpt}
+                  {story.excerpt || story.content?.substring(0, 150) + '...'}
                 </p>
               </Link>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <div className="flex items-center space-x-1">
+                  <button 
+                    onClick={() => handleUnlike(storyId)}
+                    className="flex items-center space-x-1 hover:text-red-600 transition-colors"
+                    title="Unlike"
+                  >
                     <Heart size={16} className="fill-red-500 text-red-500" />
-                    <span>{story.likes}</span>
-                  </div>
+                    <span>{story.likes || story.stats?.likes || 0}</span>
+                  </button>
                   <div className="flex items-center space-x-1">
                     <MessageCircle size={16} />
-                    <span>{story.comments}</span>
+                    <span>{story.comments || story.stats?.comments || 0}</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center space-x-2">
-                  <button className="text-gray-600 hover:text-purple-600 p-1">
-                    <Bookmark size={16} />
+                  <button 
+                    onClick={() => handleSave(storyId)}
+                    className="text-gray-600 hover:text-purple-600 p-1 transition-colors"
+                    title={story.isSaved ? 'Unsave' : 'Save'}
+                  >
+                    <Bookmark size={16} className={story.isSaved ? 'fill-purple-600 text-purple-600' : ''} />
                   </button>
                   <Link 
-                    href={`/story/${story.id}`}
+                    href={`/story/${storyId}`}
                     className="text-purple-600 hover:text-purple-700 font-medium text-sm"
                   >
                     Read
@@ -154,7 +195,7 @@ export default function LikedStories() {
             </div>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   )
 }

@@ -10,6 +10,15 @@ interface User {
   email: string
   avatar?: string
   role: 'user' | 'admin' | 'moderator'
+  bio?: string
+  location?: string
+  website?: string
+  joinDate?: string
+  stats?: {
+    followersCount: number
+    followingCount: number
+    storiesCount: number
+  }
 }
 
 interface AuthContextType {
@@ -55,19 +64,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
         
-        // Verify token with server
-        const isValid = await checkTokenValidity()
-        if (isValid) {
-          setUser(JSON.parse(storedUser))
-        } else {
-          logout()
-        }
+        // ✅ PERFORMANCE FIX: Trust localStorage, set user immediately
+        setUser(JSON.parse(storedUser))
+        
+        // ✅ Validate token in background (non-blocking)
+        validateTokenInBackground(token)
       }
     } catch (error) {
       console.error('Auth check failed:', error)
       logout()
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Background validation (doesn't block initial render)
+  const validateTokenInBackground = async (token: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      })
+      
+      if (!response.ok) {
+        // Token invalid, logout user
+        console.log('Token validation failed, logging out')
+        logout()
+      }
+    } catch (error) {
+      // Network error, keep user logged in (graceful degradation)
+      console.error('Background token validation failed:', error)
     }
   }
 

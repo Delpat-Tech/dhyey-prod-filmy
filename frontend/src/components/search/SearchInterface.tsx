@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Search, Filter, X } from 'lucide-react'
 import SearchResults from './SearchResults'
 import { searchAPI } from '@/lib/api'
@@ -18,9 +18,12 @@ export default function SearchInterface() {
   const [isSearching, setIsSearching] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      setHasSearched(false)
+      return
+    }
 
     setIsSearching(true)
     setHasSearched(true)
@@ -28,22 +31,31 @@ export default function SearchInterface() {
     try {
       let results = []
       
-      if (searchType === 'all') {
-        const response = await searchAPI.globalSearch(searchQuery)
-        results = response.data.results || []
-      } else if (searchType === 'author') {
-        const response = await searchAPI.searchUsers(searchQuery)
-        results = response.data.users || []
-      } else {
-        // Search stories with filters
-        const filters = {
-          genre: selectedGenre !== 'All' ? selectedGenre : undefined,
-          sortBy: sortBy.toLowerCase().replace(' ', '_'),
-          type: searchType
-        }
-        const response = await searchAPI.searchStories(searchQuery, filters)
-        results = response.data.stories || []
+      // Build search query based on search type
+      let searchQuery = query
+      
+      // Build filters
+      const filters: any = {
+        genre: selectedGenre !== 'All' ? selectedGenre : undefined,
+        sortBy: sortBy.toLowerCase().replace(' ', '_')
       }
+
+      // Add specific filters based on search type
+      if (searchType === 'author') {
+        filters.author = query
+      } else if (searchType === 'hashtag') {
+        // For hashtag search, add # if not present
+        searchQuery = query.startsWith('#') ? query : `#${query}`
+      }
+      // For 'title' and 'all', the backend will search in appropriate fields
+
+      console.log('Searching with query:', searchQuery, 'type:', searchType, 'filters:', filters)
+      const response = await searchAPI.searchStories(searchQuery, filters)
+      console.log('Full search response:', response)
+      
+      // The backend returns { status: 'success', query, stories, pagination, filters } directly
+      results = response.stories || []
+      console.log('Found', results.length, 'stories:', results)
 
       setSearchResults(results)
     } catch (error) {
@@ -53,6 +65,27 @@ export default function SearchInterface() {
       setIsSearching(false)
     }
   }
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    performSearch(searchQuery)
+  }
+
+  // Auto-search when query changes (with debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length >= 2) {
+        console.log('Auto-searching for:', searchQuery)
+        performSearch(searchQuery)
+      } else if (searchQuery.length === 0) {
+        setSearchResults([])
+        setHasSearched(false)
+      }
+    }, 500) // 500ms debounce
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, searchType, selectedGenre, sortBy])
 
   const clearSearch = () => {
     setSearchQuery('')

@@ -181,7 +181,12 @@ export const storyAPI = {
 // Search API
 export const searchAPI = {
   searchStories: (query: string, filters?: any) => {
-    const params = new URLSearchParams({ q: query, ...filters })
+    // Remove undefined values from filters
+    const cleanFilters = filters ? Object.fromEntries(
+      Object.entries(filters).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    ) : {}
+    const params = new URLSearchParams({ q: query, ...cleanFilters })
+    console.log('API call URL:', `/search/stories?${params}`)
     return apiRequest(`/search/stories?${params}`)
   },
 

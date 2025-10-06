@@ -1,7 +1,16 @@
+'use client'
+
+import { useState } from 'react'
 import StoryFeed from '@/components/home/StoryFeed'
 import FeaturedStories from '@/components/home/FeaturedStories'
 
 export default function DashboardPage() {
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+
+  const handleGenreFilter = (genre: string | null) => {
+    setSelectedGenre(genre)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section - Mobile optimized */}
@@ -29,19 +38,40 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-display">Latest Stories</h2>
             <div className="flex space-x-2">
-              <button className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md">
+              <button 
+                onClick={() => handleGenreFilter(null)}
+                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                  selectedGenre === null 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'
+                }`}
+              >
                 All
               </button>
-              <button className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-300 hover:scale-105 hover:text-purple-600">
+              <button 
+                onClick={() => handleGenreFilter('Fiction')}
+                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                  selectedGenre === 'Fiction' 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'
+                }`}
+              >
                 Fiction
               </button>
-              <button className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-300 hover:scale-105 hover:text-purple-600">
+              <button 
+                onClick={() => handleGenreFilter('Poetry')}
+                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                  selectedGenre === 'Poetry' 
+                    ? 'bg-purple-100 text-purple-700' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'
+                }`}
+              >
                 Poetry
               </button>
             </div>
           </div>
           
-          <StoryFeed />
+          <StoryFeed genreFilter={selectedGenre} />
         </div>
       </div>
     </div>

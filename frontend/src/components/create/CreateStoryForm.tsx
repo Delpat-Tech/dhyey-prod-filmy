@@ -87,7 +87,7 @@ export default function CreateStoryForm() {
         title: formData.title,
         content: formData.content,
         genre: formData.genres[0] || 'Fiction', // Use first selected genre
-        tags: formData.hashtags.split(' ').filter(tag => tag.trim()),
+        hashtags: formData.hashtags.split(' ').filter(tag => tag.trim()),
         status: 'pending', // Set as pending for admin review
         // Note: Image upload would need special handling with FormData
       }

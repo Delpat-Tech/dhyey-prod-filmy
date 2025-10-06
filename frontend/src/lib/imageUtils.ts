@@ -1,0 +1,55 @@
+/**
+ * Image URL utility functions
+ * Handles construction of image URLs for the application
+ */
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+/**
+ * Constructs a full image URL from a relative path
+ * @param imagePath - The image path from the backend (e.g., "/uploads/avatars/image.jpg")
+ * @param fallback - Optional fallback image URL
+ * @returns Full image URL
+ */
+export const getImageUrl = (imagePath?: string | null, fallback?: string): string => {
+  // If no image path provided, return fallback or default
+  if (!imagePath) {
+    return fallback || '/images/default-avatar.png';
+  }
+
+  // If already a full URL (starts with http:// or https://), return as-is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+
+  // If it's a blob URL (for preview), return as-is
+  if (imagePath.startsWith('blob:')) {
+    return imagePath;
+  }
+
+  // Construct full URL, ensuring no double slashes
+  const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  return `${API_BASE_URL}${cleanPath}`;
+};
+
+/**
+ * Get avatar URL with fallback
+ */
+export const getAvatarUrl = (avatar?: string | null): string => {
+  return getImageUrl(avatar, '/images/default-avatar.png');
+};
+
+/**
+ * Get story image URL with fallback
+ */
+export const getStoryImageUrl = (image?: string | null): string => {
+  return getImageUrl(image, '/images/default-story.png');
+};
+
+/**
+ * Check if an image URL is valid
+ */
+export const isValidImageUrl = (url?: string | null): boolean => {
+  if (!url) return false;
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:') || url.startsWith('/');
+};

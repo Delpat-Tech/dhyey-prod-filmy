@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { Heart, Send } from 'lucide-react'
 import { storyAPI } from '@/lib/api'
+import { getAvatarUrl } from '@/lib/imageUtils'
 
 interface CommentsSectionProps {
   storyId: number
@@ -236,7 +237,7 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
             {/* Main Comment */}
             <div className="flex items-start space-x-3">
               <Image
-                src={comment.author.avatar}
+                src={getAvatarUrl(comment.author.avatar)}
                 alt={comment.author.name}
                 width={32}
                 height={32}
@@ -283,7 +284,7 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
                     {comment.replies.map((reply) => (
                       <div key={reply.id} className="flex items-start space-x-3 ml-6">
                         <Image
-                          src={reply.author.avatar}
+                          src={getAvatarUrl(reply.author.avatar)}
                           alt={reply.author.name}
                           width={24}
                           height={24}

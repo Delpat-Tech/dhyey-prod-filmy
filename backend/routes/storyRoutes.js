@@ -4,10 +4,11 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
-// Public routes
-router.get('/', storyController.getPublicStories);
-router.get('/search', storyController.searchStories);
+// Public routes (with optional auth to track user interactions)
+router.get('/', authController.optionalAuth, storyController.getPublicStories);
+router.get('/search', authController.optionalAuth, storyController.searchStories);
 router.get('/:id', authController.optionalAuth, storyController.getStoryById);
+router.get('/user/:userId', authController.optionalAuth, storyController.getUserStories);
 
 // Protected routes (require authentication)
 router.use(authController.protect);
@@ -36,8 +37,5 @@ router.post('/:id/share', storyController.shareStory);
 router.get('/:id/comments', storyController.getStoryComments);
 router.post('/:id/comments', storyController.addComment);
 router.post('/:id/comments/:commentId/like', storyController.toggleLikeComment);
-
-// User's stories
-router.get('/user/:userId', storyController.getUserStories);
 
 module.exports = router;

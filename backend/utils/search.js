@@ -37,6 +37,7 @@ class SearchService {
     // Extract tags (#tag)
     const tagMatches = query.match(/#\w+/g);
     if (tagMatches) {
+      // Keep hashtags with # symbol to match database format
       filters.hashtags = tagMatches.map(tag => tag.toLowerCase());
       query = query.replace(/#\w+/g, '').trim();
     }
@@ -65,14 +66,27 @@ class SearchService {
 
     const pipeline = [];
 
-    // Match stage
+    // Match stage - Support both 'published' and 'approved' status
     const matchStage = {
-      status: includeUnpublished ? { $in: ['published', 'draft'] } : 'published'
+      status: includeUnpublished ? { $in: ['published', 'approved', 'draft'] } : { $in: ['published', 'approved'] }
     };
 
-    // Text search
+    // Text search - use regex if text index doesn't exist
     if (filters.text) {
-      matchStage.$text = { $search: filters.text };
+      // Try to use text search, but fallback to regex if needed
+      try {
+        matchStage.$or = [
+          { title: new RegExp(filters.text, 'i') },
+          { excerpt: new RegExp(filters.text, 'i') },
+          { content: new RegExp(filters.text, 'i') }
+        ];
+      } catch (error) {
+        // Fallback to basic regex search
+        matchStage.$or = [
+          { title: new RegExp(filters.text, 'i') },
+          { excerpt: new RegExp(filters.text, 'i') }
+        ];
+      }
     }
 
     // Genre filter
@@ -102,15 +116,6 @@ class SearchService {
     }
 
     pipeline.push({ $match: matchStage });
-
-    // Add score for text search
-    if (filters.text) {
-      pipeline.push({
-        $addFields: {
-          score: { $meta: 'textScore' }
-        }
-      });
-    }
 
     // Author lookup and filter
     pipeline.push({
@@ -142,11 +147,7 @@ class SearchService {
     let sortStage = {};
     switch (sortBy) {
       case 'relevance':
-        if (filters.text) {
-          sortStage = { score: { $meta: 'textScore' }, publishedAt: -1 };
-        } else {
-          sortStage = { 'stats.views': -1, publishedAt: -1 };
-        }
+        sortStage = { 'stats.views': -1, 'stats.likes': -1, publishedAt: -1 };
         break;
       case 'newest':
         sortStage = { publishedAt: -1 };
@@ -198,8 +199,7 @@ class SearchService {
         'author._id': 1,
         'author.name': 1,
         'author.username': 1,
-        'author.avatar': 1,
-        score: 1
+        'author.avatar': 1
       }
     });
 
@@ -339,16 +339,16 @@ class SearchService {
   // Get available filters for stories
   async getAvailableFilters() {
     const [genres, topTags, topAuthors] = await Promise.all([
-      Story.distinct('genre', { status: 'published' }),
+      Story.distinct('genre', { status: { $in: ['published', 'approved'] } }),
       Story.aggregate([
-        { $match: { status: 'published' } },
+        { $match: { status: { $in: ['published', 'approved'] } } },
         { $unwind: '$hashtags' },
         { $group: { _id: '$hashtags', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 20 }
       ]),
       Story.aggregate([
-        { $match: { status: 'published' } },
+        { $match: { status: { $in: ['published', 'approved'] } } },
         { $group: { _id: '$author', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
@@ -386,7 +386,7 @@ class SearchService {
     
     const [storyTitles, usernames, tags] = await Promise.all([
       Story.find(
-        { title: searchRegex, status: 'published' },
+        { title: searchRegex, status: { $in: ['published', 'approved'] } },
         { title: 1 }
       ).limit(limit),
       
@@ -396,7 +396,7 @@ class SearchService {
       ).limit(limit),
       
       Story.aggregate([
-        { $match: { hashtags: searchRegex, status: 'published' } },
+        { $match: { hashtags: searchRegex, status: { $in: ['published', 'approved'] } } },
         { $unwind: '$hashtags' },
         { $match: { hashtags: searchRegex } },
         { $group: { _id: '$hashtags', count: { $sum: 1 } } },

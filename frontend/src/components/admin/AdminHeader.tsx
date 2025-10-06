@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Search, Settings, LogOut, User, Menu, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { getAvatarUrl } from '@/lib/imageUtils'
 
 export default function AdminHeader() {
   const [showNotifications, setShowNotifications] = useState(false)
@@ -18,7 +19,7 @@ export default function AdminHeader() {
   const admin = {
     name: user?.name || "Loading...",
     email: user?.email || "Loading...",
-    avatar: user?.avatar || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face",
+    avatar: getAvatarUrl(user?.avatar),
     role: user?.role === 'admin' ? "Admin" : "User"
   }
 

@@ -4,17 +4,28 @@ const searchService = require('../utils/search');
 
 // Search stories
 exports.searchStories = catchAsync(async (req, res, next) => {
-  const { q, page, limit, sortBy } = req.query;
+  const { q, page, limit, sortBy, genre, author } = req.query;
+
+  console.log('Search request:', { q, page, limit, sortBy, genre, author });
 
   if (!q || q.trim().length < 2) {
     return next(new AppError('Search query must be at least 2 characters long', 400));
   }
 
-  const results = await searchService.searchStories(q, {
+  // Build query with filters
+  let searchQuery = q;
+  if (genre && genre !== 'undefined') searchQuery += ` genre:${genre}`;
+  if (author) searchQuery += ` author:${author}`;
+
+  console.log('Final search query:', searchQuery);
+
+  const results = await searchService.searchStories(searchQuery, {
     page: parseInt(page) || 1,
     limit: parseInt(limit) || 20,
     sortBy: sortBy || 'relevance'
   });
+
+  console.log('Found stories:', results.stories.length);
 
   res.status(200).json({
     status: 'success',

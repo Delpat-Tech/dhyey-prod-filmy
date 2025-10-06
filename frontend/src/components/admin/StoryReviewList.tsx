@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { adminAPI } from '@/lib/api'
 import { showNotification } from '@/lib/errorHandler'
+import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 
 // Mock data for stories pending review
 const mockStories = [
@@ -461,7 +462,7 @@ export default function StoryReviewList() {
                   {(story.featuredImage || story.image) ? (
                     <>
                       <img
-                        src={(story.featuredImage || story.image).startsWith('http') ? (story.featuredImage || story.image) : `http://localhost:5000${story.featuredImage || story.image}`}
+                        src={getImageUrl(story.featuredImage || story.image)}
                         alt={story.title}
                         className="rounded-lg object-cover w-full h-full"
                         onError={(e) => {
@@ -497,7 +498,7 @@ export default function StoryReviewList() {
                       <div className="flex items-center mt-1 space-x-2">
                         {story.author?.avatar ? (
                           <img
-                            src={story.author.avatar}
+                            src={getAvatarUrl(story.author.avatar)}
                             alt={story.author?.name || 'Author'}
                             className="rounded-full w-5 h-5 object-cover"
                             onError={(e) => {

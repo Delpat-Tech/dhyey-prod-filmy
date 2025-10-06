@@ -35,6 +35,9 @@ const config: Config = {
         heading: ['Playfair Display', 'Georgia', 'serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
+      animation: {
+        'slide-in-right': 'slideInFromRight 0.3s ease-out',
+      },
     },
   },
   plugins: [],

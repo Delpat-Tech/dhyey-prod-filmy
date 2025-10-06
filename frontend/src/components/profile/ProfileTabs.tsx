@@ -12,7 +12,11 @@ const tabs = [
   { id: 'liked', label: 'Liked', icon: Heart },
 ]
 
-export default function ProfileTabs() {
+interface ProfileTabsProps {
+  username?: string
+}
+
+export default function ProfileTabs({ username }: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState('stories')
 
   const renderTabContent = () => {

@@ -4,6 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
 import { ArrowLeft, Share2, MoreHorizontal, Calendar, Clock, Eye } from 'lucide-react'
+import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
+import { toast } from '@/lib/toast'
 
 interface StoryHeaderProps {
   story: {
@@ -75,7 +77,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
     switch (platform) {
       case 'copy':
         await navigator.clipboard.writeText(url)
-        alert('Link copied to clipboard!')
+        toast.success('Link copied to clipboard!')
         break
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
@@ -242,7 +244,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
             >
               {story.author.avatar ? (
                 <Image
-                  src={story.author.avatar}
+                  src={getAvatarUrl(story.author.avatar)}
                   alt={story.author.name}
                   width={50}
                   height={50}
@@ -296,7 +298,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
         {story.image && (
           <div className="relative aspect-video rounded-xl overflow-hidden">
             <Image
-              src={story.image}
+              src={getImageUrl(story.image)}
               alt={story.title}
               fill
               className="object-cover"

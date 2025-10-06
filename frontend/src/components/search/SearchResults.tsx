@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, Bookmark, MessageCircle, Clock, Search } from 'lucide-react'
+import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 
 interface SearchResultsProps {
   query: string
@@ -69,9 +70,12 @@ const mockResults = [
   }
 ]
 
-export default function SearchResults({ query, searchType, genre, sortBy }: SearchResultsProps) {
-  // Filter results based on search criteria
-  const filteredResults = mockResults.filter(story => {
+export default function SearchResults({ query, searchType, genre, sortBy, results, isLoading, hasSearched }: SearchResultsProps) {
+  // Use real API results if available, fallback to mock data
+  const displayResults = results && results.length > 0 ? results : (hasSearched && results ? [] : mockResults)
+  
+  // Filter mock results for demo purposes (only if using mock data)
+  const filteredResults = !results ? displayResults.filter(story => {
     if (genre !== 'All' && story.genre !== genre) return false
     
     if (!query) return true
@@ -85,16 +89,26 @@ export default function SearchResults({ query, searchType, genre, sortBy }: Sear
         return story.author.name.toLowerCase().includes(searchLower) || 
                story.author.username.toLowerCase().includes(searchLower)
       case 'hashtag':
-        return story.hashtags.some(tag => tag.toLowerCase().includes(searchLower))
+        return story.hashtags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
       default:
         return story.title.toLowerCase().includes(searchLower) ||
                story.author.name.toLowerCase().includes(searchLower) ||
-               story.hashtags.some(tag => tag.toLowerCase().includes(searchLower)) ||
-               story.excerpt.toLowerCase().includes(searchLower)
+               story.hashtags?.some((tag: string) => tag.toLowerCase().includes(searchLower)) ||
+               story.excerpt?.toLowerCase().includes(searchLower)
     }
-  })
+  }) : displayResults
 
-  if (!query && genre === 'All') {
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Searching...</p>
+      </div>
+    )
+  }
+
+  if (!query && genre === 'All' && !hasSearched) {
     return (
       <div className="text-center py-12">
         <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -131,13 +145,13 @@ export default function SearchResults({ query, searchType, genre, sortBy }: Sear
 
       <div className="grid gap-4 md:gap-6">
         {filteredResults.map((story) => (
-          <div key={story.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+          <div key={story._id || story.id} className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
             <div className="md:flex">
               {/* Story Image */}
               <div className="md:w-48 h-48 md:h-auto relative flex-shrink-0">
-                <Link href={`/story/${story.id}`}>
+                <Link href={`/story/${story._id || story.id}`}>
                   <Image
-                    src={story.image}
+                    src={getImageUrl(story.image)}
                     alt={story.title}
                     fill
                     className="object-cover hover:scale-105 transition-transform duration-300"
@@ -151,7 +165,7 @@ export default function SearchResults({ query, searchType, genre, sortBy }: Sear
                   <div className="flex items-center space-x-3">
                     <Link href={`/profile/${story.author.username}`}>
                       <Image
-                        src={story.author.avatar}
+                        src={getAvatarUrl(story.author.avatar)}
                         alt={story.author.name}
                         width={32}
                         height={32}
@@ -180,7 +194,7 @@ export default function SearchResults({ query, searchType, genre, sortBy }: Sear
                   </span>
                 </div>
 
-                <Link href={`/story/${story.id}`}>
+                <Link href={`/story/${story._id || story.id}`}>
                   <h3 className="font-bold text-lg text-gray-900 mb-2 hover:text-purple-600 transition-colors">
                     {story.title}
                   </h3>
@@ -189,13 +203,15 @@ export default function SearchResults({ query, searchType, genre, sortBy }: Sear
                   </p>
                 </Link>
 
-                <div className="flex items-center space-x-1 mb-4">
-                  {story.hashtags.map((tag, index) => (
-                    <span key={index} className="text-purple-600 text-sm hover:underline cursor-pointer">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                {story.hashtags && story.hashtags.length > 0 && (
+                  <div className="flex items-center space-x-1 mb-4">
+                    {story.hashtags.map((tag: string, index: number) => (
+                      <span key={index} className="text-purple-600 text-sm hover:underline cursor-pointer">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-6 text-sm text-gray-600">

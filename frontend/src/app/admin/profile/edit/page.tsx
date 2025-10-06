@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
-import { userAPI } from '../../../lib/api'
-import { getAvatarUrl } from '../../../lib/imageUtils'
+import { adminAPI } from '../../../../lib/api'
+import { getAvatarUrl } from '../../../../lib/imageUtils'
+import { useAuth } from '../../../../contexts/AuthContext'
 
-export default function EditProfilePage() {
+export default function AdminEditProfilePage() {
+  const { updateUser } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     username: '',
@@ -22,12 +24,12 @@ export default function EditProfilePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   useEffect(() => {
-    fetchUserData()
+    fetchAdminData()
   }, [])
 
-  const fetchUserData = async () => {
+  const fetchAdminData = async () => {
     try {
-      const response = await userAPI.getMe()
+      const response = await adminAPI.getAdminProfile()
       
       const user = response.data.user
       setFormData({
@@ -39,8 +41,8 @@ export default function EditProfilePage() {
       })
       setAvatar(user.avatar || '')
     } catch (error) {
-      console.error('Error fetching user data:', error)
-      setMessage('Failed to load user data')
+      console.error('Error fetching admin data:', error)
+      setMessage('Failed to load admin data')
     } finally {
       setLoading(false)
     }
@@ -52,6 +54,8 @@ export default function EditProfilePage() {
     setMessage('')
 
     try {
+      let updateData = { ...formData }
+      
       // If there's a selected file, create FormData for file upload
       if (selectedFile) {
         const formDataWithFile = new FormData()
@@ -62,7 +66,7 @@ export default function EditProfilePage() {
         formDataWithFile.append('location', formData.location)
         formDataWithFile.append('website', formData.website)
         
-        const response = await fetch('/api/v1/users/me', {
+        const response = await fetch('/api/v1/admin/profile', {
           method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('dhyey_token')}`
@@ -75,16 +79,37 @@ export default function EditProfilePage() {
         }
         
         const result = await response.json()
+        
+        // Update user context with new data including avatar
+        updateUser({
+          name: formData.name,
+          username: formData.username,
+          bio: formData.bio,
+          location: formData.location,
+          website: formData.website,
+          avatar: result.data?.user?.avatar
+        })
+        
         setAvatar(result.data?.user?.avatar || avatar)
         setSelectedFile(null)
       } else {
         // Update profile data without photo
-        await userAPI.updateMe(formData)
+        const response = await adminAPI.updateAdminProfile(formData)
+        
+        // Update user context to reflect changes in navbar
+        updateUser({
+          name: formData.name,
+          username: formData.username,
+          bio: formData.bio,
+          location: formData.location,
+          website: formData.website,
+          avatar: response.data?.user?.avatar || avatar
+        })
       }
       
-      setMessage('Profile updated successfully!')
+      setMessage('Admin profile updated successfully!')
     } catch (error: any) {
-      setMessage(error.response?.data?.message || error.message || 'Failed to update profile')
+      setMessage(error.response?.data?.message || error.message || 'Failed to update admin profile')
     } finally {
       setSaving(false)
     }
@@ -117,10 +142,10 @@ export default function EditProfilePage() {
         <div className="bg-white border-b border-gray-200 px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/profile" className="text-gray-600 hover:text-gray-900">
+              <Link href="/admin/profile" className="text-gray-600 hover:text-gray-900">
                 <ArrowLeft size={20} />
               </Link>
-              <h1 className="text-xl font-bold text-gray-900">Edit Profile</h1>
+              <h1 className="text-xl font-bold text-gray-900">Edit Admin Profile</h1>
             </div>
             <button
               onClick={handleSubmit}
@@ -141,7 +166,7 @@ export default function EditProfilePage() {
               <div className="relative">
                 <Image
                   src={getAvatarUrl(avatar)}
-                  alt="Profile"
+                  alt="Admin Profile"
                   width={100}
                   height={100}
                   className="rounded-full"
@@ -162,7 +187,7 @@ export default function EditProfilePage() {
                 </button>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">Profile Photo</h3>
+                <h3 className="font-medium text-gray-900">Admin Profile Photo</h3>
                 <p className="text-sm text-gray-600">Click the camera icon to update your photo</p>
               </div>
             </div>

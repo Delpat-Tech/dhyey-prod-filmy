@@ -42,6 +42,14 @@ router.post('/create-admin', authController.createAdmin);
 router.patch('/users/:id/suspend', userController.suspendUser);
 router.patch('/users/:id/unsuspend', userController.unsuspendUser);
 
+// Admin Profile Management
+router.get('/profile', userController.getMe);
+router.patch('/profile', userController.uploadUserPhoto, userController.processUserPhoto, userController.updateMe);
+
+// Admin Settings Management
+router.get('/settings', userController.getMe);
+router.patch('/settings', userController.updateMe);
+
 // Admin Analytics
 router.get('/analytics', (req, res) => {
   // Mock analytics data for now

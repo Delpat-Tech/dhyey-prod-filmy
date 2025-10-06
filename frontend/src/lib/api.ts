@@ -263,6 +263,22 @@ export const adminAPI = {
   unsuspendUser: (userId: string) =>
     apiRequest(`/admin/users/${userId}/unsuspend`, { method: 'PATCH' }),
 
+  // Admin Profile Management
+  getAdminProfile: () => apiRequest('/admin/profile'),
+  updateAdminProfile: (userData: any) =>
+    apiRequest('/admin/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(userData),
+    }),
+
+  // Admin Settings Management
+  getAdminSettings: () => apiRequest('/admin/settings'),
+  updateAdminSettings: (settingsData: any) =>
+    apiRequest('/admin/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(settingsData),
+    }),
+
   // Analytics
   getAnalytics: () => apiRequest('/admin/analytics'),
   

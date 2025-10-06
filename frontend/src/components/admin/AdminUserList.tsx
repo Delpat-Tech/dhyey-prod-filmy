@@ -18,6 +18,7 @@ import {
   Edit
 } from 'lucide-react'
 import { adminAPI } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface AdminUser {
   _id: string
@@ -48,6 +49,7 @@ const roleIcons = {
 }
 
 export default function AdminUserList() {
+  const { user } = useAuth()
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -312,7 +314,7 @@ export default function AdminUserList() {
                       >
                         <Mail size={16} />
                       </button>
-                      {admin.role !== 'super_admin' && (
+                      {admin.role !== 'super_admin' && admin.email !== 'admin@dhyey.com' && admin._id !== user?._id && (
                         <button
                           onClick={() => handleSuspendToggle(admin._id, admin.status)}
                           className={`p-2 rounded-lg ${

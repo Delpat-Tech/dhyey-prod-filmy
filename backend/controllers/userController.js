@@ -325,7 +325,23 @@ exports.getAllUsersForAdmin = catchAsync(async (req, res, next) => {
 exports.suspendUser = catchAsync(async (req, res, next) => {
   const { reason, duration } = req.body;
   
-  const user = await User.findByIdAndUpdate(
+  // Prevent self-suspension
+  if (req.params.id === req.user.id) {
+    return next(new AppError('You cannot suspend yourself', 400));
+  }
+  
+  const user = await User.findById(req.params.id);
+  
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+  
+  // Prevent suspending the main admin user
+  if (user.email === 'admin@dhyey.com') {
+    return next(new AppError('Cannot suspend the main administrator account', 403));
+  }
+  
+  const updatedUser = await User.findByIdAndUpdate(
     req.params.id,
     { 
       status: 'suspended',
@@ -337,13 +353,9 @@ exports.suspendUser = catchAsync(async (req, res, next) => {
     { new: true, runValidators: true }
   ).select('-password');
 
-  if (!user) {
-    return next(new AppError('No user found with that ID', 404));
-  }
-
   res.status(200).json({
     status: 'success',
-    data: { user }
+    data: { user: updatedUser }
   });
 });
 

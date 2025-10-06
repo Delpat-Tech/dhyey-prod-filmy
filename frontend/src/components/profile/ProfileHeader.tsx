@@ -24,28 +24,33 @@ export default function ProfileHeader({ username }: ProfileHeaderProps) {
   const isOwnProfile = !username || username === user?.username
 
   useEffect(() => {
-    if (isOwnProfile) {
-      setProfileData(user)
-      setIsLoading(authLoading)
-    } else if (username) {
-      // Fetch other user's profile data
-      // For now, use mock data
-      setProfileData({
-        name: username === 'nikeceo1' ? 'Nike CEO' : 'User Name',
-        username: username,
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        bio: 'Storyteller and creative writer',
-        location: 'New York, NY',
-        joinDate: '2023-01-01',
-        website: '',
-        stats: {
-          stories: 12,
-          followers: 1234,
-          following: 567
+    const fetchProfileData = async () => {
+      if (isOwnProfile) {
+        if (user) {
+          try {
+            const response = await userAPI.getMe()
+            setProfileData(response.data.user)
+          } catch (error) {
+            console.error('Error fetching user data:', error)
+            setProfileData(user)
+          }
+        } else {
+          setProfileData(user)
         }
-      })
-      setIsLoading(false)
+        setIsLoading(authLoading)
+      } else if (username) {
+        try {
+          const response = await userAPI.getUserProfile(username)
+          setProfileData(response.data.user)
+        } catch (error) {
+          console.error('Error fetching profile:', error)
+          setProfileData(null)
+        }
+        setIsLoading(false)
+      }
     }
+
+    fetchProfileData()
   }, [user, username, authLoading, isOwnProfile])
 
   const handleFollow = () => {

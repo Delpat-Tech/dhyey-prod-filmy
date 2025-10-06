@@ -141,13 +141,7 @@ export default function AdminHeader() {
               )}
             </div>
 
-            {/* Settings */}
-            <Link
-              href="/admin/settings"
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
-            >
-              <Settings size={20} />
-            </Link>
+
 
             {/* Profile Dropdown */}
             <div className="relative">

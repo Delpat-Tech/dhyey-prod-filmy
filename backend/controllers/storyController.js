@@ -206,7 +206,7 @@ exports.getStoryForAdmin = catchAsync(async (req, res, next) => {
 // Get all published stories for public feed
 exports.getPublicStories = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = Math.min(parseInt(req.query.limit) || 10, 20); // Reduced from 50 to 20
+  const limit = Math.min(parseInt(req.query.limit) || 10, 50);
   const skip = (page - 1) * limit;
   const sortBy = req.query.sortBy || 'newest';
 
@@ -236,12 +236,11 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
   }
 
   const stories = await Story.find(query)
-    .populate('author', 'name username avatar')
+    .populate('author', 'name username avatar stats')
     .sort(sort)
     .skip(skip)
     .limit(limit)
-    .select('title genre image stats createdAt publishedAt author likedBy savedBy')
-    .lean(); // Use lean() for better performance
+    .select('-content');
 
   const total = await Story.countDocuments(query);
 

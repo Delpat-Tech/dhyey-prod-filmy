@@ -442,6 +442,20 @@ export default function UserManagement() {
                       >
                         <Mail size={16} />
                       </button>
+                      {user.email !== 'admin@dhyey.com' && (
+                        <button
+                          onClick={() => handleSingleUserAction(user.id, user.status === 'suspended' ? 'activate' : 'suspend')}
+                          className={`p-1 rounded ${
+                            user.status === 'suspended' 
+                              ? 'text-green-400 hover:text-green-600 hover:bg-green-50' 
+                              : 'text-red-400 hover:text-red-600 hover:bg-red-50'
+                          }`}
+                          title={user.status === 'suspended' ? 'Unsuspend User' : 'Suspend User'}
+                          disabled={isProcessing}
+                        >
+                          <UserX size={16} />
+                        </button>
+                      )}
                       <button
                         className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
                         title="More Actions"

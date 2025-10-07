@@ -85,13 +85,14 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         setIsInitialLoading(true)
         const params = new URLSearchParams()
         params.append('status', 'approved')
+        params.append('limit', '10') // Limit initial load
         
         if (genreFilter) {
           params.append('genre', genreFilter)
         }
         
         const response = await storyAPI.getPublicStories(params)
-        const stories = response.data.stories || mockStories
+        const stories = response.data.stories || mockStories.slice(0, 10)
         
         // Initialize liked/saved state from backend data
         const newLiked = new Set()
@@ -408,7 +409,9 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                   alt={story.title}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-
+                  loading="lazy"
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
                 />
                 <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
               </div>

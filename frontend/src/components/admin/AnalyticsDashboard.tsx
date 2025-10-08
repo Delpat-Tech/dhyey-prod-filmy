@@ -108,6 +108,9 @@ export default function AnalyticsDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
           <p className="text-gray-600">Comprehensive insights into your platform performance</p>
         </div>
+
+        {/* Controls section commented out */}
+        {/*
         <div className="mt-4 sm:mt-0 flex items-center space-x-3">
           <select
             value={timeRange}
@@ -124,6 +127,8 @@ export default function AnalyticsDashboard() {
             <span>Export</span>
           </button>
         </div>
+        */}
+
       </div>
 
       {/* Enhanced Overview Cards */}
@@ -221,93 +226,39 @@ export default function AnalyticsDashboard() {
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
         </div>
 
+        {/* Total Views - Coming Soon */}
         <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-700 rounded-xl p-6 text-white hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
           </div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-purple-100 text-sm font-semibold tracking-wide">Total Views</p>
-                <p className="text-3xl font-bold tracking-tight">{formatNumber(analyticsData.overview.totalViews.value)}</p>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
-                <Eye className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs text-white/80 mb-1">
-                <span>Monthly growth</span>
-                <span className="font-semibold">+23%</span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-2">
-                <div className="bg-gradient-to-r from-white/60 to-white/80 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: '95%' }}></div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between text-sm">
-              <div className={`flex items-center px-2 py-1 rounded-full ${
-                analyticsData.overview.totalViews.trend === 'up' ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'
-              }`}>
-                {analyticsData.overview.totalViews.trend === 'up' ? (
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 mr-1" />
-                )}
-                <span className="font-medium">{analyticsData.overview.totalViews.change}%</span>
-              </div>
-              <div className="text-xs text-white/70 font-medium">Outstanding</div>
+
+          <div className="relative z-10 flex items-center justify-center h-32">
+            <div className="text-center">
+              <Eye className="h-12 w-12 text-white/70 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-white mb-2">Total Views</h3>
+              <p className="text-white/80 text-sm">Coming Soon</p>
             </div>
           </div>
-          
+
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
         </div>
 
+        {/* Engagement Rate - Coming Soon */}
         <div className="group relative overflow-hidden bg-gradient-to-br from-pink-500 via-rose-600 to-red-700 rounded-xl p-6 text-white hover:scale-105 hover:shadow-2xl transition-all duration-300 cursor-pointer">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent"></div>
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
           </div>
-          
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-pink-100 text-sm font-semibold tracking-wide">Engagement Rate</p>
-                <p className="text-3xl font-bold tracking-tight">{analyticsData.overview.engagementRate.value}%</p>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
-                <Heart className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            
-            <div className="mb-3">
-              <div className="flex items-center justify-between text-xs text-white/80 mb-1">
-                <span>Industry benchmark: 65%</span>
-                <span className="font-semibold">Above avg</span>
-              </div>
-              <div className="w-full bg-white/20 rounded-full h-2">
-                <div className="bg-gradient-to-r from-white/60 to-white/80 h-2 rounded-full transition-all duration-1000 ease-out" style={{ width: '68%' }}></div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between text-sm">
-              <div className={`flex items-center px-2 py-1 rounded-full ${
-                analyticsData.overview.engagementRate.trend === 'up' ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'
-              }`}>
-                {analyticsData.overview.engagementRate.trend === 'up' ? (
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 mr-1" />
-                )}
-                <span className="font-medium">{Math.abs(analyticsData.overview.engagementRate.change)}%</span>
-              </div>
-              <div className="text-xs text-white/70 font-medium">Good</div>
+
+          <div className="relative z-10 flex items-center justify-center h-32">
+            <div className="text-center">
+              <Heart className="h-12 w-12 text-white/70 mx-auto mb-3" />
+              <h3 className="text-lg font-bold text-white mb-2">Engagement Rate</h3>
+              <p className="text-white/80 text-sm">Coming Soon</p>
             </div>
           </div>
-          
+
           <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out"></div>
         </div>
       </div>
@@ -356,51 +307,15 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* Enhanced Device Statistics */}
+        {/* Enhanced Device Statistics - Coming Soon */}
         <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Device Usage</h3>
-              <p className="text-sm text-gray-500">Platform distribution</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Monitor className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Device Analytics</h3>
+              <p className="text-gray-500 mb-4">Coming Soon</p>
+              <p className="text-sm text-gray-400">Detailed device usage statistics will be available in the next update.</p>
             </div>
-            <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
-              <Monitor className="h-5 w-5 text-white" />
-            </div>
-          </div>
-          <div className="space-y-5">
-            {analyticsData.deviceStats.map((device, index) => (
-              <div key={device.device} className="group">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${device.color.replace('bg-', 'bg-').replace('-500', '-100')}`}>
-                      {device.device === 'Mobile' && <Smartphone className={`h-4 w-4 ${device.color.replace('bg-', 'text-')}`} />}
-                      {device.device === 'Desktop' && <Monitor className={`h-4 w-4 ${device.color.replace('bg-', 'text-')}`} />}
-                      {device.device === 'Tablet' && <Monitor className={`h-4 w-4 ${device.color.replace('bg-', 'text-')}`} />}
-                    </div>
-                    <div>
-                      <span className="text-sm font-semibold text-gray-900">{device.device}</span>
-                      <div className="text-xs text-gray-500">Primary platform</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-gray-900">{device.percentage}%</div>
-                    <div className="text-xs text-gray-500">of total users</div>
-                  </div>
-                </div>
-                <div className="relative">
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div 
-                      className={`${device.color} h-3 rounded-full transition-all duration-1000 ease-out group-hover:shadow-md`}
-                      style={{ 
-                        width: `${device.percentage}%`,
-                        transitionDelay: `${index * 0.2}s`
-                      }}
-                    ></div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent rounded-full"></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -465,63 +380,15 @@ export default function AnalyticsDashboard() {
           </div>
         </div>
 
-        {/* Enhanced Traffic Sources */}
+        {/* Enhanced Traffic Sources - Coming Soon */}
         <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-lg font-bold text-gray-900">Traffic Sources</h3>
-              <p className="text-sm text-gray-500">User acquisition channels</p>
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <Globe className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Traffic Analytics</h3>
+              <p className="text-gray-500 mb-4">Coming Soon</p>
+              <p className="text-sm text-gray-400">Detailed traffic source analysis will be available in the next update.</p>
             </div>
-            <div className="p-2 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg">
-              <Globe className="h-5 w-5 text-white" />
-            </div>
-          </div>
-          <div className="space-y-5">
-            {analyticsData.trafficSources.map((source, index) => {
-              const gradients = [
-                'from-indigo-500 to-blue-600',
-                'from-green-500 to-emerald-600', 
-                'from-purple-500 to-violet-600',
-                'from-orange-500 to-red-600'
-              ]
-              const gradient = gradients[index] || gradients[0]
-              
-              return (
-                <div key={source.source} className="group p-3 rounded-lg hover:bg-white/70 transition-colors">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`p-2 bg-gradient-to-r ${gradient} rounded-lg group-hover:scale-110 transition-transform`}>
-                        <Target className="h-4 w-4 text-white" />
-                      </div>
-                      <div>
-                        <span className="text-sm font-semibold text-gray-900">{source.source}</span>
-                        <div className="text-xs text-gray-500">Traffic channel</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-gray-900">{formatNumber(source.visits)}</div>
-                      <div className="text-xs text-gray-500">{source.percentage}% share</div>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                      <div 
-                        className={`bg-gradient-to-r ${gradient} h-3 rounded-full transition-all duration-1000 ease-out group-hover:shadow-lg`}
-                        style={{ 
-                          width: `${source.percentage}%`,
-                          transitionDelay: `${index * 0.15}s`
-                        }}
-                      ></div>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/30 to-transparent rounded-full"></div>
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Conversion rate: {(Math.random() * 5 + 2).toFixed(1)}%</span>
-                    <span>Quality: {index < 2 ? 'High' : index < 3 ? 'Medium' : 'Good'}</span>
-                  </div>
-                </div>
-              )
-            })}
           </div>
         </div>
       </div>

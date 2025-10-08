@@ -310,7 +310,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
                   <span>•</span>
                   <span>{story.content?.split(' ').length || 0} words</span>
                 </div>
-                <p className="mt-3 text-gray-700">{story.excerpt || story.content?.substring(0, 200) + '...' || 'No excerpt available'}</p>
+                {/* <p className="mt-3 text-gray-700">{story.excerpt || story.content?.substring(0, 200) + '...' || 'No excerpt available'}</p> */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {(story.hashtags || story.tags || []).map((tag, index) => (
                     <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded">

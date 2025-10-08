@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, AlertCircle, Check } from 'lucide-react'
 import { showNotification } from '@/lib/errorHandler'
@@ -195,20 +195,41 @@ export default function RegisterForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl mb-4">
-            <span className="text-2xl font-bold text-white">D</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Dhyey</h1>
-          <p className="text-gray-600">Create your storytelling account</p>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-slate-950">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-800 via-indigo-900 to-slate-950" />
+      <div className="absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.18),transparent_60%),radial-gradient(circle_at_80%_0%,rgba(236,72,153,0.25),transparent_55%),radial-gradient(circle_at_10%_90%,rgba(129,140,248,0.28),transparent_60%)]" />
 
-        {/* Registration Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="pointer-events-none absolute inset-0">
+        <div
+          className="shape absolute top-[12%] left-[15%] w-44 h-44 rounded-full bg-gradient-to-br from-fuchsia-400/70 to-indigo-500/80 shadow-[0_45px_120px_rgba(79,70,229,0.35)]"
+          style={{ animation: 'float 18s ease-in-out infinite', animationDelay: '-6s' } as CSSProperties}
+        />
+        <div
+          className="shape absolute top-[38%] right-[12%] w-72 h-72 rounded-[3.5rem] border border-white/20 bg-white/10 backdrop-blur-3xl shadow-[0_55px_160px_rgba(255,255,255,0.15)]"
+          style={{ animation: 'float 22s ease-in-out infinite', animationDelay: '-4s', animationDirection: 'alternate' } as CSSProperties}
+        />
+        <div
+          className="shape absolute bottom-[10%] left-[25%] w-56 h-56 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-2xl"
+          style={{ animation: 'float 20s ease-in-out infinite', animationDelay: '-2s' } as CSSProperties}
+        />
+        <div
+          className="shape absolute top-[4%] right-[28%] w-28 h-28 rounded-full bg-white/15 border border-white/30"
+          style={{ animation: 'float 16s ease-in-out infinite', animationDelay: '-8s', animationDirection: 'alternate-reverse' } as CSSProperties}
+        />
+      </div>
+
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-14 sm:px-10 lg:px-16">
+        <div className="w-full max-w-3xl">
+          <div className="text-center text-white mb-12">
+            <span className="text-xs uppercase tracking-[0.5em] text-white/60">Dhyey Productions</span>
+            <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl">Join the suite built for storytellers.</h1>
+            <p className="mt-4 text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
+              Shape characters, timelines, and approvals in one creative command center. Sign up to unlock the workflow leading writers use to bring their scripts to life.
+            </p>
+          </div>
+
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
+            <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -467,6 +488,18 @@ export default function RegisterForm() {
           </div>
         </div>
       </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translate3d(0, 0, 0) rotate(0deg);
+          }
+          50% {
+            transform: translate3d(0, -20px, 0) rotate(6deg);
+          }
+        }
+      `}</style>
     </div>
   )
 }

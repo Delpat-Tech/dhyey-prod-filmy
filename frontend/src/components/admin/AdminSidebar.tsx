@@ -45,7 +45,7 @@ const navigationItems: NavSection[] = [
     title: 'Content Management',
     items: [
       { name: 'Story Reviews', href: '/admin/stories', icon: FileText, badge: '12' },
-      { name: 'Reports', href: '/admin/reports', icon: Flag, badge: '2' },
+      // { name: 'Reports', href: '/admin/reports', icon: Flag, badge: '2' },
     ]
   },
   {

@@ -1,3 +1,4 @@
+/*
 import { Metadata } from 'next'
 import { Clock } from 'lucide-react'
 
@@ -22,3 +23,4 @@ export default function ReportsPage() {
     </div>
   )
 }
+*/

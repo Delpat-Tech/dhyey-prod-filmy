@@ -51,52 +51,8 @@ router.get('/settings', userController.getMe);
 router.patch('/settings', userController.updateMe);
 
 // Admin Analytics
-router.get('/analytics', (req, res) => {
-  // Mock analytics data for now
-  res.status(200).json({
-    status: 'success',
-    data: {
-      overview: {
-        totalUsers: { value: 8934, change: 8.2, trend: 'up' },
-        totalStories: { value: 1247, change: 12.5, trend: 'up' },
-        totalViews: { value: 125678, change: 23.1, trend: 'up' },
-        engagementRate: { value: 68.5, change: -2.3, trend: 'down' }
-      }
-    }
-  });
-});
+router.get('/analytics', userController.getDashboardAnalytics);
 
-router.get('/dashboard-stats', (req, res) => {
-  // Mock dashboard stats for now
-  res.status(200).json({
-    status: 'success',
-    data: {
-      totalStories: {
-        value: 1247,
-        change: 12,
-        trend: 'up',
-        sparklineData: [1100, 1150, 1180, 1200, 1220, 1240, 1247]
-      },
-      totalUsers: {
-        value: 8934,
-        change: 8,
-        trend: 'up',
-        sparklineData: [8200, 8350, 8500, 8650, 8750, 8850, 8934]
-      },
-      totalViews: {
-        value: 125678,
-        change: 23,
-        trend: 'up',
-        sparklineData: [98000, 105000, 112000, 118000, 122000, 124000, 125678]
-      },
-      totalLikes: {
-        value: 23456,
-        change: 15,
-        trend: 'up',
-        sparklineData: [19500, 20200, 21000, 21800, 22500, 23100, 23456]
-      }
-    }
-  });
-});
+router.get('/dashboard-stats', userController.getDashboardStats);
 
 module.exports = router;

@@ -100,7 +100,7 @@ As the digital walls began to shimmer and crack under the Grid's relentless assa
 export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'content' | 'author' | 'reports' | 'history'>('content')
+  const [activeTab, setActiveTab] = useState<'content' | 'author' | 'history'>('content')
   const [approvalNote, setApprovalNote] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
   const [showApprovalModal, setShowApprovalModal] = useState(false)
@@ -374,7 +374,6 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           {[
             { id: 'content', label: 'Content', icon: FileText },
             { id: 'author', label: 'Author Info', icon: User },
-            { id: 'reports', label: 'Reports', icon: Flag, badge: story.reports?.length || 0 },
             { id: 'history', label: 'History', icon: Clock }
           ].map((tab) => (
             <button
@@ -399,11 +398,11 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-lg border border-gray-200">
+      <div className="bg-white rounded-lg border border-gray-200 max-w-full overflow-hidden">
         {activeTab === 'content' && (
           <div className="p-6">
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+            <div className="prose max-w-full">
+              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed break-words overflow-wrap-anywhere max-w-full">
                 {story.content}
               </div>
             </div>
@@ -458,37 +457,6 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           </div>
         )}
 
-        {activeTab === 'reports' && (
-          <div className="p-6">
-            {(story.reports?.length || 0) > 0 ? (
-              <div className="space-y-4">
-                {story.reports?.map((report: StoryReport, index: number) => (
-                  <div key={report.id || index} className="border border-red-200 rounded-lg p-4 bg-red-50">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium text-red-900">{report.reason || 'No reason provided'}</h4>
-                        <p className="text-sm text-red-700 mt-1">{report.description || 'No description provided'}</p>
-                        <div className="text-xs text-red-600 mt-2">
-                          Reported by {report.reportedBy || 'Anonymous'} on {formatDate(report.reportedAt || report.createdAt || new Date().toISOString())}
-                        </div>
-                      </div>
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
-                        {report.status || 'pending'}
-                      </span>
-                    </div>
-                  </div>
-                )) || []}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Flag className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No reports</h3>
-                <p className="mt-1 text-sm text-gray-500">This story has not been reported.</p>
-              </div>
-            )}
-          </div>
-        )}
-
         {activeTab === 'history' && (
           <div className="p-6">
             <div className="space-y-4">
@@ -499,12 +467,36 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
                   <p className="text-xs text-gray-500">{formatDate(story.createdAt || story.submittedAt || new Date().toISOString())}</p>
                 </div>
               </div>
-              {story.reviewedAt && (
+              {story.rejectedAt && (
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-red-400 rounded-full" />
+                  <div>
+                    <p className="text-sm text-gray-900">Story rejected</p>
+                    <p className="text-xs text-gray-500">{formatDate(story.rejectedAt)}</p>
+                    {(story.rejectionReason || story.moderationNote) && (
+                      <p className="text-xs text-red-600 mt-1 italic">Reason: {story.rejectionReason || story.moderationNote}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {story.approvedAt && (
                 <div className="flex items-start space-x-3">
                   <div className="flex-shrink-0 w-2 h-2 mt-2 bg-green-400 rounded-full" />
                   <div>
-                    <p className="text-sm text-gray-900">Story reviewed</p>
-                    <p className="text-xs text-gray-500">{formatDate(story.reviewedAt)}</p>
+                    <p className="text-sm text-gray-900">Story approved</p>
+                    <p className="text-xs text-gray-500">{formatDate(story.approvedAt)}</p>
+                    {story.approvalNote && (
+                      <p className="text-xs text-gray-600 mt-1 italic">Note: {story.approvalNote}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {story.publishedAt && (
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 bg-green-400 rounded-full" />
+                  <div>
+                    <p className="text-sm text-gray-900">Story published</p>
+                    <p className="text-xs text-gray-500">{formatDate(story.publishedAt)}</p>
                   </div>
                 </div>
               )}

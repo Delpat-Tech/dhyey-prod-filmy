@@ -4,11 +4,8 @@ import { useState, useEffect } from 'react'
 import { 
   FileText, 
   Users, 
-  Eye, 
-  Heart, 
   TrendingUp, 
   Clock, 
-  AlertCircle,
   CheckCircle 
 } from 'lucide-react'
 import Link from 'next/link'
@@ -79,54 +76,57 @@ const recentActivity = [
   }
 ]
 
-const pendingStories = [
-  {
-    id: 1,
-    title: 'The Last Horizon',
-    author: 'Emma Wilson',
-    submittedAt: '2 hours ago',
-    genre: 'Sci-Fi',
-    wordCount: 2340
-  },
-  {
-    id: 2,
-    title: 'City Lights',
-    author: 'Marcus Chen',
-    submittedAt: '4 hours ago',
-    genre: 'Romance',
-    wordCount: 1890
-  },
-  {
-    id: 3,
-    title: 'Digital Dreams',
-    author: 'Alex Thompson',
-    submittedAt: '6 hours ago',
-    genre: 'Fiction',
-    wordCount: 3120
-  }
-]
+
 
 export default function AdminDashboard() {
   const [mounted, setMounted] = useState(false)
   const [stats, setStats] = useState<any>(dashboardStats)
   const [isLoading, setIsLoading] = useState(true)
+  const [pendingStories, setPendingStories] = useState<any[]>([])
 
   useEffect(() => {
     setMounted(true)
     loadDashboardData()
+    loadPendingStories()
   }, [])
 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true)
       const response = await adminAPI.getDashboardStats()
-      setStats(response.data || dashboardStats)
+      if (response.data) {
+        setStats({
+          ...response.data,
+          pendingReviews: response.data.pendingReviews || 0,
+          todaySubmissions: response.data.todaySubmissions || 0,
+          activeUsers: response.data.activeUsers || 0,
+          reportedContent: response.data.reportedContent || 0,
+          suspendedUsers: response.data.suspendedUsers || 0,
+          adminUsers: response.data.adminUsers || 0,
+          totalAllUsers: response.data.totalAllUsers || 0
+        })
+      } else {
+        setStats(dashboardStats)
+      }
     } catch (error) {
       console.error('Failed to load dashboard stats:', error)
       // Fallback to mock data
       setStats(dashboardStats)
     } finally {
       setIsLoading(false)
+    }
+  }
+
+
+
+  const loadPendingStories = async () => {
+    try {
+      const response = await adminAPI.getAllStories(new URLSearchParams({ limit: '3', status: 'pending' }))
+      if (response.data?.stories) {
+        setPendingStories(response.data.stories)
+      }
+    } catch (error) {
+      console.error('Failed to load pending stories:', error)
     }
   }
 
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <StatCard
           title="Total Stories"
           value={stats.totalStories?.value || 0}
@@ -159,50 +159,17 @@ export default function AdminDashboard() {
           gradient="bg-gradient-to-br from-blue-500 to-blue-600"
           sparklineData={stats.totalStories?.sparklineData || []}
         />
-
-        <StatCard
-          title="Total Users"
-          value={stats.totalUsers?.value || 0}
-          change={stats.totalUsers?.change || 0}
-          changeType="percentage"
-          trend={stats.totalUsers?.trend || 'up'}
-          icon={Users}
-          gradient="bg-gradient-to-br from-green-500 to-green-600"
-          sparklineData={stats.totalUsers?.sparklineData || []}
-        />
-
-        <StatCard
-          title="Total Views"
-          value={stats.totalViews?.value || 0}
-          change={stats.totalViews?.change || 0}
-          changeType="percentage"
-          trend={stats.totalViews?.trend || 'up'}
-          icon={Eye}
-          gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-          sparklineData={stats.totalViews?.sparklineData || []}
-        />
-
-        <StatCard
-          title="Total Likes"
-          value={stats.totalLikes?.value || 0}
-          change={stats.totalLikes?.change || 0}
-          changeType="percentage"
-          trend={stats.totalLikes?.trend || 'up'}
-          icon={Heart}
-          gradient="bg-gradient-to-br from-pink-500 to-pink-600"
-          sparklineData={stats.totalLikes?.sparklineData || []}
-        />
       </div>
 
       {/* Enhanced Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/admin/stories" className="group relative overflow-hidden bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-medium text-white/90">Pending Reviews</p>
-                <p className="text-3xl font-bold text-white">{dashboardStats.pendingReviews}</p>
+                <p className="text-3xl font-bold text-white">{stats.pendingReviews || 0}</p>
               </div>
               <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
                 <Clock className="h-6 w-6 text-white" />
@@ -211,9 +178,9 @@ export default function AdminDashboard() {
             <p className="text-sm text-white/80">Stories awaiting approval</p>
             <div className="mt-3 flex items-center text-xs text-white/70">
               <div className="flex-1 bg-white/20 rounded-full h-1">
-                <div className="bg-white/60 h-1 rounded-full" style={{ width: '75%' }}></div>
+                <div className="bg-white/60 h-1 rounded-full" style={{ width: stats.pendingReviews > 10 ? '75%' : '25%' }}></div>
               </div>
-              <span className="ml-2">High Priority</span>
+              <span className="ml-2">{stats.pendingReviews > 10 ? 'High Priority' : 'Low Priority'}</span>
             </div>
           </div>
         </Link>
@@ -224,7 +191,7 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-medium text-white/90">Today's Submissions</p>
-                <p className="text-3xl font-bold text-white">{dashboardStats.todaySubmissions}</p>
+                <p className="text-3xl font-bold text-white">{stats.todaySubmissions || 0}</p>
               </div>
               <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
                 <FileText className="h-6 w-6 text-white" />
@@ -245,44 +212,24 @@ export default function AdminDashboard() {
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-sm font-medium text-white/90">Active Users</p>
-                <p className="text-3xl font-bold text-white">{dashboardStats.activeUsers}</p>
+                <p className="text-sm font-medium text-white/90">Total Users</p>
+                <p className="text-3xl font-bold text-white">{stats.totalAllUsers || 0}</p>
               </div>
               <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
                 <Users className="h-6 w-6 text-white" />
               </div>
             </div>
-            <p className="text-sm text-white/80">Users active in last 24h</p>
+            <p className="text-sm text-white/80">Regular: {stats.totalUsers?.value || 0}, Suspended: {stats.suspendedUsers || 0}, Admins: {stats.adminUsers || 0}</p>
             <div className="mt-3 flex items-center text-xs text-white/70">
               <div className="flex-1 bg-white/20 rounded-full h-1">
-                <div className="bg-white/60 h-1 rounded-full" style={{ width: '85%' }}></div>
+                <div className="bg-white/60 h-1 rounded-full" style={{ width: stats.totalAllUsers > 20 ? '85%' : '45%' }}></div>
               </div>
-              <span className="ml-2">Excellent</span>
+              <span className="ml-2">{stats.totalAllUsers > 20 ? 'Excellent' : 'Good'}</span>
             </div>
           </div>
         </Link>
 
-        <Link href="/admin/reports" className="group relative overflow-hidden bg-gradient-to-br from-red-500 to-rose-600 rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <p className="text-sm font-medium text-white/90">Reported Content</p>
-                <p className="text-3xl font-bold text-white">{dashboardStats.reportedContent}</p>
-              </div>
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors">
-                <AlertCircle className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <p className="text-sm text-white/80">Content requiring attention</p>
-            <div className="mt-3 flex items-center text-xs text-white/70">
-              <div className="flex-1 bg-white/20 rounded-full h-1">
-                <div className="bg-white/60 h-1 rounded-full" style={{ width: '25%' }}></div>
-              </div>
-              <span className="ml-2">Low Risk</span>
-            </div>
-          </div>
-        </Link>
+
       </div>
 
       {/* Main Content Grid */}
@@ -326,29 +273,23 @@ export default function AdminDashboard() {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {pendingStories.map((story) => (
-                <div key={story.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{story.title}</h4>
-                    <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
-                      <span>by {story.author}</span>
-                      <span>•</span>
-                      <span>{story.genre}</span>
-                      <span>•</span>
-                      <span>{story.wordCount} words</span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-1">Submitted {story.submittedAt}</p>
+              {pendingStories.length > 0 ? pendingStories.map((story) => (
+                <div key={story._id} className="p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium text-gray-900">{story.title}</h4>
+                  <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
+                    <span>by {story.author?.name || 'Unknown'}</span>
+                    <span>•</span>
+                    <span>{story.genre}</span>
+                    <span>•</span>
+                    <span>{story.content?.length || 0} chars</span>
                   </div>
-                  <div className="flex space-x-2">
-                    <button className="px-3 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full hover:bg-green-200 transition-colors">
-                      Approve
-                    </button>
-                    <button className="px-3 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full hover:bg-red-200 transition-colors">
-                      Reject
-                    </button>
-                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Submitted {new Date(story.createdAt).toLocaleDateString()}</p>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No pending stories</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

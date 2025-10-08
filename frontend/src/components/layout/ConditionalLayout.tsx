@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Menu } from 'lucide-react'
 import Navbar from './Navbar'
 import BottomNav from './BottomNav'
@@ -10,12 +11,8 @@ export default function ConditionalLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [pathname, setPathname] = useState('')
+  const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  
-  useEffect(() => {
-    setPathname(window.location.pathname)
-  }, [])
   
   const isAuthPage = pathname === '/login' || pathname === '/register' || pathname === '/auth/login' || pathname === '/auth/register' || pathname === '/auth/forgot-password' || pathname.startsWith('/admin')
 

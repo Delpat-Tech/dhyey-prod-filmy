@@ -188,7 +188,7 @@ export default function AdminUserList() {
         </div>
       </div>
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input
@@ -200,27 +200,14 @@ export default function AdminUserList() {
             />
           </div>
           <select
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-            className={selectStyles}
-          >
-            <option value="all">All Roles</option>
-            <option value="super_admin">Super Admin</option>
-            <option value="admin">Admin</option>
-          </select>
-          <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className={selectStyles}
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
             <option value="suspended">Suspended</option>
           </select>
-          <div className="text-sm text-gray-500 flex items-center">
-            {filteredAdmins.length} admin(s) found
-          </div>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { 
   LayoutDashboard, 
   FileText, 
@@ -20,6 +21,7 @@ import {
   ChevronRight,
   Eye
 } from 'lucide-react'
+import { adminAPI } from '@/lib/api'
 
 interface NavItem {
   name: string
@@ -33,38 +35,7 @@ interface NavSection {
   items: NavItem[]
 }
 
-const navigationItems: NavSection[] = [
-  {
-    title: 'Overview',
-    items: [
-      { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-      { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-    ]
-  },
-  {
-    title: 'Content Management',
-    items: [
-      { name: 'Story Reviews', href: '/admin/stories', icon: FileText, badge: '12' },
-      // { name: 'Reports', href: '/admin/reports', icon: Flag, badge: '2' },
-    ]
-  },
-  {
-    title: 'User Management',
-    items: [
-      { name: 'All Users', href: '/admin/users', icon: Users },
-      { name: 'Admin Users', href: '/admin/admins', icon: UserCheck },
-      { name: 'Add Admin', href: '/admin/admins/add', icon: Plus },
-      { name: 'Suspended Users', href: '/admin/users/suspend', icon: UserMinus },
-    ]
-  },
-  {
-    title: 'DHEY Production',
-    items: [
-      { name: 'Competitions', href: '/admin/competitions', icon: Trophy },
-      { name: 'Portfolio', href: '/admin/portfolio', icon: Building },
-    ]
-  }
-]
+
 
 interface AdminSidebarProps {
   isCollapsed: boolean
@@ -73,6 +44,52 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
   const pathname = usePathname()
+  const [pendingCount, setPendingCount] = useState(0)
+
+  useEffect(() => {
+    loadPendingCount()
+  }, [])
+
+  const loadPendingCount = async () => {
+    try {
+      const response = await adminAPI.getDashboardStats()
+      if (response.data?.pendingReviews) {
+        setPendingCount(response.data.pendingReviews)
+      }
+    } catch (error) {
+      console.error('Failed to load pending count:', error)
+    }
+  }
+
+  const navigationItems: NavSection[] = [
+    {
+      title: 'Overview',
+      items: [
+        { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+        { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+      ]
+    },
+    {
+      title: 'Content Management',
+      items: [
+        { name: 'Story Reviews', href: '/admin/stories', icon: FileText, badge: pendingCount > 0 ? pendingCount.toString() : undefined },
+      ]
+    },
+    {
+      title: 'User Management',
+      items: [
+        { name: 'All Users', href: '/admin/users', icon: Users },
+        { name: 'Admin Users', href: '/admin/admins', icon: UserCheck },
+      ]
+    },
+    {
+      title: 'DHEY Production',
+      items: [
+        { name: 'Competitions', href: '/admin/competitions', icon: Trophy },
+        { name: 'Portfolio', href: '/admin/portfolio', icon: Building },
+      ]
+    }
+  ]
 
   return (
     <aside className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:pt-16 bg-white border-r border-gray-200 transition-all duration-300 ${

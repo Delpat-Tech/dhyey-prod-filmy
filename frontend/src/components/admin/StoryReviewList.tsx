@@ -145,7 +145,6 @@ export default function StoryReviewList() {
         const params = new URLSearchParams()
         params.append('status', filterStatus)
         if (filterGenre !== 'all') params.append('genre', filterGenre)
-        if (debouncedSearchTerm) params.append('search', debouncedSearchTerm)
         
         const response = await adminAPI.getAllStories(params)
         setStories(response.data.stories || mockStories)
@@ -178,11 +177,11 @@ export default function StoryReviewList() {
     }
 
     loadStories()
-  }, [filterStatus, filterGenre, debouncedSearchTerm])
+  }, [filterStatus, filterGenre])
 
   const filteredStories = stories.filter(story => {
     const matchesSearch = story.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         story.author.name.toLowerCase().includes(searchTerm.toLowerCase())
+                         story.author?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = filterStatus === 'all' || story.status === filterStatus
     const matchesGenre = filterGenre === 'all' || story.genre === filterGenre
     return matchesSearch && matchesStatus && matchesGenre
@@ -289,7 +288,14 @@ export default function StoryReviewList() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return 'No date'
+    
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) {
+      return 'Invalid date'
+    }
+    
+    return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -332,22 +338,12 @@ export default function StoryReviewList() {
           <h1 className="text-2xl font-bold text-gray-900">Story Reviews</h1>
           <p className="text-gray-600">Review and manage submitted stories ({stories.length} total)</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex space-x-3">
-          {/* Export button commented out */}
-          {/*
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-            Export
-          </button>
-          */}
-          <button className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">
-            Review Settings
-          </button>
-        </div>
+
       </div>
 
       {/* Filters */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -388,12 +384,6 @@ export default function StoryReviewList() {
             <option value="Romance">Romance</option>
             <option value="Mystery">Mystery</option>
           </select>
-
-          {/* Advanced Filters */}
-          <button className="flex items-center justify-center px-4 py-2 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50">
-            <Filter size={16} className="mr-2" />
-            More Filters
-          </button>
         </div>
       </div>
 
@@ -564,44 +554,10 @@ export default function StoryReviewList() {
                       {/* Submission Date */}
                       <div className="flex items-center text-gray-500">
                         <Calendar size={14} className="mr-1" />
-                        <span className="text-xs">{formatDate(story.submittedAt)}</span>
+                        <span className="text-xs">{formatDate(story.submittedAt || story.createdAt || story.publishedAt)}</span>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex space-x-2">
-                        <Link
-                          href={`/admin/stories/${story.id}`}
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                          title="Review Story"
-                        >
-                          <Eye size={16} />
-                        </Link>
-                        <button
-                          onClick={() => handleSingleAction(story.id.toString(), 'approve')}
-                          disabled={isProcessing}
-                          className="p-2 text-green-400 hover:text-green-600 hover:bg-green-50 rounded disabled:opacity-50"
-                          title="Approve Story"
-                        >
-                          <CheckCircle size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleSingleAction(story.id.toString(), 'reject')}
-                          disabled={isProcessing}
-                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded disabled:opacity-50"
-                          title="Reject Story"
-                        >
-                          <XCircle size={16} />
-                        </button>
-                        {/* Three dots (More Actions) button commented out */}
-                        {/*
-                        <button
-                          className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
-                          title="More Actions"
-                        >
-                          <MoreHorizontal size={16} />
-                        </button>
-                        */}
-                      </div>
+
                     </div>
                   </div>
                 </div>

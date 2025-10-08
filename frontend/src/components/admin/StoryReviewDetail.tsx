@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Key } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
@@ -24,6 +24,16 @@ import { showNotification } from '@/lib/errorHandler'
 
 interface StoryReviewDetailProps {
   storyId: string
+}
+
+interface StoryReport {
+  id: number
+  reason: string
+  description: string
+  reportedBy: string
+  reportedAt: string
+  status: string
+  createdAt?: string
 }
 
 // Mock story data
@@ -312,7 +322,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
                 </div>
                 {/* <p className="mt-3 text-gray-700">{story.excerpt || story.content?.substring(0, 200) + '...' || 'No excerpt available'}</p> */}
                 <div className="flex flex-wrap gap-2 mt-3">
-                  {(story.hashtags || story.tags || []).map((tag, index) => (
+                  {(story.hashtags || story.tags || []).map((tag: string, index: Key | null | undefined) => (
                     <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-sm rounded">
                       {tag.startsWith('#') ? tag : `#${tag}`}
                     </span>
@@ -321,14 +331,16 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
               </div>
               <div className="text-right">
                 <div className="flex items-center space-x-2 mb-2">
-                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                    story.status === 'pending' || story.status === 'in_review' 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : story.status === 'approved' || story.status === 'published'
-                      ? 'bg-green-100 text-green-800'
-                      : story.status === 'rejected'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-gray-100 text-gray-800'
+                  <span className={`px-3 py-1 text-sm font-medium ${
+                    story.status === 'pending' || story.status === 'in_review'
+                      ? 'rounded bg-yellow-100 text-yellow-800'
+                      : `rounded-full ${
+                        story.status === 'approved' || story.status === 'published'
+                          ? 'bg-green-100 text-green-800'
+                          : story.status === 'rejected'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`
                   }`}>
                     {story.status === 'pending' ? 'Pending Review' 
                      : story.status === 'in_review' ? 'In Review'
@@ -450,7 +462,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
           <div className="p-6">
             {(story.reports?.length || 0) > 0 ? (
               <div className="space-y-4">
-                {story.reports?.map((report, index) => (
+                {story.reports?.map((report: StoryReport, index: number) => (
                   <div key={report.id || index} className="border border-red-200 rounded-lg p-4 bg-red-50">
                     <div className="flex items-start justify-between">
                       <div>

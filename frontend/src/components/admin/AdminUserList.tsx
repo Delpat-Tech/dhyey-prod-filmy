@@ -10,7 +10,6 @@ import {
   UserX, 
   Mail, 
   Calendar,
-  MoreHorizontal,
   Crown,
   Settings,
   AlertTriangle,
@@ -314,7 +313,7 @@ export default function AdminUserList() {
                       >
                         <Mail size={16} />
                       </button>
-                      {admin.role !== 'super_admin' && admin.email !== 'admin@dhyey.com' && admin._id !== user?._id && (
+                      {admin.role !== 'super_admin' && admin.email !== 'admin@dhyey.com' && admin._id !== user?.id && (
                         <button
                           onClick={() => handleSuspendToggle(admin._id, admin.status)}
                           className={`p-2 rounded-lg ${
@@ -327,12 +326,6 @@ export default function AdminUserList() {
                           <UserX size={16} />
                         </button>
                       )}
-                      <button
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
-                        title="More Actions"
-                      >
-                        <MoreHorizontal size={16} />
-                      </button>
                     </div>
                   </div>
                 </div>

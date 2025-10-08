@@ -550,7 +550,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         <button 
           onClick={loadMoreStories}
           disabled={isLoading}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? 'Loading...' : 'Load More Stories'}
         </button>

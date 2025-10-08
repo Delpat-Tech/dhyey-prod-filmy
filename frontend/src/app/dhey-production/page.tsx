@@ -6,7 +6,7 @@ import ContactSection from '@/components/dhey/ContactSection'
 
 export default function DHEYProductionPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <DHEYHero />
       <AboutSection />
       <WorkShowcase />

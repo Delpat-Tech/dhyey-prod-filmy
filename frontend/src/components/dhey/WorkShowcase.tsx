@@ -84,7 +84,7 @@ export default function WorkShowcase() {
     : projects.filter(project => project.category === selectedCategory)
 
   return (
-    <section className="py-16 md:py-24 bg-gray-50">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <div className="max-w-6xl mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-12">

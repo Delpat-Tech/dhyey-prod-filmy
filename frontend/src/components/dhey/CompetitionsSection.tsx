@@ -81,7 +81,7 @@ export default function CompetitionsSection() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {currentCompetitions.map((competition) => (
-              <div key={competition.id} className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl overflow-hidden border border-purple-100 hover:shadow-lg transition-shadow">
+              <div key={competition.id} className="bg-gradient-to-br from-purple-50 via-white to-indigo-50 rounded-xl overflow-hidden border border-purple-100 hover:shadow-lg transition-shadow">
                 {/* Competition Image */}
                 <div className="relative h-48 overflow-hidden">
                   <Image
@@ -127,7 +127,7 @@ export default function CompetitionsSection() {
 
                   <Link 
                     href={`/competitions/${competition.id}`}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all text-center block"
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all text-center block"
                   >
                     Enter Competition
                   </Link>
@@ -150,7 +150,7 @@ export default function CompetitionsSection() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {pastWinners.map((winner, index) => (
-              <div key={index} className="bg-gray-50 rounded-xl p-6 text-center hover:shadow-md transition-shadow">
+              <div key={index} className="bg-gradient-to-br from-purple-50 via-white to-indigo-50 rounded-xl p-6 text-center hover:shadow-md transition-shadow">
                 {/* Winner Image */}
                 <div className="relative w-20 h-20 mx-auto mb-4">
                   <Image
@@ -188,7 +188,7 @@ export default function CompetitionsSection() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-8 md:p-12 text-center text-white">
+        <div className="mt-20 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 rounded-2xl p-8 md:p-12 text-center text-white">
           <h3 className="text-2xl md:text-3xl font-bold mb-4">
             Ready to Showcase Your Talent?
           </h3>
@@ -199,7 +199,7 @@ export default function CompetitionsSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
               href="/competitions"
-              className="bg-white text-purple-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition-colors"
+              className="bg-white text-purple-700 px-8 py-3 rounded-full font-bold hover:bg-purple-50 transition-colors"
             >
               Browse Competitions
             </Link>

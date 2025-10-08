@@ -141,7 +141,7 @@ export default function CreateStoryForm() {
             value={formData.title}
             onChange={handleInputChange}
             placeholder="Enter your story title..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-lg transition-all duration-200 text-gray-900 bg-white"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-base transition-all duration-200 text-gray-900 bg-white placeholder:text-gray-500"
             required
           />
         </div>
@@ -211,7 +211,7 @@ export default function CreateStoryForm() {
               value={formData.hashtags}
               onChange={handleInputChange}
               placeholder="#fiction #love #mystery"
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-white bg-gray-800 placeholder-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-base text-gray-900 bg-white placeholder:text-gray-500"
             />
             <div className="mt-1">
               <p className="text-xs text-gray-500">
@@ -311,6 +311,7 @@ export default function CreateStoryForm() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+          {/**
           <button
             type="button"
             onClick={handleSaveDraft}
@@ -329,11 +330,12 @@ export default function CreateStoryForm() {
             <Eye size={16} />
             <span>Preview</span>
           </button>
-          
+          */}
+
           <button
             type="submit"
             disabled={isSubmitting || !formData.title || !formData.content || formData.genres.length === 0}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-1"
           >
             <Send size={16} />
             <span>{isSubmitting ? 'Submitting...' : 'Submit for Review'}</span>

@@ -218,172 +218,177 @@ export default function RegisterForm() {
         />
       </div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-14 sm:px-10 lg:px-16">
-        <div className="w-full max-w-3xl">
-          <div className="text-center text-white mb-12">
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
+        <div className="w-full max-w-4xl">
+          <div className="text-center text-white mb-6">
             <span className="text-xs uppercase tracking-[0.5em] text-white/60">Dhyey Productions</span>
-            <h1 className="mt-6 text-4xl font-semibold leading-tight sm:text-5xl">Join the suite built for storytellers.</h1>
-            <p className="mt-4 text-base text-white/70 max-w-2xl mx-auto leading-relaxed">
-              Shape characters, timelines, and approvals in one creative command center. Sign up to unlock the workflow leading writers use to bring their scripts to life.
+            <h1 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">Join the suite built for storytellers.</h1>
+            <p className="mt-3 text-sm text-white/70 max-w-2xl mx-auto leading-relaxed">
+              Shape characters, timelines, and approvals in one creative command center.
             </p>
           </div>
 
-          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 md:p-10">
-            <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your full name"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
-              </div>
-              {errors.name && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.name}
-                </div>
-              )}
-            </div>
-
-            {/* Username Field */}
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <span className="text-gray-400 font-medium">@</span>
-                </div>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  placeholder="Choose a username"
-                  className={`w-full pl-8 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
-                    errors.username ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
-              </div>
-              {errors.username && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.username}
-                </div>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
-              </div>
-              {errors.email && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.email}
-                </div>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Create a strong password"
-                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                </button>
-              </div>
-              
-              {/* Password Strength Indicator */}
-              {formData.password && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-600">Password strength:</span>
-                    <span className={`text-xs font-medium ${
-                      passwordStrength.score <= 1 ? 'text-red-600' :
-                      passwordStrength.score <= 2 ? 'text-yellow-600' :
-                      passwordStrength.score <= 3 ? 'text-blue-600' : 'text-green-600'
-                    }`}>
-                      {getPasswordStrengthText()}
-                    </span>
+          <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
+            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name and Username Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Name Field */}
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
-                      style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                    ></div>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
+                      errors.name ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+                {errors.name && (
+                  <div className="flex items-center mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.name}
                   </div>
-                  {passwordStrength.feedback.length > 0 && (
-                    <div className="mt-1 text-xs text-gray-600">
-                      Missing: {passwordStrength.feedback.join(', ')}
-                    </div>
-                  )}
+                )}
+              </div>
+
+              {/* Username Field */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Username
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-400 font-medium">@</span>
+                  </div>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    placeholder="Choose a username"
+                    className={`w-full pl-8 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
+                      errors.username ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
                 </div>
-              )}
-              
-              {errors.password && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.password}
-                </div>
-              )}
+                {errors.username && (
+                  <div className="flex items-center mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.username}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Email and Password Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Email Field */}
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email"
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
+                      errors.email ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                </div>
+                {errors.email && (
+                  <div className="flex items-center mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.email}
+                  </div>
+                )}
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="Create a strong password"
+                    className={`w-full pl-10 pr-12 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
+                      errors.password ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <div className="flex items-center mt-1 text-xs text-red-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {errors.password}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="-mt-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-gray-600">Password strength:</span>
+                  <span className={`text-xs font-medium ${
+                    passwordStrength.score <= 1 ? 'text-red-600' :
+                    passwordStrength.score <= 2 ? 'text-yellow-600' :
+                    passwordStrength.score <= 3 ? 'text-blue-600' : 'text-green-600'
+                  }`}>
+                    {getPasswordStrengthText()}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                  ></div>
+                </div>
+                {passwordStrength.feedback.length > 0 && (
+                  <div className="mt-1 text-xs text-gray-600">
+                    Missing: {passwordStrength.feedback.join(', ')}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
                 Confirm Password
               </label>
               <div className="relative">
@@ -397,7 +402,7 @@ export default function RegisterForm() {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Confirm your password"
-                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
+                  className={`w-full pl-10 pr-12 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white placeholder-gray-400 ${
                     errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />
@@ -410,14 +415,14 @@ export default function RegisterForm() {
                 </button>
               </div>
               {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                <div className="flex items-center mt-1 text-sm text-green-600">
-                  <Check className="h-4 w-4 mr-1" />
+                <div className="flex items-center mt-1 text-xs text-green-600">
+                  <Check className="h-3 w-3 mr-1" />
                   Passwords match
                 </div>
               )}
               {errors.confirmPassword && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
-                  <AlertCircle className="h-4 w-4 mr-1" />
+                <div className="flex items-center mt-1 text-xs text-red-600">
+                  <AlertCircle className="h-3 w-3 mr-1" />
                   {errors.confirmPassword}
                 </div>
               )}
@@ -458,7 +463,7 @@ export default function RegisterForm() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <>
@@ -475,7 +480,7 @@ export default function RegisterForm() {
           </form>
 
           {/* Sign In Link */}
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <p className="text-gray-600">
               Already have an account?{' '}
               <Link

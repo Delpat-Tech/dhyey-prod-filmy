@@ -14,13 +14,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section - Mobile optimized */}
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-8 md:py-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-10"></div>
+      <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-900 text-white py-8 md:py-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
         <div className="relative max-w-6xl mx-auto px-4 text-center">
-          <h1 className="text-2xl md:text-4xl font-bold mb-2 fade-in-up font-heading">
+          <h1 className="text-2xl md:text-4xl font-bold mb-3 fade-in-up text-white">
             Share Your Stories
           </h1>
-          <p className="text-purple-100 text-sm md:text-lg fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <p className="text-white text-sm md:text-lg fade-in-up tracking-wide" style={{ animationDelay: '0.2s' }}>
             Discover amazing stories from creative writers around the world
           </p>
         </div>
@@ -36,7 +36,7 @@ export default function DashboardPage() {
         {/* Main Feed */}
         <div className="mt-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 font-display">Latest Stories</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Latest Stories</h2>
             <div className="flex space-x-2">
               <button 
                 onClick={() => handleGenreFilter(null)}

@@ -5,7 +5,7 @@ import { Play, Award, Users, Film } from 'lucide-react'
 
 export default function DHEYHero() {
   return (
-    <div className="relative bg-gradient-to-br from-purple-900 via-purple-800 to-pink-800 text-white overflow-hidden">
+    <div className="relative bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-950 text-white overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0" style={{
@@ -17,7 +17,7 @@ export default function DHEYHero() {
         <div className="text-center mb-12">
           {/* Logo/Brand */}
           <div className="inline-flex items-center space-x-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
               <Film size={32} className="text-white" />
             </div>
             <div>
@@ -29,7 +29,7 @@ export default function DHEYHero() {
           {/* Tagline */}
           <h2 className="text-2xl md:text-4xl font-bold mb-4 leading-tight">
             Crafting Stories That
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-indigo-300 to-purple-500">
               Inspire & Entertain
             </span>
           </h2>
@@ -41,11 +41,11 @@ export default function DHEYHero() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <button className="flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-8 py-4 rounded-full font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-105">
+            <button className="flex items-center space-x-2 bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:from-purple-600 hover:via-indigo-600 hover:to-purple-700 transition-all transform hover:scale-105">
               <Play size={20} />
               <span>Watch Our Work</span>
             </button>
-            <button className="flex items-center space-x-2 border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-purple-900 transition-all">
+            <button className="flex items-center space-x-2 border-2 border-purple-200 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-purple-900 transition-all">
               <Users size={20} />
               <span>Join Our Community</span>
             </button>
@@ -55,28 +55,28 @@ export default function DHEYHero() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div className="space-y-2">
-            <div className="text-3xl md:text-4xl font-bold text-yellow-400">50+</div>
+            <div className="text-3xl md:text-4xl font-bold text-indigo-300">50+</div>
             <div className="text-purple-200">Projects Completed</div>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl md:text-4xl font-bold text-yellow-400">25+</div>
+            <div className="text-3xl md:text-4xl font-bold text-indigo-300">25+</div>
             <div className="text-purple-200">Awards Won</div>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl md:text-4xl font-bold text-yellow-400">100K+</div>
+            <div className="text-3xl md:text-4xl font-bold text-indigo-300">100K+</div>
             <div className="text-purple-200">Stories Shared</div>
           </div>
           <div className="space-y-2">
-            <div className="text-3xl md:text-4xl font-bold text-yellow-400">5+</div>
+            <div className="text-3xl md:text-4xl font-bold text-indigo-300">5+</div>
             <div className="text-purple-200">Years Experience</div>
           </div>
         </div>
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-yellow-400 rounded-full opacity-20 animate-pulse"></div>
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-pink-500 rounded-full opacity-20 animate-pulse delay-1000"></div>
-      <div className="absolute top-1/2 right-20 w-16 h-16 bg-orange-400 rounded-full opacity-20 animate-pulse delay-500"></div>
+      <div className="absolute top-20 left-10 w-20 h-20 bg-purple-500 rounded-full opacity-20 animate-pulse"></div>
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-indigo-500 rounded-full opacity-20 animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 right-20 w-16 h-16 bg-purple-400 rounded-full opacity-20 animate-pulse delay-500"></div>
     </div>
   )
 }

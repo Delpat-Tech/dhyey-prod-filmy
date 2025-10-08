@@ -52,7 +52,7 @@ export default function FeaturedStories() {
 
   return (
     <div className="relative">
-      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 font-display">Featured Stories</h2>
+      <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Featured Stories</h2>
       
       {/* Mobile Carousel */}
       <div className="md:hidden relative overflow-hidden rounded-xl">

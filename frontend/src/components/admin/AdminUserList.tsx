@@ -274,10 +274,10 @@ export default function AdminUserList() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
                         <h3 className="text-sm font-medium text-gray-900">{admin.name}</h3>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-white text-gray-700 border border-gray-200">
                           {getRoleDisplayName(admin.role)}
                         </span>
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200">
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-white text-gray-700 border border-gray-200">
                           {admin.status}
                         </span>
                       </div>

@@ -393,11 +393,11 @@ export default function UserManagement() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       <h3 className="text-sm font-medium text-gray-900 truncate">{user.name}</h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[user.status]}`}>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${statusColors[user.status as keyof typeof statusColors] || statusColors.active}`}>
                         {user.status}
                       </span>
                       {user.reportCount > 0 && (
-                        <span className="px-2 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium">
+                        <span className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs font-medium">
                           {user.reportCount} report(s)
                         </span>
                       )}

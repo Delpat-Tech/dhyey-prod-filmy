@@ -70,6 +70,9 @@ interface StoryFeedProps {
 export default function StoryFeed({ genreFilter }: StoryFeedProps) {
   const [likedStories, setLikedStories] = useState<Set<string>>(new Set())
   const [savedStories, setSavedStories] = useState<Set<string>>(new Set())
+  const [hiddenStories, setHiddenStories] = useState<Set<string>>(new Set())
+  const [blockedAuthors, setBlockedAuthors] = useState<Set<string>>(new Set())
+  const [reportedStories, setReportedStories] = useState<Set<string>>(new Set())
   const [showShareMenu, setShowShareMenu] = useState<string | null>(null)
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null)
   const [displayedStories, setDisplayedStories] = useState<any[]>([])
@@ -96,9 +99,9 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         console.log('First story full data:', stories[0])
         
         // Initialize liked/saved state from backend data
-        const newLiked = new Set()
-        const newSaved = new Set()
-        stories.forEach(story => {
+        const newLiked = new Set<string>()
+        const newSaved = new Set<string>()
+        stories.forEach((story: any) => {
           const storyId = story._id || story.id
           if (story.isLiked) {
             newLiked.add(storyId)
@@ -256,6 +259,45 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
     setShowShareMenu(null) // Close other menu
   }
 
+  const handleReportStory = async (storyId: string) => {
+    try {
+      setReportedStories(prev => new Set(prev).add(storyId))
+      setShowMoreMenu(null)
+      toast.success('Story reported. Thank you for your feedback!')
+    } catch (error) {
+      console.error('Failed to report story:', error)
+      toast.error('Failed to report story. Please try again.')
+    }
+  }
+
+  const handleNotInterested = async (storyId: string) => {
+    try {
+      setHiddenStories(prev => new Set(prev).add(storyId))
+      setShowMoreMenu(null)
+      toast.success('Story marked as not interested')
+
+      // Remove from displayed stories
+      setDisplayedStories(prev => prev.filter(story => (story._id || story.id) !== storyId))
+    } catch (error) {
+      console.error('Failed to mark as not interested:', error)
+      toast.error('Failed to update preferences. Please try again.')
+    }
+  }
+
+  const handleBlockAuthor = async (authorId: string) => {
+    try {
+      setBlockedAuthors(prev => new Set(prev).add(authorId))
+      setShowMoreMenu(null)
+      toast.success('Author blocked successfully')
+
+      // Remove all stories by this author
+      setDisplayedStories(prev => prev.filter(story => story.author.id !== authorId))
+    } catch (error) {
+      console.error('Failed to block author:', error)
+      toast.error('Failed to block author. Please try again.')
+    }
+  }
+
   const shareStory = async (platform: string, story: any) => {
     const url = `${window.location.origin}/story/${story.id}`
     const title = `Check out "${story.title}" by ${story.author.name}`
@@ -343,95 +385,18 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
             animation: 'fadeInUp 0.6s ease-out forwards'
           }}
         >
-          {/* Story Header */}
-          <div className="flex items-center justify-between p-4">
-            <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group">
-              <div className="relative">
-                <Image
-                  src={getAvatarUrl(story.author.avatar)}
-                  alt={story.author.name}
-                  width={40}
-                  height={40}
-                  className="rounded-full transition-transform duration-300 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+          {/* Story Header - Title and Tags */}
+          <div className="p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <Link href={`/story/${story.id}`}>
+                  <h3 className="font-bold text-lg text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
+                    {story.title}
+                  </h3>
+                </Link>
               </div>
-              <div>
-                <h4 className="font-semibold text-gray-900">{story.author.name}</h4>
-                <p className="text-sm text-gray-500">@{story.author.username} • {story.timeAgo}</p>
-              </div>
-            </Link>
-            <div className="relative" ref={el => { moreMenuRefs.current[story.id] = el }}>
-              <button 
-                onClick={() => handleMore(story.id)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
-              >
-                <MoreHorizontal size={16} className="text-gray-500" />
-              </button>
-              
-              {/* More Menu */}
-              {showMoreMenu === story.id && (
-                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
-                  <button
-                    onClick={() => {
-                      console.log('Save story:', story.title)
-                      toggleSave(story._id || story.id)
-                      setShowMoreMenu(null)
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    {savedStories.has(story._id || story.id) ? 'Unsave Story' : 'Save Story'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Report story:', story.title)
-                      setShowMoreMenu(null)
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Report Story
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Hide story:', story.title)
-                      setShowMoreMenu(null)
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Hide Story
-                  </button>
-                  <button
-                    onClick={() => {
-                      console.log('Not interested in:', story.title)
-                      setShowMoreMenu(null)
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Not Interested
-                  </button>
-                  <hr className="my-1 border-gray-100" />
-                  <button
-                    onClick={() => {
-                      console.log('Block author:', story.author.name)
-                      setShowMoreMenu(null)
-                    }}
-                    className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors font-medium"
-                  >
-                    Block Author
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Story Content */}
-          <div className="px-4 pb-3">
-            <Link href={`/story/${story.id}`}>
-              <h3 className="font-bold text-lg text-gray-900 mb-2 hover:text-purple-600 transition-colors duration-300 font-display">
-                {story.title}
-              </h3>
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+              <div className="flex items-center space-x-2 ml-4">
+                <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-md text-xs font-medium">
                   {story.genre}
                 </span>
                 <div className="flex space-x-1">
@@ -441,7 +406,92 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                     </span>
                   ))}
                 </div>
+
+                {/* More Menu - Top Right */}
+                <div className="relative" ref={el => { moreMenuRefs.current[story.id] = el }}>
+                  <button
+                    onClick={() => handleMore(story.id)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
+                  >
+                    <MoreHorizontal size={16} className="text-gray-500" />
+                  </button>
+
+                  {/* More Menu */}
+                  {showMoreMenu === story.id && (
+                    <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 z-50 min-w-[160px]">
+                      <button
+                        onClick={() => {
+                          console.log('Save story:', story.title)
+                          toggleSave(story._id || story.id)
+                          setShowMoreMenu(null)
+                        }}
+                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        {savedStories.has(story._id || story.id) ? 'Unsave Story' : 'Save Story'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Report story:', story.title)
+                          handleReportStory(story._id || story.id)
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                          reportedStories.has(story._id || story.id)
+                            ? 'text-green-600 bg-green-50'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {reportedStories.has(story._id || story.id) ? '✓ Reported' : 'Report Story'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Hide story:', story.title)
+                          handleHideStory(story._id || story.id)
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                          hiddenStories.has(story._id || story.id)
+                            ? 'text-blue-600 bg-blue-50'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {hiddenStories.has(story._id || story.id) ? '✓ Hidden' : 'Hide Story'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('Not interested in:', story.title)
+                          handleNotInterested(story._id || story.id)
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                          hiddenStories.has(story._id || story.id)
+                            ? 'text-blue-600 bg-blue-50'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {hiddenStories.has(story._id || story.id) ? '✓ Not Interested' : 'Not Interested'}
+                      </button>
+                      <hr className="my-1 border-gray-100" />
+                      <button
+                        onClick={() => {
+                          console.log('Block author:', story.author.name)
+                          handleBlockAuthor(story.author.id)
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                          blockedAuthors.has(story.author.id)
+                            ? 'text-red-600 bg-red-50'
+                            : 'text-red-600 hover:bg-red-50'
+                        }`}
+                      >
+                        {blockedAuthors.has(story.author.id) ? '✓ Author Blocked' : 'Block Author'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+          </div>
+
+          {/* Story Content */}
+          <div className="px-4 pb-3">
+            <Link href={`/story/${story.id}`}>
               <p className="text-gray-700 leading-relaxed mb-4 line-clamp-3 font-body">
                 {story.content}
               </p>
@@ -464,43 +514,62 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
             </Link>
           )}
 
-          {/* Story Actions */}
+          {/* Story Footer - Author Info and Actions */}
           <div className="p-4">
             <div className="flex items-center justify-between">
+              {/* Author Info - Bottom Left */}
+              <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group">
+                <div className="relative">
+                  <Image
+                    src={getAvatarUrl(story.author.avatar)}
+                    alt={story.author.name}
+                    width={40}
+                    height={40}
+                    className="rounded-full transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">{story.author.name}</h4>
+                  <p className="text-sm text-gray-500">@{story.author.username} • {story.timeAgo}</p>
+                </div>
+              </Link>
+
+              {/* Actions - Bottom Right */}
               <div className="flex items-center space-x-6">
                 <button
                   onClick={() => toggleLike(story._id || story.id)}
                   className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
-                  <Heart 
-                    size={20} 
-                    className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`} 
+                  <Heart
+                    size={20}
+                    className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`}
                   />
                   <span className="text-sm font-medium">
                     {story.stats?.likes || story.likes || 0}
                   </span>
                 </button>
-                
-                <Link 
+
+                <Link
                   href={`/story/${story._id || story.id}#comments`}
                   className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
                   <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
                   <span className="text-sm font-medium">{story.stats?.comments || story.comments || 0}</span>
                 </Link>
-                
+
                 <button
                   onClick={() => toggleSave(story._id || story.id)}
                   className="flex items-center space-x-2 text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
-                  <Bookmark 
-                    size={20} 
-                    className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`} 
+                  <Bookmark
+                    size={20}
+                    className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`}
                   />
                 </button>
-                
+
                 <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -512,12 +581,12 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                     <Share2 size={20} className="transition-transform duration-300 hover:scale-110" />
                     <span className="text-sm font-medium">Share</span>
                   </button>
-                  
+
                   {/* Share Menu */}
                   {showShareMenu === (story._id || story.id) && (
-                    <div 
+                    <div
                       className="fixed bg-white border border-gray-200 rounded-lg shadow-2xl py-1 min-w-[180px]"
-                      style={{ 
+                      style={{
                         zIndex: 9999,
                         left: '50%',
                         top: '50%',
@@ -571,10 +640,10 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                       </button>
                     </div>
                   )}
-                  
+
                   {/* Backdrop */}
                   {showShareMenu === (story._id || story.id) && (
-                    <div 
+                    <div
                       className="fixed inset-0 bg-black bg-opacity-50"
                       style={{ zIndex: 9998 }}
                       onClick={() => setShowShareMenu(null)}

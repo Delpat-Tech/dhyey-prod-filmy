@@ -17,7 +17,7 @@ export default function LoginForm() {
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
-    rememberMe: false
+    rememberMe: true
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -188,19 +188,32 @@ export default function LoginForm() {
 
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleInputChange}
-                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                <label className="flex items-center group cursor-pointer">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleInputChange}
+                      className="sr-only"
+                    />
+                    <div className={`w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center ${
+                      formData.rememberMe
+                        ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-600'
+                        : 'border-gray-300 bg-white group-hover:border-purple-400'
+                    }`}>
+                      {formData.rememberMe && (
+                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="ml-3 text-sm text-gray-600 font-medium">Remember me</span>
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-purple-600 hover:text-purple-500 font-medium"
+                  className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors duration-200"
                 >
                   Forgot password?
                 </Link>

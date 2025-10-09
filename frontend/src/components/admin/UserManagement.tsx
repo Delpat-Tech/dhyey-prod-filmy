@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   Download
 } from 'lucide-react'
+import Checkbox from '@/components/ui/Checkbox'
 import CustomSelect from '@/components/ui/CustomSelect'
 import { adminAPI } from '@/lib/api'
 import { showNotification } from '@/lib/errorHandler'
@@ -334,13 +335,13 @@ export default function UserManagement() {
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
           <div className="flex items-center">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
-              onChange={handleSelectAll}
-              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+              onChange={() => handleSelectAll()}
+              size="md"
+              className="mr-3"
             />
-            <span className="ml-3 text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-gray-900">
               Users ({filteredUsers.length})
             </span>
           </div>
@@ -350,11 +351,10 @@ export default function UserManagement() {
           {filteredUsers.map((user) => (
             <div key={user.id} className="p-6 hover:bg-gray-50">
               <div className="flex items-center space-x-4">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedUsers.includes(user.id)}
                   onChange={() => handleSelectUser(user.id)}
-                  className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                  size="md"
                 />
 
                 <div className="flex items-center space-x-4 flex-1">

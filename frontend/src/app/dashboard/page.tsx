@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import StoryFeed from '@/components/home/StoryFeed'
-import FeaturedStories from '@/components/home/FeaturedStories'
+// import FeaturedStories from '@/components/home/FeaturedStories'
 
 export default function DashboardPage() {
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
@@ -30,8 +30,22 @@ export default function DashboardPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {/* Featured Stories Section */}
-        <FeaturedStories />
+        {/* Featured Stories Section - Coming Soon */}
+        {/* <FeaturedStories /> */}
+
+        {/* Coming Soon Section */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-8">
+          <div className="max-w-md mx-auto">
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-xl">🚀</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Featured Stories</h2>
+            <p className="text-gray-600 mb-4">Coming Soon</p>
+            <p className="text-sm text-gray-500">
+              We're working on bringing you curated featured stories from our top authors. Stay tuned!
+            </p>
+          </div>
+        </div>
         
         {/* Main Feed */}
         <div className="mt-8">

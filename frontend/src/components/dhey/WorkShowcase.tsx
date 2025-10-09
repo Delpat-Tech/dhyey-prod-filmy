@@ -104,7 +104,7 @@ export default function WorkShowcase() {
                 onClick={() => setSelectedCategory(category)}
                 className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                   selectedCategory === category
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
                     : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
@@ -206,7 +206,7 @@ export default function WorkShowcase() {
         <div className="text-center mt-12">
           <Link 
             href="/dhey-production/portfolio"
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-full font-medium hover:from-purple-700 hover:to-indigo-700 transition-all transform hover:scale-105"
           >
             <span>View Full Portfolio</span>
             <ExternalLink size={16} />
@@ -216,3 +216,4 @@ export default function WorkShowcase() {
     </section>
   )
 }
+

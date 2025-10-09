@@ -74,9 +74,28 @@ const companyInfo = {
   tagline: "Empowering Storytellers, Inspiring Communities",
   founded: "2023",
   location: "Mumbai, India",
-  description: "DHEY Productions is a innovative storytelling platform that connects writers, readers, and creative minds through competitions, collaborative projects, and community-driven content creation.",
-  mission: "To democratize storytelling and provide a platform where every voice can be heard, every story can find its audience, and creative expression knows no bounds.",
-  vision: "To become the world's leading community-driven storytelling ecosystem that nurtures talent, fosters collaboration, and creates meaningful connections through the power of narrative.",
+  description: "DHEY Productions is a burgeoning production house dedicated to empowering undiscovered talent and bringing compelling stories to life.",
+  founder: {
+    name: "Bhawesh Sharma",
+    stageName: "Baiman Bhawesh",
+    bio: "Founder, filmmaker and writer with a nine-year journey in the film industry. After extensive experience in filmmaking and writing, Bhawesh was inspired to create DHEY Production to help aspiring artists who have compelling stories but lack the resources or knowledge to bring them to the screen.",
+    currentProjects: [
+      {
+        title: "LETTER FROM DARKNESS",
+        description: "An audio show exploring horror, crime, fiction, and the supernatural",
+        role: "Writer and Sound Director"
+      },
+      {
+        title: "TATPAR",
+        description: "A movie exploring crime, suspense, and thriller genres",
+        role: "Writer and Director",
+        release: "End of this year"
+      }
+    ]
+  },
+  mission: "To serve as a launchpad for creative individuals to take their first step into the film industry. We are a professional, creative, and approachable platform that helps artists showcase their work and supports them throughout their journey.",
+  whatWeDo: "We are a unique blend of a producer, a storyteller, and a community builder. We don't just produce content; we cultivate a family of artists and stand by them through their struggles, ensuring their creative vision is respected and brought to life.",
+  dheyExperience: "When you visit our website, we want you to feel a sense of trust and confidence. We are here to help you share your stories with the world and provide you with the support you need to succeed.",
   values: [
     "Creativity without boundaries",
     "Community-first approach",
@@ -128,8 +147,19 @@ const timelineData: TimelineItem[] = [
 const teamMembers: TeamMember[] = [
   {
     id: '1',
-    name: 'Sarah Johnson',
+    name: companyInfo.founder.name,
     role: 'Founder & CEO',
+    bio: `${companyInfo.founder.bio} Currently working on ${companyInfo.founder.currentProjects[0].title} and ${companyInfo.founder.currentProjects[1].title}.`,
+    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    social: {
+      linkedin: '#',
+      twitter: '#'
+    }
+  },
+  {
+    id: '2',
+    name: 'Sarah Johnson',
+    role: 'Creative Director',
     bio: 'Visionary leader with 10+ years in digital media and content strategy.',
     image: 'https://images.unsplash.com/photo-1494790108755-2616b612b789?w=150&h=150&fit=crop&crop=face',
     social: {
@@ -138,7 +168,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    id: '2',
+    id: '3',
     name: 'Michael Chen',
     role: 'Head of Content',
     bio: 'Award-winning editor and content curator with expertise in digital storytelling.',
@@ -149,7 +179,7 @@ const teamMembers: TeamMember[] = [
     }
   },
   {
-    id: '3',
+    id: '4',
     name: 'Priya Sharma',
     role: 'Community Manager',
     bio: 'Community building expert passionate about fostering meaningful connections.',
@@ -228,6 +258,26 @@ export default function PortfolioPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">About DHEY Productions</h2>
             <p className="text-gray-600 mb-6">{companyInfo.description}</p>
 
+            {/* Founder Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Our Founder & Vision</h3>
+              <p className="text-gray-600 mb-4">{companyInfo.founder.bio}</p>
+
+              {/* Current Projects */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-3">Current Projects</h4>
+                <div className="space-y-3">
+                  {companyInfo.founder.currentProjects.map((project, index) => (
+                    <div key={index} className="border-l-4 border-purple-200 pl-4">
+                      <h5 className="font-medium text-purple-600">{project.title}</h5>
+                      <p className="text-sm text-gray-600 mb-1">{project.description}</p>
+                      <p className="text-xs text-gray-500">{project.role}{project.release && ` • ${project.release}`}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4">
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Our Mission</h3>
@@ -235,8 +285,13 @@ export default function PortfolioPage() {
               </div>
 
               <div>
-                <h3 className="font-medium text-gray-900 mb-2">Our Vision</h3>
-                <p className="text-gray-600 text-sm">{companyInfo.vision}</p>
+                <h3 className="font-medium text-gray-900 mb-2">What We Do</h3>
+                <p className="text-gray-600 text-sm">{companyInfo.whatWeDo}</p>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-gray-900 mb-2">The DHEY Experience</h3>
+                <p className="text-gray-600 text-sm">{companyInfo.dheyExperience}</p>
               </div>
 
               <div>

@@ -1,28 +1,101 @@
 'use client'
 
 import Image from 'next/image'
-import { Target, Eye, Heart, Zap } from 'lucide-react'
+import { Target, Eye, Heart, Zap, User, Lightbulb, Users, Award } from 'lucide-react'
 
-const values = [
+const founderInfo = {
+  name: "Bhawesh Sharma",
+  stageName: "Baiman Bhawesh",
+  image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+  currentProjects: [
+    {
+      title: "LETTER FROM DARKNESS",
+      description: "An audio show that delves into the genres of horror, crime, fiction, and the supernatural",
+      role: "Writer and Sound Director"
+    },
+    {
+      title: "TATPAR",
+      description: "A movie slated for release by the end of this year, exploring the genres of crime, suspense, and thriller",
+      role: "Writer and Director",
+      release: "End of this year"
+    }
+  ]
+}
+
+const sections = [
   {
-    icon: Target,
-    title: "Our Mission",
-    description: "To empower storytellers and creators by providing a platform where imagination meets innovation, fostering a community of creative minds."
+    title: "About DHEY Production & Its Founder",
+    icon: User,
+    content: [
+      {
+        subtitle: "Introduction: Who is Bhawesh Sharma and what is DHEY Production?",
+        text: "DHEY Production is a burgeoning production house founded by Bhawesh Sharma, an emerging force in the film industry, also known by his stage name, Baiman Bhawesh. DHEY Production was established with a singular, powerful mission: to empower talented and skilled individuals who have a passion for filmmaking but lack the necessary knowledge or resources to bring their stories to an audience. We serve as the bridge that connects raw talent with the screen."
+      },
+      {
+        text: "Bhawesh brings a wealth of industry knowledge, with sufficient experience in both filmmaking and writing. Having worked on various film projects, he has a deep understanding of the creative and technical aspects of production. He is currently set to release two of his projects on YouTube:"
+      }
+    ],
+    projects: founderInfo.currentProjects
   },
   {
-    icon: Eye,
-    title: "Our Vision",
-    description: "To become the leading creative hub where stories transcend boundaries and inspire positive change in the world."
+    title: "The Vision: Why was DHEY Production Started?",
+    icon: Lightbulb,
+    content: [
+      {
+        text: "The inspiration behind DHEY Production is rooted in a nine-year journey of struggle and research. During this period, Bhawesh Sharma dedicated himself to honing his writing and storytelling skills. In the process, he met and interacted with over 2,700 people from all age groups."
+      },
+      {
+        text: "Through these conversations, he discovered a recurring theme: a vast number of individuals with a deep desire to act in films, work in the industry, or see their names on the big screen. However, many of these talented people were held back by a lack of resources, while others lacked the knowledge to navigate the complexities of the film industry."
+      },
+      {
+        text: "Moved by their stories and inspired by their passion, Bhawesh decided to create a platform to help them overcome these barriers. DHEY Production was born out of a desire to support these aspiring artists in their struggles and provide them with a launchpad to start their careers."
+      }
+    ]
   },
   {
+    title: "Our Identity: Producer, Storyteller, and Community Builder",
+    icon: Users,
+    content: [
+      {
+        text: "Yes, DHEY Production is all three. We are producers who bring stories to life, storytellers who value the power of narrative, and community builders who create a supportive ecosystem for artists. Our identity is a unique blend of these three pillars, as we believe that great art is born from a combination of creative vision, technical execution, and a strong, collaborative community."
+      }
+    ]
+  }
+]
+
+const brandSections = [
+  {
+    title: "The DHEY Production Personality",
+    icon: Award,
+    content: [
+      {
+        text: "DHEY Production is a professional and creative platform dedicated to showcasing the untapped creativity of aspiring artists. Our online presence reflects our commitment to quality, innovation, and approachability."
+      },
+      {
+        text: "Our three-year vision is to establish DHEY Production as the definitive platform where every creative individual can take their first step into the industry. We aim to be the supportive force that \"pushes\" them in the right direction whenever and wherever they need it in their respective fields."
+      }
+    ]
+  },
+  {
+    title: "If DHEY Production Were a Person",
+    icon: User,
+    content: [
+      {
+        text: "If DHEY Production were a person, it would be a mentor and a guide—a platform that provides creative individuals with the opportunity to take the first and most crucial step in their careers."
+      },
+      {
+        text: "Once an artist connects with DHEY Production, they become a part of our family. Our vision is not to profit from our artists or to exploit their skills for commercial gain. Instead, DHEY Production stands as a constant pillar of support throughout an artist's journey, offering guidance and encouragement through their struggles."
+      }
+    ]
+  },
+  {
+    title: "The Feeling We Want to Inspire",
     icon: Heart,
-    title: "Our Values",
-    description: "Creativity, authenticity, collaboration, and excellence drive everything we do. We believe every story matters."
-  },
-  {
-    icon: Zap,
-    title: "Our Impact",
-    description: "Transforming ideas into compelling narratives that resonate with audiences and create lasting emotional connections."
+    content: [
+      {
+        text: "When visitors come to our website for the first time, we want them to feel a sense of trust and assurance. We want to instill the confidence that their dreams, their writing, and their stories are in the right hands. Our goal is to be the platform that they can rely on to present their creative vision to the world with the respect and professionalism it deserves."
+      }
+    ]
   }
 ]
 
@@ -36,88 +109,143 @@ export default function AboutSection() {
             About DHEY Productions
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-            Founded with a passion for storytelling, DHEY Productions has been at the forefront 
-            of creative content creation, bringing together talented writers, filmmakers, and artists.
+            Empowering storytellers and connecting creative minds with the world of filmmaking
           </p>
         </div>
 
-        {/* Story Section */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
-          <div className="space-y-6">
-            <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Our Story
-            </h3>
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>
-                DHEY Productions was born from a simple belief: every story has the power to change lives. 
-                What started as a small collective of passionate storytellers has grown into a thriving 
-                creative community that spans across multiple mediums and genres.
-              </p>
-              <p>
-                We've produced award-winning content, launched successful campaigns, and most importantly, 
-                provided a platform for emerging voices to share their unique perspectives with the world.
-              </p>
-              <p>
-                Today, we continue to push the boundaries of creative storytelling, embracing new 
-                technologies and platforms while staying true to our core mission of authentic, 
-                impactful narrative creation.
-              </p>
+        {/* Founder Section */}
+        <div className="mb-20">
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <User size={24} className="text-white" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Meet the Founder
+                </h3>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-xl font-semibold text-purple-600">
+                  {founderInfo.name} ({founderInfo.stageName})
+                </h4>
+                <div className="space-y-4 text-gray-700 leading-relaxed">
+                  <p>
+                    DHEY Production is a burgeoning production house founded by Bhawesh Sharma, an emerging force in the film industry, also known by his stage name, Baiman Bhawesh.
+                  </p>
+                  <p>
+                    DHEY Production was established with a singular, powerful mission: to empower talented and skilled individuals who have a passion for filmmaking but lack the necessary knowledge or resources to bring their stories to an audience. We serve as the bridge that connects raw talent with the screen.
+                  </p>
+                  <p>
+                    Bhawesh brings a wealth of industry knowledge, with sufficient experience in both filmmaking and writing. Having worked on various film projects, he has a deep understanding of the creative and technical aspects of production.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
+                <Image
+                  src={founderInfo.image}
+                  alt={founderInfo.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-20"></div>
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20"></div>
             </div>
           </div>
-          
-          <div className="relative">
-            <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
-              <Image
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=500&h=500&fit=crop"
-                alt="DHEY Productions team"
-                fill
-                className="object-cover"
-              />
+
+          {/* Current Projects */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8">
+            <h4 className="text-2xl font-bold text-gray-900 mb-6 text-center">Current Projects</h4>
+            <div className="grid md:grid-cols-2 gap-6">
+              {founderInfo.currentProjects.map((project, index) => (
+                <div key={index} className="bg-white rounded-xl p-6 shadow-sm border border-purple-100">
+                  <h5 className="text-lg font-bold text-purple-600 mb-2">{project.title}</h5>
+                  <p className="text-gray-700 mb-3">{project.description}</p>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="font-medium">{project.role}</span>
+                    {project.release && (
+                      <span className="ml-auto text-purple-600">📅 {project.release}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-            {/* Decorative elements */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full opacity-20"></div>
-            <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full opacity-20"></div>
           </div>
         </div>
 
-        {/* Values Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {values.map((value, index) => (
-            <div key={index} className="text-center group">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <value.icon size={24} className="text-white" />
+        {/* Main Content Sections */}
+        <div className="space-y-20">
+          {sections.map((section, index) => (
+            <div key={index} className="border-l-4 border-purple-200 pl-8">
+              <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <User size={24} className="text-white" />
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  {section.title}
+                </h3>
               </div>
-              <h4 className="text-xl font-bold text-gray-900 mb-3">{value.title}</h4>
-              <p className="text-gray-600 leading-relaxed">{value.description}</p>
+
+              <div className="space-y-6 text-gray-700 leading-relaxed">
+                {section.content.map((item, itemIndex) => (
+                  <div key={itemIndex}>
+                    {item.subtitle && (
+                      <h4 className="text-lg font-semibold text-purple-600 mb-3">
+                        {item.subtitle}
+                      </h4>
+                    )}
+                    <p className="mb-4">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Projects section for founder section */}
+              {section.projects && (
+                <div className="mt-8 grid md:grid-cols-2 gap-6">
+                  {section.projects.map((project, projectIndex) => (
+                    <div key={projectIndex} className="bg-gray-50 rounded-xl p-6">
+                      <h5 className="text-lg font-bold text-purple-600 mb-2">{project.title}</h5>
+                      <p className="text-gray-700 mb-3">{project.description}</p>
+                      <p className="text-sm text-gray-600 font-medium">{project.role}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
-        </div>
 
-        {/* Team Section */}
-        <div className="mt-20 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-            Meet Our Creative Team
-          </h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { name: "Sarah Johnson", role: "Creative Director", image: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200&h=200&fit=crop&crop=face" },
-              { name: "Michael Chen", role: "Lead Producer", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" },
-              { name: "Emily Rodriguez", role: "Story Editor", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=face" },
-              { name: "David Kim", role: "Technical Lead", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" }
-            ].map((member, index) => (
-              <div key={index} className="group">
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="rounded-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+          {/* Brand Identity Section */}
+          <div className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-3xl p-8 md:p-12">
+            <h3 className="text-3xl font-bold text-gray-900 mb-12 text-center">
+              The Brand & Its Identity
+            </h3>
+
+            <div className="space-y-12">
+              {brandSections.map((section, index) => (
+                <div key={index} className="border-l-4 border-purple-300 pl-8">
+                  <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <User size={24} className="text-white" />
                 </div>
-                <h5 className="font-bold text-gray-900">{member.name}</h5>
-                <p className="text-purple-600 text-sm">{member.role}</p>
-              </div>
-            ))}
+                    <h4 className="text-xl md:text-2xl font-bold text-gray-900">
+                      {section.title}
+                    </h4>
+                  </div>
+
+                  <div className="space-y-4 text-gray-700 leading-relaxed">
+                    {section.content.map((item, itemIndex) => (
+                      <p key={itemIndex}>{item.text}</p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

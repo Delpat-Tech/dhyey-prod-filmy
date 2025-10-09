@@ -29,10 +29,7 @@ const contactMethods = [
 
 const inquiryTypes = [
   { value: "general", label: "General Inquiry" },
-  { value: "collaboration", label: "Collaboration" },
   { value: "competition", label: "Competition Question" },
-  { value: "media", label: "Media & Press" },
-  { value: "support", label: "Technical Support" }
 ]
 
 export default function ContactSection() {
@@ -106,7 +103,7 @@ export default function ContactSection() {
                   href={method.action}
                   className="flex items-start space-x-4 p-4 bg-white rounded-xl hover:shadow-md transition-shadow group"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
                     <method.icon size={20} className="text-white" />
                   </div>
                   <div>
@@ -235,7 +232,7 @@ export default function ContactSection() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 px-6 rounded-lg font-medium hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <Send size={16} />
                 <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>

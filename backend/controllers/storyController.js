@@ -240,7 +240,8 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     .populate('author', 'name username avatar stats')
     .sort(sort)
     .skip(skip)
-    .limit(limit);
+    .limit(limit)
+    .select('+savedBy +likedBy');
 
   const total = await Story.countDocuments(query);
 
@@ -250,6 +251,16 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     if (req.user) {
       storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
       storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
+      console.log(`Story ${story._id}: savedBy=[${story.savedBy}], currentUser=${req.user._id}, isSaved=${storyObj.isSaved}`);
+      if (story._id.toString() === '68e3f7dc7dcd3a40281c9304') {
+        console.log('TARGET STORY DETAILS:', {
+          id: story._id,
+          savedBy: story.savedBy,
+          savedByLength: story.savedBy?.length,
+          currentUser: req.user._id.toString(),
+          isSaved: storyObj.isSaved
+        });
+      }
     } else {
       storyObj.isLiked = false;
       storyObj.isSaved = false;
@@ -322,6 +333,9 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
   if (req.user) {
     storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
     storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
+    console.log('Story savedBy array:', story.savedBy);
+    console.log('Current user ID:', req.user._id.toString());
+    console.log('Is saved:', storyObj.isSaved);
   } else {
     storyObj.isLiked = false;
     storyObj.isSaved = false;
@@ -468,7 +482,9 @@ exports.toggleLikeStory = catchAsync(async (req, res, next) => {
 
 // Save/Unsave story
 exports.toggleSaveStory = catchAsync(async (req, res, next) => {
+  console.log('=== TOGGLE SAVE STORY ===');
   console.log('Toggle save story - User ID:', req.user._id, 'Story ID:', req.params.id);
+  
   const story = await Story.findById(req.params.id);
 
   if (!story) {
@@ -476,9 +492,21 @@ exports.toggleSaveStory = catchAsync(async (req, res, next) => {
   }
 
   console.log('Before toggle - savedBy:', story.savedBy);
-  // Allow saving even for stories under review (users can save for later)
-  await story.toggleSave(req.user._id);
-  console.log('After toggle - savedBy:', story.savedBy, 'isSaved:', story.savedBy.includes(req.user._id));
+  
+  // Simple toggle logic without calling the model method
+  const userId = req.user._id;
+  const isCurrentlySaved = story.savedBy.some(id => id.toString() === userId.toString());
+  
+  if (isCurrentlySaved) {
+    story.savedBy = story.savedBy.filter(id => id.toString() !== userId.toString());
+  } else {
+    story.savedBy.push(userId);
+  }
+  
+  story.stats.saves = story.savedBy.length;
+  await story.save({ validateBeforeSave: false });
+  
+  console.log('After save - savedBy:', story.savedBy);
 
   // Track analytics
   await analyticsService.trackEvent(
@@ -486,11 +514,14 @@ exports.toggleSaveStory = catchAsync(async (req, res, next) => {
     req.user._id,
     { storyId: story._id }
   );
+  
+  const finalIsSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+  console.log('Final response - isSaved:', finalIsSaved, 'savesCount:', story.stats.saves);
 
   res.status(200).json({
     status: 'success',
     data: {
-      isSaved: story.savedBy.includes(req.user._id),
+      isSaved: story.savedBy.some(id => id.toString() === req.user._id.toString()),
       savesCount: story.stats.saves
     }
   });

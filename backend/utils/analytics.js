@@ -81,10 +81,11 @@ class AnalyticsService {
 
   // Track story save
   async trackStorySave(storyId, userId) {
-    const story = await Story.findById(storyId);
-    if (!story) return;
-
-    await story.toggleSave(userId);
+    // Story save tracking is now handled in the controller
+    // Just increment the shares count for analytics
+    await Story.findByIdAndUpdate(storyId, {
+      $inc: { 'stats.shares': 0 } // No-op, save is handled elsewhere
+    });
   }
 
   // Track story share

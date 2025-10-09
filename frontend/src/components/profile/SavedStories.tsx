@@ -79,13 +79,26 @@ export default function SavedStories({ activeTab }: SavedStoriesProps) {
     }
   }, [activeTab, user?.id])
 
+  // Listen for saved stories updates
+  useEffect(() => {
+    const handleSavedStoriesUpdate = () => {
+      if (activeTab === 'saved' && user?.id) {
+        fetchSavedStories()
+      }
+    }
+
+    window.addEventListener('savedStoriesUpdated', handleSavedStoriesUpdate)
+    return () => window.removeEventListener('savedStoriesUpdated', handleSavedStoriesUpdate)
+  }, [activeTab, user?.id])
+
   const fetchSavedStories = async () => {
     try {
       setLoading(true)
       console.log('Fetching saved stories for user:', user!.id)
       const response = await userAPI.getUserSavedStories(user!.id)
       console.log('Saved stories response:', response)
-      const stories = response.data?.stories || []
+      console.log('Full response data:', response.data)
+      const stories = response.data?.stories || response.data?.savedStories || response.data || []
       console.log('Setting saved stories:', stories)
       setStories(stories)
     } catch (error) {

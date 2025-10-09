@@ -92,7 +92,8 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         
         const response = await storyAPI.getPublicStories(params)
         const stories = response.data.stories || mockStories
-        console.log('First story isLiked:', stories[0]?.isLiked, 'likedBy count:', stories[0]?.likedBy?.length)
+        console.log('First story isLiked:', stories[0]?.isLiked, 'isSaved:', stories[0]?.isSaved)
+        console.log('First story full data:', stories[0])
         
         // Initialize liked/saved state from backend data
         const newLiked = new Set()
@@ -190,7 +191,10 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
   }
 
   const toggleSave = async (storyId: string) => {
+    if (isLoading) return // Prevent multiple calls
+    
     try {
+      setIsLoading(true)
       // Use the correct ID format (_id for backend)
       const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
       console.log('Toggling save for story:', actualStoryId)
@@ -198,6 +202,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
       const isSaved = response.data.isSaved
       const savesCount = response.data.savesCount
       console.log('Save response:', { isSaved, savesCount })
+      console.log('Story ID being processed:', actualStoryId)
       
       setSavedStories(prev => {
         const newSet = new Set(prev)
@@ -206,6 +211,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         } else {
           newSet.delete(actualStoryId)
         }
+        console.log('Updated saved stories set:', Array.from(newSet))
         return newSet
       })
       
@@ -234,6 +240,8 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
     } catch (error) {
       console.error('Failed to save story:', error)
       toast.error('Failed to save story. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -474,7 +482,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                 </button>
                 
                 <Link 
-                  href={`/story/${story.id}#comments`}
+                  href={`/story/${story._id || story.id}#comments`}
                   className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
                   <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
@@ -489,9 +497,6 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                     size={20} 
                     className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`} 
                   />
-                  <span className="text-sm font-medium">
-                    {story.stats?.saves || story.saves || 0}
-                  </span>
                 </button>
                 
                 <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>

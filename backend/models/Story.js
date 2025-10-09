@@ -287,21 +287,9 @@ storySchema.methods.toggleLike = async function(userId) {
   return this;
 };
 
-// Instance method to toggle save
-storySchema.methods.toggleSave = async function(userId) {
-  const userIdStr = userId.toString();
-  const isSaved = this.savedBy.some(id => id.toString() === userIdStr);
-  
-  if (isSaved) {
-    this.savedBy = this.savedBy.filter(id => id.toString() !== userIdStr);
-  } else {
-    this.savedBy.push(userId);
-  }
-  
-  this.stats.saves = this.savedBy.length;
-  await this.save({ validateBeforeSave: false });
-  return this;
-};
+// Instance method to toggle save - DISABLED
+// This method was causing double-toggle issues
+// storySchema.methods.toggleSave = async function(userId) { ... }
 
 const Story = mongoose.model('Story', storySchema);
 

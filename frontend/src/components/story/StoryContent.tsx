@@ -74,11 +74,11 @@ export default function StoryContent({ story }: StoryContentProps) {
       {/* Story Content */}
       <article className="prose prose-lg max-w-none">
         <div 
-          className="text-gray-800 leading-relaxed"
+          className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere"
           style={{ fontSize: `${fontSize}px`, lineHeight: '1.7' }}
         >
           {paragraphs.map((paragraph, index) => (
-            <p key={index} className="mb-6">
+            <p key={index} className="mb-6 break-words">
               {paragraph}
             </p>
           ))}

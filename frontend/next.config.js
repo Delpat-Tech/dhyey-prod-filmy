@@ -9,7 +9,7 @@ const nextConfig = {
     ]
   },
   images: {
-    domains: ['localhost', 'images.unsplash.com', 'randomuser.me'],
+    domains: ['localhost', 'images.unsplash.com', 'randomuser.me', 'ui-avatars.com'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -26,6 +26,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'randomuser.me',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'ui-avatars.com',
         port: '',
         pathname: '/**',
       },

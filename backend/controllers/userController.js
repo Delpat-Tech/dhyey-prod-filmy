@@ -203,10 +203,12 @@ exports.getUserSavedStories = catchAsync(async (req, res, next) => {
     return next(new AppError('You can only view your own saved stories', 403));
   }
 
+  const userObjectId = new mongoose.Types.ObjectId(userId);
   const query = {
-    savedBy: { $in: [new mongoose.Types.ObjectId(userId)] }
+    savedBy: userObjectId
   };
   console.log('Query for saved stories:', query);
+  console.log('UserId:', userId, 'ObjectId:', userObjectId);
 
   const savedStories = await Story.find(query)
     .populate('author', 'name username avatar')
@@ -216,9 +218,24 @@ exports.getUserSavedStories = catchAsync(async (req, res, next) => {
     .select('-content');
 
   console.log('Found saved stories:', savedStories.length);
+  
+  // Debug: Check if there are any stories with savedBy field
+  const allStoriesWithSaves = await Story.find({ savedBy: { $exists: true, $ne: [] } }).select('title savedBy _id');
+  console.log('All stories with saves:', allStoriesWithSaves.length);
+  allStoriesWithSaves.forEach(story => {
+    console.log(`Story ID: ${story._id}, Title: ${story.title}, SavedBy: ${story.savedBy}`);
+  });
+  
+  // Debug: Check specific story that was just saved
+  const specificStory = await Story.findById('68e3f7dc7dcd3a40281c9304').select('title savedBy');
+  console.log('Specific story (68e3f7dc7dcd3a40281c9304) savedBy:', specificStory?.savedBy);
+  
+  // Check if this user has saved any stories
+  const userSavedStories = await Story.find({ savedBy: userObjectId }).select('title _id');
+  console.log('Stories saved by current user:', userSavedStories.map(s => ({ id: s._id, title: s.title })));
 
   const total = await Story.countDocuments({
-    savedBy: { $in: [new mongoose.Types.ObjectId(userId)] }
+    savedBy: userObjectId
   });
 
   res.status(200).json({

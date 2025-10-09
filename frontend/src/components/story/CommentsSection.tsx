@@ -218,7 +218,7 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
   }
 
   return (
-    <div className="bg-white">
+    <div id="comments-section" className="bg-white">
       {/* Like count and time - Instagram style */}
       <div className="px-4 py-2 border-b border-gray-100">
         <div className="font-semibold text-sm text-black mb-1">

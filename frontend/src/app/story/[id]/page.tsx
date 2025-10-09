@@ -67,7 +67,9 @@ export default function StoryPage({ params }: { params: { id: string } }) {
   const loadStory = async () => {
     try {
       const response = await storyAPI.getStoryById(params.id)
-      setStory(response.data.story)
+      const storyData = response.data.story
+      console.log('Loaded story bookmark state:', storyData.isSaved)
+      setStory(storyData)
     } catch (error: any) {
       console.error('Failed to load story:', error)
       // Don't fallback to mock data for real story IDs

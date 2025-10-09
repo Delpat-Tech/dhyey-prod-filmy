@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
-import { adminAPI } from '../../../../lib/api'
 import { getAvatarUrl } from '../../../../lib/imageUtils'
 import { useAuth } from '../../../../contexts/AuthContext'
 
@@ -12,7 +11,7 @@ export default function AdminEditProfilePage() {
   const { updateUser } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
-    username: '',
+    authorName: '',
     bio: '',
     location: '',
     website: ''
@@ -34,7 +33,7 @@ export default function AdminEditProfilePage() {
       const user = response.data.user
       setFormData({
         name: user.name || '',
-        username: user.username || '',
+        authorName: user.username || user.authorName || '',
         bio: user.bio || '',
         location: user.location || '',
         website: user.website || ''
@@ -61,7 +60,7 @@ export default function AdminEditProfilePage() {
         const formDataWithFile = new FormData()
         formDataWithFile.append('avatar', selectedFile)
         formDataWithFile.append('name', formData.name)
-        formDataWithFile.append('username', formData.username)
+        formDataWithFile.append('authorName', formData.authorName)
         formDataWithFile.append('bio', formData.bio)
         formDataWithFile.append('location', formData.location)
         formDataWithFile.append('website', formData.website)
@@ -83,7 +82,7 @@ export default function AdminEditProfilePage() {
         // Update user context with new data including avatar
         updateUser({
           name: formData.name,
-          username: formData.username,
+          authorName: formData.authorName,
           bio: formData.bio,
           location: formData.location,
           website: formData.website,
@@ -99,7 +98,7 @@ export default function AdminEditProfilePage() {
         // Update user context to reflect changes in navbar
         updateUser({
           name: formData.name,
-          username: formData.username,
+          authorName: formData.authorName,
           bio: formData.bio,
           location: formData.location,
           website: formData.website,
@@ -205,15 +204,15 @@ export default function AdminEditProfilePage() {
               />
             </div>
 
-            {/* Username */}
+            {/* Author Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+                Author Name
               </label>
               <input
                 type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                value={formData.authorName}
+                onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
               />
             </div>

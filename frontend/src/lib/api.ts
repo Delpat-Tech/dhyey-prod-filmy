@@ -134,6 +134,7 @@ export const userAPI = {
   getUserFollowers: (userId: string) => apiRequest(`/users/${userId}/followers`),
   getUserFollowing: (userId: string) => apiRequest(`/users/${userId}/following`),
   getUserSavedStories: (userId: string) => apiRequest(`/users/${userId}/saved`),
+  getUserLikedStories: () => apiRequest('/users/me/liked'),
   
   // Admin routes
   getAllUsers: () => apiRequest('/users/admin/all'),

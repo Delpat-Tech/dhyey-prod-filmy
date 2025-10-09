@@ -219,15 +219,7 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
 
   return (
     <div id="comments-section" className="bg-white">
-      {/* Like count and time - Instagram style */}
-      <div className="px-4 py-2 border-b border-gray-100">
-        <div className="font-semibold text-sm text-black mb-1">
-          370 likes
-        </div>
-        <div className="text-xs text-gray-500">
-          2 hours ago
-        </div>
-      </div>
+
 
       {/* Comments List - Instagram Style */}
       <div className="px-4 py-3">
@@ -255,25 +247,11 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
                 {/* Comment metadata */}
                 <div className="flex items-center space-x-4 mt-2">
                   <span className="text-xs text-gray-500">{comment.timeAgo}</span>
-                  {comment.likes > 0 && (
-                    <span className="text-xs text-gray-500 font-medium">
-                      {comment.likes} {comment.likes === 1 ? 'like' : 'likes'}
-                    </span>
-                  )}
                   <button
                     onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
                     className="text-xs text-gray-500 font-medium hover:text-gray-700"
                   >
                     Reply
-                  </button>
-                  <button
-                    onClick={() => handleLikeComment(comment.id)}
-                    className="p-1"
-                  >
-                    <Heart 
-                      size={12} 
-                      className={`${comment.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-gray-600'} transition-colors`} 
-                    />
                   </button>
                 </div>
 
@@ -302,19 +280,11 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
                           {/* Reply metadata */}
                           <div className="flex items-center space-x-4 mt-1">
                             <span className="text-xs text-gray-500">{reply.timeAgo}</span>
-                            {reply.likes > 0 && (
-                              <span className="text-xs text-gray-500 font-medium">
-                                {reply.likes} {reply.likes === 1 ? 'like' : 'likes'}
-                              </span>
-                            )}
                             <button
-                              onClick={() => handleLikeReply(reply.id)}
-                              className="p-1"
+                              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                              className="text-xs text-gray-500 font-medium hover:text-gray-700"
                             >
-                              <Heart 
-                                size={10} 
-                                className={`${reply.isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400 hover:text-gray-600'} transition-colors`} 
-                              />
+                              Reply
                             </button>
                           </div>
                         </div>

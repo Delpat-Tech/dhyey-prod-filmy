@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Share2, MoreHorizontal, Calendar, Clock, Eye } from 'lucide-react'
+import { ArrowLeft, Share2, MoreHorizontal, Calendar, Clock } from 'lucide-react'
 import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 import { toast } from '@/lib/toast'
 
@@ -112,100 +112,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
           <span className="hidden sm:inline">Back to Feed</span>
         </Link>
         
-        <div className="flex items-center space-x-2 relative">
-          {!isUnderReview && (
-            <div className="relative" ref={shareMenuRef}>
-              <button 
-                onClick={handleShare}
-                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <Share2 size={20} />
-              </button>
-              
-              {/* Share Menu */}
-              {showShareMenu && (
-                <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-48 z-50">
-                  <button 
-                    onClick={() => shareStory('copy')}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                  >
-                    Copy Link
-                  </button>
-                  <button 
-                    onClick={() => shareStory('twitter')}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                  >
-                    Share on Twitter
-                  </button>
-                  <button 
-                    onClick={() => shareStory('facebook')}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                  >
-                    Share on Facebook
-                  </button>
-                  <button 
-                    onClick={() => shareStory('linkedin')}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                  >
-                    Share on LinkedIn
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          
-          <div className="relative" ref={moreMenuRef}>
-            <button 
-              onClick={handleMore}
-              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <MoreHorizontal size={20} />
-            </button>
-            
-            {/* More Menu */}
-            {showMoreMenu && (
-              <div className="absolute right-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-48 z-50">
-                <button 
-                  onClick={() => {
-                    console.log('Save Story clicked')
-                    setShowMoreMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Save Story
-                </button>
-                <button 
-                  onClick={() => {
-                    console.log('Report Story clicked')
-                    setShowMoreMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Report Story
-                </button>
-                <button 
-                  onClick={() => {
-                    console.log('Hide Story clicked')
-                    setShowMoreMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 transition-colors"
-                >
-                  Hide Story
-                </button>
-                <hr className="my-1 border-gray-100" />
-                <button 
-                  onClick={() => {
-                    console.log('Block Author clicked')
-                    setShowMoreMenu(false)
-                  }}
-                  className="w-full text-left px-4 py-3 hover:bg-red-50 text-sm text-red-600 transition-colors font-medium"
-                >
-                  Block Author
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+
       </div>
 
       {/* Story Header */}
@@ -285,13 +192,9 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
             <span>{formatDate(story.publishedAt)}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <Clock size={16} />
             <span>{story.readTime}</span>
           </div>
-          <div className="flex items-center space-x-1">
-            <Eye size={16} />
-            <span>{story.stats.views.toLocaleString()} views</span>
-          </div>
+
         </div>
 
         {/* Featured Image */}

@@ -581,3 +581,45 @@ exports.getDashboardStats = catchAsync(async (req, res, next) => {
     }
   });
 });
+
+// Get user's liked stories
+exports.getUserLikedStories = catchAsync(async (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(parseInt(req.query.limit) || 20, 50);
+  const skip = (page - 1) * limit;
+
+  const userObjectId = req.user._id;
+  const query = {
+    likedBy: userObjectId,
+    status: 'approved'
+  };
+
+  const likedStories = await Story.find(query)
+    .populate('author', 'name username avatar')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .select('-content');
+
+  // Add isLiked and isSaved status
+  const storiesWithStatus = likedStories.map(story => {
+    const storyObj = story.toObject();
+    storyObj.isLiked = true; // Always true since these are liked stories
+    storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
+    return storyObj;
+  });
+
+  const total = await Story.countDocuments(query);
+
+  res.status(200).json({
+    status: 'success',
+    results: likedStories.length,
+    pagination: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit)
+    },
+    data: { stories: storiesWithStatus }
+  });
+});

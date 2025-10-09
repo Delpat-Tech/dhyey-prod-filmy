@@ -29,12 +29,12 @@ export default function DashboardPage() {
         <div className="absolute bottom-10 right-10 w-16 h-16 bg-white opacity-10 rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {/* Featured Stories Section - Coming Soon */}
         {/* <FeaturedStories /> */}
 
         {/* Coming Soon Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8 text-center mb-8">
           <div className="max-w-md mx-auto">
             <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white font-bold text-xl">🚀</span>
@@ -49,12 +49,12 @@ export default function DashboardPage() {
         
         {/* Main Feed */}
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900">Latest Stories</h2>
-            <div className="flex space-x-2">
+          <div className="mb-6">
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Latest Stories</h2>
+            <div className="flex flex-wrap gap-2">
               <button 
                 onClick={() => handleGenreFilter(null)}
-                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                className={`px-4 py-2 text-sm rounded-full font-medium transition-all duration-300 ${
                   selectedGenre === null 
                     ? 'bg-purple-100 text-purple-700' 
                     : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'
@@ -64,7 +64,7 @@ export default function DashboardPage() {
               </button>
               <button 
                 onClick={() => handleGenreFilter('Fiction')}
-                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                className={`px-4 py-2 text-sm rounded-full font-medium transition-all duration-300 ${
                   selectedGenre === 'Fiction' 
                     ? 'bg-purple-100 text-purple-700' 
                     : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'
@@ -74,7 +74,7 @@ export default function DashboardPage() {
               </button>
               <button 
                 onClick={() => handleGenreFilter('Poetry')}
-                className={`px-3 py-1 text-sm rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                className={`px-4 py-2 text-sm rounded-full font-medium transition-all duration-300 ${
                   selectedGenre === 'Poetry' 
                     ? 'bg-purple-100 text-purple-700' 
                     : 'text-gray-600 hover:bg-gray-100 hover:text-purple-600'

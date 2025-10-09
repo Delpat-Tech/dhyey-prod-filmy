@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, MessageCircle, Bookmark, Clock } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
-import { storyAPI } from '@/lib/api'
+import { storyAPI, userAPI } from '@/lib/api'
 import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 
 // Mock liked stories data
@@ -59,8 +59,27 @@ const likedStories = [
 
 export default function LikedStories() {
   const { user } = useAuth()
-  const [stories, setStories] = useState<any[]>(likedStories)
-  const [loading, setLoading] = useState(false)
+  const [stories, setStories] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadLikedStories = async () => {
+      try {
+        setLoading(true)
+        const response = await userAPI.getUserLikedStories()
+        setStories(response.data.stories || [])
+      } catch (error) {
+        console.error('Failed to load liked stories:', error)
+        setStories(likedStories) // Fallback to mock data
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (user) {
+      loadLikedStories()
+    }
+  }, [user])
 
   const handleUnlike = async (storyId: string) => {
     try {
@@ -83,6 +102,26 @@ export default function LikedStories() {
     } catch (error) {
       console.error('Error saving story:', error)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden animate-pulse">
+            <div className="md:flex">
+              <div className="md:w-48 h-48 md:h-auto bg-gray-200"></div>
+              <div className="flex-1 p-4 md:p-6">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
   }
 
   if (stories.length === 0) {

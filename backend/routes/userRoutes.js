@@ -23,6 +23,7 @@ router.post('/:userId/follow', userController.toggleFollowUser);
 router.get('/:userId/followers', userController.getUserFollowers);
 router.get('/:userId/following', userController.getUserFollowing);
 router.get('/:userId/saved', userController.getUserSavedStories);
+router.get('/me/liked', userController.getUserLikedStories);
 
 // Admin routes
 router.get('/admin/all', authController.restrictTo('admin'), userController.getAllUsersForAdmin);

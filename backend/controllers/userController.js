@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('./../models/User');
 const Story = require('./../models/Story');
 const catchAsync = require('./../utils/catchAsync');
@@ -195,24 +196,29 @@ exports.getUserSavedStories = catchAsync(async (req, res, next) => {
   const limit = Math.min(parseInt(req.query.limit) || 20, 50);
   const skip = (page - 1) * limit;
 
+  console.log('Get saved stories - User ID:', userId, 'Requesting user:', req.user._id.toString());
+
   // Check if user is requesting their own saved stories
   if (userId !== req.user._id.toString()) {
     return next(new AppError('You can only view your own saved stories', 403));
   }
 
-  const savedStories = await Story.find({
-    savedBy: userId,
-    status: 'published'
-  })
+  const query = {
+    savedBy: { $in: [new mongoose.Types.ObjectId(userId)] }
+  };
+  console.log('Query for saved stories:', query);
+
+  const savedStories = await Story.find(query)
     .populate('author', 'name username avatar')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .select('-content');
 
+  console.log('Found saved stories:', savedStories.length);
+
   const total = await Story.countDocuments({
-    savedBy: userId,
-    status: 'published'
+    savedBy: { $in: [new mongoose.Types.ObjectId(userId)] }
   });
 
   res.status(200).json({

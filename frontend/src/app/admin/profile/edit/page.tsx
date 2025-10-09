@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { ArrowLeft, Camera, Save } from 'lucide-react'
 import { getAvatarUrl } from '../../../../lib/imageUtils'
 import { useAuth } from '../../../../contexts/AuthContext'
+import { adminAPI } from '../../../../lib/api'
 
 export default function AdminEditProfilePage() {
   const { updateUser } = useAuth()

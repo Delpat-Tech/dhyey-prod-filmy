@@ -160,6 +160,14 @@ export default function AdminSettingsPage() {
                 </div>
               </Link>
 
+              <Link href="/admin/settings/change-password" className="flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors">
+                <Settings size={20} className="text-gray-600" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Change Password</h3>
+                  <p className="text-sm text-gray-600">Update your admin password</p>
+                </div>
+              </Link>
+
               <Link href="/admin" className="flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors">
                 <Settings size={20} className="text-gray-600" />
                 <div>

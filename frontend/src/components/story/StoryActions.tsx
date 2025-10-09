@@ -49,19 +49,29 @@ export default function StoryActions({ story }: StoryActionsProps) {
 
   const handleLike = async () => {
     try {
-      await storyAPI.likeStory(story.id.toString())
-      setIsLiked(!isLiked)
+      const response = await storyAPI.likeStory(story.id.toString())
+      setIsLiked(response.data.isLiked)
+      // Update the story stats in parent component if needed
+      if (story.stats) {
+        story.stats.likes = response.data.likesCount
+      }
     } catch (error) {
       console.error('Failed to like story:', error)
+      toast.error('Failed to like story. Please try again.')
     }
   }
 
   const handleSave = async () => {
     try {
-      await storyAPI.saveStory(story.id.toString())
-      setIsSaved(!isSaved)
+      const response = await storyAPI.saveStory(story.id.toString())
+      setIsSaved(response.data.isSaved)
+      // Update the story stats in parent component if needed
+      if (story.stats) {
+        story.stats.saves = response.data.savesCount
+      }
     } catch (error) {
       console.error('Failed to save story:', error)
+      toast.error('Failed to save story. Please try again.')
     }
   }
 
@@ -80,6 +90,9 @@ export default function StoryActions({ story }: StoryActionsProps) {
     const title = "Check out this amazing story!"
     
     try {
+      // Track the share on backend
+      await storyAPI.shareStory(story.id.toString(), { platform })
+      
       switch (platform) {
         case 'copy':
           await navigator.clipboard.writeText(url)
@@ -97,6 +110,7 @@ export default function StoryActions({ story }: StoryActionsProps) {
       }
     } catch (error) {
       console.error('Share failed:', error)
+      toast.error('Failed to share story. Please try again.')
     }
     setShowShareMenu(false)
   }
@@ -140,7 +154,7 @@ export default function StoryActions({ story }: StoryActionsProps) {
                   className={isLiked ? 'fill-red-600' : ''} 
                 />
                 <span className="font-medium">
-                  {story.stats.likes + (isLiked && !story.isLiked ? 1 : isLiked === story.isLiked ? 0 : -1)}
+                  {story.stats.likes}
                 </span>
               </button>
 
@@ -267,9 +281,9 @@ export default function StoryActions({ story }: StoryActionsProps) {
           {/* Engagement Stats */}
           <div className="flex items-center justify-between text-sm text-gray-600 pt-4 border-t border-gray-100">
             <div className="flex items-center space-x-4">
-              <span>{story.stats.likes + (isLiked && !story.isLiked ? 1 : isLiked === story.isLiked ? 0 : -1)} likes</span>
+              <span>{story.stats.likes} likes</span>
               <span>{story.stats.comments} comments</span>
-              <span>{story.stats.saves + (isSaved && !story.isSaved ? 1 : isSaved === story.isSaved ? 0 : -1)} saves</span>
+              <span>{story.stats.saves} saves</span>
             </div>
             
             {/* Appreciation Button */}

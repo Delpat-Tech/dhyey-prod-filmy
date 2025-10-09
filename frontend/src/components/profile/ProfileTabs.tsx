@@ -24,7 +24,7 @@ export default function ProfileTabs({ username }: ProfileTabsProps) {
       case 'stories':
         return <StoriesGrid />
       case 'saved':
-        return <SavedStories />
+        return <SavedStories activeTab={activeTab} />
       case 'liked':
         return <LikedStories />
       default:

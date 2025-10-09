@@ -92,17 +92,23 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         
         const response = await storyAPI.getPublicStories(params)
         const stories = response.data.stories || mockStories
+        console.log('First story isLiked:', stories[0]?.isLiked, 'likedBy count:', stories[0]?.likedBy?.length)
         
         // Initialize liked/saved state from backend data
         const newLiked = new Set()
         const newSaved = new Set()
         stories.forEach(story => {
           const storyId = story._id || story.id
-          if (story.isLiked) newLiked.add(storyId)
-          if (story.isSaved) newSaved.add(storyId)
+          if (story.isLiked) {
+            newLiked.add(storyId)
+          }
+          if (story.isSaved) {
+            newSaved.add(storyId)
+          }
         })
         setLikedStories(newLiked)
         setSavedStories(newSaved)
+        console.log('Initialized saved stories:', Array.from(newSaved))
         setDisplayedStories(stories)
       } catch (error) {
         console.error('Failed to load stories:', error)
@@ -146,57 +152,88 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
 
   const toggleLike = async (storyId: string) => {
     try {
-      await storyAPI.likeStory(storyId)
-      const isLiked = likedStories.has(storyId)
+      // Use the correct ID format (_id for backend)
+      const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
+      const response = await storyAPI.likeStory(actualStoryId)
+      const isLiked = response.data.isLiked
+      const likesCount = response.data.likesCount
+      
       setLikedStories(prev => {
         const newSet = new Set(prev)
-        if (newSet.has(storyId)) {
-          newSet.delete(storyId)
+        if (isLiked) {
+          newSet.add(actualStoryId)
         } else {
-          newSet.add(storyId)
+          newSet.delete(actualStoryId)
         }
         return newSet
       })
+      
       setDisplayedStories(prev => prev.map(story => {
-        if (story.id === storyId || story._id === storyId) {
+        const currentStoryId = story._id || story.id
+        if (currentStoryId === actualStoryId) {
           return {
             ...story,
-            likes: (story.likes || 0) + (isLiked ? -1 : 1),
-            isLiked: !isLiked
+            likes: likesCount,
+            isLiked: isLiked,
+            stats: {
+              ...story.stats,
+              likes: likesCount
+            }
           }
         }
         return story
       }))
     } catch (error) {
       console.error('Failed to like story:', error)
+      toast.error('Failed to like story. Please try again.')
     }
   }
 
   const toggleSave = async (storyId: string) => {
     try {
-      await storyAPI.saveStory(storyId)
-      const isSaved = savedStories.has(storyId)
+      // Use the correct ID format (_id for backend)
+      const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
+      console.log('Toggling save for story:', actualStoryId)
+      const response = await storyAPI.saveStory(actualStoryId)
+      const isSaved = response.data.isSaved
+      const savesCount = response.data.savesCount
+      console.log('Save response:', { isSaved, savesCount })
+      
       setSavedStories(prev => {
         const newSet = new Set(prev)
-        if (newSet.has(storyId)) {
-          newSet.delete(storyId)
+        if (isSaved) {
+          newSet.add(actualStoryId)
         } else {
-          newSet.add(storyId)
+          newSet.delete(actualStoryId)
         }
         return newSet
       })
+      
+      // Show toast after state update
+      if (isSaved) {
+        toast.success('Story saved successfully!')
+      } else {
+        toast.success('Story removed from saved!')
+      }
+      
       setDisplayedStories(prev => prev.map(story => {
-        if (story.id === storyId || story._id === storyId) {
+        const currentStoryId = story._id || story.id
+        if (currentStoryId === actualStoryId) {
           return {
             ...story,
-            saves: (story.saves || 0) + (isSaved ? -1 : 1),
-            isSaved: !isSaved
+            saves: savesCount,
+            isSaved: isSaved,
+            stats: {
+              ...story.stats,
+              saves: savesCount
+            }
           }
         }
         return story
       }))
     } catch (error) {
       console.error('Failed to save story:', error)
+      toast.error('Failed to save story. Please try again.')
     }
   }
 
@@ -216,6 +253,9 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
     const title = `Check out "${story.title}" by ${story.author.name}`
     
     try {
+      // Track the share on backend
+      await storyAPI.shareStory(story.id, { platform })
+      
       switch (platform) {
         case 'copy':
           await navigator.clipboard.writeText(url)
@@ -233,6 +273,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
       }
     } catch (error) {
       console.error('Share failed:', error)
+      toast.error('Failed to share story. Please try again.')
     }
     setShowShareMenu(null)
   }
@@ -326,12 +367,12 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                   <button
                     onClick={() => {
                       console.log('Save story:', story.title)
-                      toggleSave(story.id)
+                      toggleSave(story._id || story.id)
                       setShowMoreMenu(null)
                     }}
                     className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   >
-                    {savedStories.has(story.id) ? 'Unsave Story' : 'Save Story'}
+                    {savedStories.has(story._id || story.id) ? 'Unsave Story' : 'Save Story'}
                   </button>
                   <button
                     onClick={() => {
@@ -420,15 +461,15 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <button
-                  onClick={() => toggleLike(story.id)}
+                  onClick={() => toggleLike(story._id || story.id)}
                   className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
                   <Heart 
                     size={20} 
-                    className={`transition-all duration-300 ${likedStories.has(story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`} 
+                    className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`} 
                   />
                   <span className="text-sm font-medium">
-                    {story.likes || 0}
+                    {story.stats?.likes || story.likes || 0}
                   </span>
                 </button>
                 
@@ -437,8 +478,21 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                   className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                 >
                   <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
-                  <span className="text-sm font-medium">{story.comments || 0}</span>
+                  <span className="text-sm font-medium">{story.stats?.comments || story.comments || 0}</span>
                 </Link>
+                
+                <button
+                  onClick={() => toggleSave(story._id || story.id)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                >
+                  <Bookmark 
+                    size={20} 
+                    className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`} 
+                  />
+                  <span className="text-sm font-medium">
+                    {story.stats?.saves || story.saves || 0}
+                  </span>
+                </button>
                 
                 <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>
                   <button 
@@ -446,7 +500,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                       e.preventDefault()
                       e.stopPropagation()
                       console.log('Share button clicked - event triggered')
-                      handleShare(story.id)
+                      handleShare(story._id || story.id)
                     }}
                     className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer"
                   >
@@ -454,15 +508,8 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                     <span className="text-sm font-medium">Share</span>
                   </button>
                   
-                  {/* Debug indicator */}
-                  {showShareMenu === story.id && (
-                    <div className="absolute left-0 top-full mt-1 text-xs text-red-500 bg-yellow-100 px-2 py-1 rounded">
-                      Menu Open: {story.id}
-                    </div>
-                  )}
-                  
                   {/* Share Menu */}
-                  {showShareMenu === story.id && (
+                  {showShareMenu === (story._id || story.id) && (
                     <div 
                       className="fixed bg-white border border-gray-200 rounded-lg shadow-2xl py-1 min-w-[180px]"
                       style={{ 
@@ -521,7 +568,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                   )}
                   
                   {/* Backdrop */}
-                  {showShareMenu === story.id && (
+                  {showShareMenu === (story._id || story.id) && (
                     <div 
                       className="fixed inset-0 bg-black bg-opacity-50"
                       style={{ zIndex: 9998 }}
@@ -530,16 +577,6 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                   )}
                 </div>
               </div>
-              
-              <button
-                onClick={() => toggleSave(story.id)}
-                className="text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
-              >
-                <Bookmark 
-                  size={20} 
-                  className={`transition-all duration-300 ${savedStories.has(story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`} 
-                />
-              </button>
             </div>
           </div>
         </div>

@@ -141,7 +141,8 @@ const storySchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  toObject: { virtuals: true },
+  versionKey: false
 });
 
 // Indexes for performance
@@ -207,6 +208,8 @@ storySchema.pre('save', function(next) {
   next();
 });
 
+
+
 // Static method to get trending stories
 storySchema.statics.getTrending = function(limit = 10) {
   return this.aggregate([
@@ -269,29 +272,35 @@ storySchema.methods.incrementView = function(userId = null, readingTime = 0, com
 };
 
 // Instance method to toggle like
-storySchema.methods.toggleLike = function(userId) {
-  const likeIndex = this.likedBy.indexOf(userId);
+storySchema.methods.toggleLike = async function(userId) {
+  const userIdStr = userId.toString();
+  const isLiked = this.likedBy.some(id => id.toString() === userIdStr);
   
-  if (likeIndex > -1) {
-    this.likedBy.splice(likeIndex, 1);
+  if (isLiked) {
+    this.likedBy = this.likedBy.filter(id => id.toString() !== userIdStr);
   } else {
     this.likedBy.push(userId);
   }
   
-  return this.save({ validateBeforeSave: false });
+  this.stats.likes = this.likedBy.length;
+  await this.save({ validateBeforeSave: false });
+  return this;
 };
 
 // Instance method to toggle save
-storySchema.methods.toggleSave = function(userId) {
-  const saveIndex = this.savedBy.indexOf(userId);
+storySchema.methods.toggleSave = async function(userId) {
+  const userIdStr = userId.toString();
+  const isSaved = this.savedBy.some(id => id.toString() === userIdStr);
   
-  if (saveIndex > -1) {
-    this.savedBy.splice(saveIndex, 1);
+  if (isSaved) {
+    this.savedBy = this.savedBy.filter(id => id.toString() !== userIdStr);
   } else {
     this.savedBy.push(userId);
   }
   
-  return this.save({ validateBeforeSave: false });
+  this.stats.saves = this.savedBy.length;
+  await this.save({ validateBeforeSave: false });
+  return this;
 };
 
 const Story = mongoose.model('Story', storySchema);

@@ -39,6 +39,7 @@ router.get('/test-auth', (req, res) => {
 // Admin User Management
 router.get('/admins', userController.getAllAdmins);
 router.post('/create-admin', authController.createAdmin);
+router.patch('/change-user-password', authController.adminChangePassword);
 router.patch('/users/:id/suspend', userController.suspendUser);
 router.patch('/users/:id/unsuspend', userController.unsuspendUser);
 

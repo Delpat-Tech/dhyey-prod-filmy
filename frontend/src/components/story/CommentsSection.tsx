@@ -99,17 +99,17 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
   const [replyingTo, setReplyingTo] = useState<number | null>(null)
   const [replyText, setReplyText] = useState('')
   const [showAllComments, setShowAllComments] = useState(false)
-  const [likedReplies, setLikedReplies] = useState<Set<number>>(new Set())
+
 
   const handleLikeComment = async (commentId: number) => {
     try {
-      await storyAPI.likeComment(storyId.toString(), commentId.toString())
+      const response = await storyAPI.likeComment(storyId.toString(), commentId.toString())
       setComments(prev => prev.map(comment => 
         comment.id === commentId 
           ? { 
               ...comment, 
-              isLiked: !comment.isLiked,
-              likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
+              isLiked: response.data.isLiked,
+              likes: response.data.likesCount
             }
           : comment
       ))
@@ -120,23 +120,16 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
 
   const handleLikeReply = async (replyId: number) => {
     try {
-      await storyAPI.likeComment(storyId.toString(), replyId.toString())
-      const newLikedReplies = new Set(likedReplies)
-      if (likedReplies.has(replyId)) {
-        newLikedReplies.delete(replyId)
-      } else {
-        newLikedReplies.add(replyId)
-      }
-      setLikedReplies(newLikedReplies)
-
+      const response = await storyAPI.likeComment(storyId.toString(), replyId.toString())
+      
       setComments(prev => prev.map(comment => ({
         ...comment,
         replies: comment.replies.map(reply => 
           reply.id === replyId 
             ? { 
                 ...reply, 
-                isLiked: !reply.isLiked,
-                likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
+                isLiked: response.data.isLiked,
+                likes: response.data.likesCount
               }
             : reply
         )
@@ -164,6 +157,9 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
 
       setComments(prev => [comment, ...prev])
       setNewComment('')
+      
+      // Trigger a refresh of the story data to update comment count
+      window.dispatchEvent(new CustomEvent('storyUpdated', { detail: { storyId } }))
     } catch (error) {
       console.error('Failed to add comment:', error)
     }
@@ -192,6 +188,9 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
       
       setReplyText('')
       setReplyingTo(null)
+      
+      // Trigger a refresh of the story data to update comment count
+      window.dispatchEvent(new CustomEvent('storyUpdated', { detail: { storyId } }))
     } catch (error) {
       console.error('Failed to add reply:', error)
     }

@@ -14,7 +14,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export const getImageUrl = (imagePath?: string | null, fallback?: string): string => {
   // If no image path provided, return fallback or default
   if (!imagePath) {
-    return fallback || '/images/default-avatar.png';
+    return fallback || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=150';
   }
 
   // If already a full URL (starts with http:// or https://), return as-is
@@ -36,7 +36,7 @@ export const getImageUrl = (imagePath?: string | null, fallback?: string): strin
  * Get avatar URL with fallback
  */
 export const getAvatarUrl = (avatar?: string | null): string => {
-  return getImageUrl(avatar, '/images/default-avatar.png');
+  return getImageUrl(avatar, 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=150');
 };
 
 /**

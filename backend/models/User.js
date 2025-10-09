@@ -75,6 +75,7 @@ const userSchema = new mongoose.Schema({
   emailVerificationExpires: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  passwordChangedAt: Date,
   refreshTokens: [{
     token: String,
     createdAt: {
@@ -145,6 +146,12 @@ userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
   this.password = await bcrypt.hash(this.password, 12);
+  
+  // Set passwordChangedAt if password was modified (but not on new documents)
+  if (!this.isNew) {
+    this.passwordChangedAt = Date.now() - 1000; // Subtract 1 second to ensure JWT is created after password change
+  }
+  
   next();
 });
 

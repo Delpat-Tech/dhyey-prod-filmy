@@ -13,6 +13,7 @@ import AdminLoading from './AdminLoading'
 import StatCard from './StatCard'
 import { adminAPI } from '@/lib/api'
 
+
 // Mock dashboard data with trends and sparkline data
 const dashboardStats = {
   totalStories: {
@@ -86,31 +87,17 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     setMounted(true)
-    loadDashboardData()
+    fetchAdminData()
     loadPendingStories()
   }, [])
 
-  const loadDashboardData = async () => {
+  const fetchAdminData = async () => {
     try {
       setIsLoading(true)
-      const response = await adminAPI.getDashboardStats()
-      if (response.data) {
-        setStats({
-          ...response.data,
-          pendingReviews: response.data.pendingReviews || 0,
-          todaySubmissions: response.data.todaySubmissions || 0,
-          activeUsers: response.data.activeUsers || 0,
-          reportedContent: response.data.reportedContent || 0,
-          suspendedUsers: response.data.suspendedUsers || 0,
-          adminUsers: response.data.adminUsers || 0,
-          totalAllUsers: response.data.totalAllUsers || 0
-        })
-      } else {
-        setStats(dashboardStats)
-      }
+      const data = await adminAPI.getDashboardStats()
+      setStats(data)
     } catch (error) {
-      console.error('Failed to load dashboard stats:', error)
-      // Fallback to mock data
+      console.error('Error fetching admin data:', error)
       setStats(dashboardStats)
     } finally {
       setIsLoading(false)
@@ -121,10 +108,8 @@ export default function AdminDashboard() {
 
   const loadPendingStories = async () => {
     try {
-      const response = await adminAPI.getAllStories(new URLSearchParams({ limit: '3', status: 'pending' }))
-      if (response.data?.stories) {
-        setPendingStories(response.data.stories)
-      }
+      // Use mock data for now
+      setPendingStories([])
     } catch (error) {
       console.error('Failed to load pending stories:', error)
     }

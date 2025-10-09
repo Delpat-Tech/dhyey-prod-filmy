@@ -57,7 +57,11 @@ const savedStories = [
   }
 ]
 
-export default function SavedStories() {
+interface SavedStoriesProps {
+  activeTab?: string
+}
+
+export default function SavedStories({ activeTab }: SavedStoriesProps) {
   const { user } = useAuth()
   const [stories, setStories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,11 +72,22 @@ export default function SavedStories() {
     }
   }, [user?.id])
 
+  // Refetch when saved tab becomes active
+  useEffect(() => {
+    if (activeTab === 'saved' && user?.id) {
+      fetchSavedStories()
+    }
+  }, [activeTab, user?.id])
+
   const fetchSavedStories = async () => {
     try {
       setLoading(true)
+      console.log('Fetching saved stories for user:', user!.id)
       const response = await userAPI.getUserSavedStories(user!.id)
-      setStories(response.data?.savedStories || [])
+      console.log('Saved stories response:', response)
+      const stories = response.data?.stories || []
+      console.log('Setting saved stories:', stories)
+      setStories(stories)
     } catch (error) {
       console.error('Error fetching saved stories:', error)
       setStories(savedStories)
@@ -133,6 +148,18 @@ export default function SavedStories() {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Saved Stories</h3>
+        <button 
+          onClick={fetchSavedStories}
+          className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors"
+        >
+          Refresh
+        </button>
+      </div>
+      <div className="text-sm text-gray-500 mb-2">
+        Found {stories.length} saved stories
+      </div>
       {stories.map((story) => {
         const storyId = story._id || story.id
         return (

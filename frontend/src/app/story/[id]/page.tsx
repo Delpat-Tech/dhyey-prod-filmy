@@ -64,26 +64,39 @@ export default function StoryPage({ params }: { params: { id: string } }) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  const loadStory = async () => {
+    try {
+      const response = await storyAPI.getStoryById(params.id)
+      setStory(response.data.story)
+    } catch (error: any) {
+      console.error('Failed to load story:', error)
+      // Don't fallback to mock data for real story IDs
+      if (error.message?.includes('Story not available')) {
+        setStory(null)
+      } else {
+        // Only use mock data for clearly mock IDs
+        setStory(getMockStoryData(params.id))
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    const loadStory = async () => {
-      try {
-        const response = await storyAPI.getStoryById(params.id)
-        setStory(response.data.story)
-      } catch (error: any) {
-        console.error('Failed to load story:', error)
-        // Don't fallback to mock data for real story IDs
-        if (error.message?.includes('Story not available')) {
-          setStory(null)
-        } else {
-          // Only use mock data for clearly mock IDs
-          setStory(getMockStoryData(params.id))
-        }
-      } finally {
-        setIsLoading(false)
+    loadStory()
+    
+    // Listen for story updates (like new comments)
+    const handleStoryUpdate = (event: CustomEvent) => {
+      if (event.detail.storyId === parseInt(params.id)) {
+        loadStory()
       }
     }
-
-    loadStory()
+    
+    window.addEventListener('storyUpdated', handleStoryUpdate as EventListener)
+    
+    return () => {
+      window.removeEventListener('storyUpdated', handleStoryUpdate as EventListener)
+    }
   }, [params.id])
 
   if (isLoading) {

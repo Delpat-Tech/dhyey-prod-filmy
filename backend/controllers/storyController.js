@@ -210,6 +210,7 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
   const skip = (page - 1) * limit;
   const sortBy = req.query.sortBy || 'newest';
 
+  console.log('User authenticated:', !!req.user);
   const query = { status: 'approved' };
   
   if (req.query.genre) {
@@ -239,8 +240,7 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     .populate('author', 'name username avatar stats')
     .sort(sort)
     .skip(skip)
-    .limit(limit)
-    .select('-content');
+    .limit(limit);
 
   const total = await Story.countDocuments(query);
 
@@ -248,8 +248,8 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
   const storiesWithStatus = stories.map(story => {
     const storyObj = story.toObject();
     if (req.user) {
-      storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
-      storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
     } else {
       storyObj.isLiked = false;
       storyObj.isSaved = false;
@@ -320,8 +320,8 @@ exports.getStoryById = catchAsync(async (req, res, next) => {
   // Add isLiked and isSaved status
   const storyObj = story.toObject();
   if (req.user) {
-    storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
-    storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+    storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
+    storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
   } else {
     storyObj.isLiked = false;
     storyObj.isSaved = false;
@@ -468,14 +468,17 @@ exports.toggleLikeStory = catchAsync(async (req, res, next) => {
 
 // Save/Unsave story
 exports.toggleSaveStory = catchAsync(async (req, res, next) => {
+  console.log('Toggle save story - User ID:', req.user._id, 'Story ID:', req.params.id);
   const story = await Story.findById(req.params.id);
 
   if (!story) {
     return next(new AppError('No story found with that ID', 404));
   }
 
+  console.log('Before toggle - savedBy:', story.savedBy);
   // Allow saving even for stories under review (users can save for later)
   await story.toggleSave(req.user._id);
+  console.log('After toggle - savedBy:', story.savedBy, 'isSaved:', story.savedBy.includes(req.user._id));
 
   // Track analytics
   await analyticsService.trackEvent(
@@ -551,8 +554,8 @@ exports.getUserStories = catchAsync(async (req, res, next) => {
   const storiesWithStatus = stories.map(story => {
     const storyObj = story.toObject();
     if (req.user) {
-      storyObj.isLiked = story.likedBy.some(id => id.toString() === req.user._id.toString());
-      storyObj.isSaved = story.savedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
+      storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
     } else {
       storyObj.isLiked = false;
       storyObj.isSaved = false;

@@ -157,6 +157,14 @@ export default function SettingsPage() {
                 </div>
               </Link>
 
+              <Link href="/settings/change-password" className="flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors">
+                <Shield size={20} className="text-gray-600" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Change Password</h3>
+                  <p className="text-sm text-gray-600">Update your account password</p>
+                </div>
+              </Link>
+
               <button className="w-full flex items-center space-x-3 p-4 hover:bg-gray-50 transition-colors">
                 <Palette size={20} className="text-gray-600" />
                 <div className="text-left">

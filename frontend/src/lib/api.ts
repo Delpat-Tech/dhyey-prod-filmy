@@ -34,6 +34,12 @@ const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
 
   // Handle 401 Unauthorized (token invalid/expired)
   if (response.status === 401) {
+    // Don't redirect if it's a password change request with wrong current password
+    if (endpoint.includes('/auth/update-password') || endpoint.includes('/auth/change-password')) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || 'Current password is incorrect')
+    }
+    
     console.log('Unauthorized request, clearing session')
     localStorage.removeItem('dhyey_user')
     localStorage.removeItem('dhyey_token')
@@ -100,6 +106,12 @@ export const authAPI = {
       body: JSON.stringify({ passwordCurrent, password, passwordConfirm }),
     }),
 
+  changePassword: (passwordCurrent: string, password: string, passwordConfirm: string) =>
+    apiRequest('/auth/change-password', {
+      method: 'PATCH',
+      body: JSON.stringify({ passwordCurrent, password, passwordConfirm }),
+    }),
+
   logout: () => apiRequest('/auth/logout', { method: 'POST' }),
   refreshToken: () => apiRequest('/auth/refresh-token', { method: 'POST' }),
 }
@@ -155,8 +167,11 @@ export const storyAPI = {
   saveStory: (id: string) =>
     apiRequest(`/stories/${id}/save`, { method: 'POST' }),
 
-  shareStory: (id: string) =>
-    apiRequest(`/stories/${id}/share`, { method: 'POST' }),
+  shareStory: (id: string, data?: any) =>
+    apiRequest(`/stories/${id}/share`, { 
+      method: 'POST',
+      body: JSON.stringify(data || {})
+    }),
 
   getUserStories: (userId: string) => apiRequest(`/stories/user/${userId}`),
   

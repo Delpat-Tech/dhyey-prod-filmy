@@ -397,6 +397,30 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   await createSendToken(user, 200, req, res);
 });
 
+// Admin change password for any user
+exports.adminChangePassword = catchAsync(async (req, res, next) => {
+  const { userId, newPassword } = req.body;
+  
+  if (!userId || !newPassword) {
+    return next(new AppError('Please provide userId and newPassword', 400));
+  }
+
+  // Find the target user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  // Update password
+  user.password = newPassword;
+  await user.save();
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Password updated successfully'
+  });
+});
+
 // Admin only - Create another admin
 exports.createAdmin = catchAsync(async (req, res, next) => {
   const { email, password, name } = req.body;

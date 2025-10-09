@@ -17,6 +17,7 @@ router.post('/resend-verification', authController.protect, authController.resen
 router.post('/forgot-password', authController.forgotPassword);
 router.patch('/reset-password/:token', authController.resetPassword);
 router.patch('/update-password', authController.protect, authController.updatePassword);
+router.patch('/change-password', authController.protect, authController.updatePassword);
 
 // OAuth routes (to be implemented)
 router.get('/google', (req, res) => {

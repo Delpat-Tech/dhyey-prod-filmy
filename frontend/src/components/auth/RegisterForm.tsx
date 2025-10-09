@@ -37,7 +37,7 @@ export default function RegisterForm() {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: true
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -430,29 +430,40 @@ export default function RegisterForm() {
 
             {/* Terms Agreement */}
             <div>
-              <label className="flex items-start">
-                <input
-                  type="checkbox"
-                  name="agreeToTerms"
-                  checked={formData.agreeToTerms}
-                  onChange={handleInputChange}
-                  className={`h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded mt-1 ${
-                    errors.agreeToTerms ? 'border-red-300' : ''
-                  }`}
-                />
-                <span className="ml-2 text-sm text-gray-600">
+              <label className="flex items-start group cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleInputChange}
+                    className="sr-only"
+                  />
+                  <div className={`w-5 h-5 border-2 rounded-md transition-all duration-200 flex items-center justify-center ${
+                    formData.agreeToTerms
+                      ? 'bg-gradient-to-br from-purple-600 to-indigo-600 border-purple-600'
+                      : 'border-gray-300 bg-white group-hover:border-purple-400'
+                  } ${errors.agreeToTerms ? 'border-red-300' : ''}`}>
+                    {formData.agreeToTerms && (
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="ml-3 text-sm text-gray-600 leading-relaxed">
                   I agree to the{' '}
-                  <Link href="/terms" className="text-purple-600 hover:underline">
+                  <Link href="/terms" className="text-purple-600 hover:text-purple-700 hover:underline font-medium transition-colors duration-200">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link href="/privacy" className="text-purple-600 hover:underline">
+                  <Link href="/privacy" className="text-purple-600 hover:text-purple-700 hover:underline font-medium transition-colors duration-200">
                     Privacy Policy
                   </Link>
                 </span>
               </label>
               {errors.agreeToTerms && (
-                <div className="flex items-center mt-1 text-sm text-red-600">
+                <div className="flex items-center mt-2 text-sm text-red-600">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.agreeToTerms}
                 </div>

@@ -221,7 +221,9 @@ export default function RegisterForm() {
       <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10 sm:px-10 lg:px-16">
         <div className="w-full max-w-4xl">
           <div className="text-center text-white mb-6">
-            <span className="text-xs uppercase tracking-[0.5em] text-white/60">Dhyey Productions</span>
+            <div className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
+              <span className="text-xs uppercase tracking-[0.5em] text-white/80 font-medium">Dhyey Productions</span>
+            </div>
             <h1 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">Join the suite built for storytellers.</h1>
             <p className="mt-3 text-sm text-white/70 max-w-2xl mx-auto leading-relaxed">
               Shape characters, timelines, and approvals in one creative command center.

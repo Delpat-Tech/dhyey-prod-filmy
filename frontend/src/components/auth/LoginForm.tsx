@@ -281,7 +281,9 @@ export default function LoginForm() {
 
         <div className="relative h-full flex flex-col justify-between p-12 text-white">
           <div>
-            <span className="text-xs uppercase tracking-[0.5em] text-white/60">Dhyey Productions</span>
+            <div className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-lg mb-6">
+              <span className="text-xs uppercase tracking-[0.5em] text-white/80 font-medium">Dhyey Productions</span>
+            </div>
             <h2 className="mt-6 text-4xl font-semibold leading-tight">Stories come alive with every login.</h2>
             <p className="mt-4 text-base text-white/70 max-w-sm leading-relaxed">
             Whether you're here to share your next big idea or to discover the one that's ready for the screen, this is where stories are born, developed, and transformed into scripts.

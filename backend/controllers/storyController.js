@@ -241,7 +241,8 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     .sort(sort)
     .skip(skip)
     .limit(limit)
-    .select('+savedBy +likedBy');
+    .read('primary')
+    .exec();
 
   const total = await Story.countDocuments(query);
 
@@ -251,15 +252,11 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     if (req.user) {
       storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
       storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
-      console.log(`Story ${story._id}: savedBy=[${story.savedBy}], currentUser=${req.user._id}, isSaved=${storyObj.isSaved}`);
-      if (story._id.toString() === '68e3f7dc7dcd3a40281c9304') {
-        console.log('TARGET STORY DETAILS:', {
-          id: story._id,
-          savedBy: story.savedBy,
-          savedByLength: story.savedBy?.length,
-          currentUser: req.user._id.toString(),
-          isSaved: storyObj.isSaved
-        });
+      if (story._id.toString() === '68e7c9b767dcbba659de377a') {
+        console.log('TARGET STORY DEBUG:');
+        console.log('  - likedBy:', story.likedBy);
+        console.log('  - isLiked:', storyObj.isLiked);
+        console.log('  - currentUser:', req.user._id.toString());
       }
     } else {
       storyObj.isLiked = false;
@@ -268,6 +265,11 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
     return storyObj;
   });
 
+  // Prevent caching to ensure fresh like/save status
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   res.status(200).json({
     status: 'success',
     results: stories.length,
@@ -451,31 +453,65 @@ exports.deleteStory = catchAsync(async (req, res, next) => {
 
 // Like/Unlike story
 exports.toggleLikeStory = catchAsync(async (req, res, next) => {
+  console.log('=== TOGGLE LIKE STORY CONTROLLER ===');
+  console.log('User ID:', req.user._id, 'Story ID:', req.params.id);
+  
   const story = await Story.findById(req.params.id);
 
   if (!story) {
     return next(new AppError('No story found with that ID', 404));
   }
 
-  // Prevent interactions with stories under review
   if (story.status !== 'approved') {
     return next(new AppError('Cannot interact with stories under review', 403));
   }
 
-  await story.toggleLike(req.user._id);
-
-  // Track analytics
-  await analyticsService.trackEvent(
+  const userId = req.user._id;
+  const isCurrentlyLiked = story.likedBy.some(id => id.toString() === userId.toString());
+  
+  console.log('Before update - isCurrentlyLiked:', isCurrentlyLiked);
+  
+  let updatedStory;
+  if (isCurrentlyLiked) {
+    // Unlike
+    updatedStory = await Story.findByIdAndUpdate(
+      req.params.id,
+      { 
+        $pull: { likedBy: userId },
+        $inc: { 'stats.likes': -1 }
+      },
+      { new: true }
+    );
+  } else {
+    // Like
+    updatedStory = await Story.findByIdAndUpdate(
+      req.params.id,
+      { 
+        $addToSet: { likedBy: userId },
+        $inc: { 'stats.likes': 1 }
+      },
+      { new: true }
+    );
+  }
+  
+  console.log('After update - likedBy:', updatedStory.likedBy);
+  console.log('After update - stats.likes:', updatedStory.stats.likes);
+  
+  // Track analytics asynchronously
+  analyticsService.trackEvent(
     analyticsService.eventTypes.STORY_LIKE,
     req.user._id,
     { storyId: story._id }
-  );
+  ).catch(err => console.error('Analytics tracking failed:', err));
+
+  const finalIsLiked = updatedStory.likedBy.some(id => id.toString() === req.user._id.toString());
+  console.log('Final response - isLiked:', finalIsLiked, 'likesCount:', updatedStory.stats.likes);
 
   res.status(200).json({
     status: 'success',
     data: {
-      isLiked: story.likedBy.includes(req.user._id),
-      likesCount: story.stats.likes
+      isLiked: finalIsLiked,
+      likesCount: updatedStory.stats.likes
     }
   });
 });

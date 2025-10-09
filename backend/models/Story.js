@@ -271,21 +271,9 @@ storySchema.methods.incrementView = function(userId = null, readingTime = 0, com
   return this.save({ validateBeforeSave: false });
 };
 
-// Instance method to toggle like
-storySchema.methods.toggleLike = async function(userId) {
-  const userIdStr = userId.toString();
-  const isLiked = this.likedBy.some(id => id.toString() === userIdStr);
-  
-  if (isLiked) {
-    this.likedBy = this.likedBy.filter(id => id.toString() !== userIdStr);
-  } else {
-    this.likedBy.push(userId);
-  }
-  
-  this.stats.likes = this.likedBy.length;
-  await this.save({ validateBeforeSave: false });
-  return this;
-};
+// Instance method to toggle like - REMOVED
+// This method was causing double-toggle issues with the controller
+// The controller now handles like toggling directly with atomic operations
 
 // Instance method to toggle save - DISABLED
 // This method was causing double-toggle issues

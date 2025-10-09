@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Heart, Bookmark, Share2, MessageCircle, MoreHorizontal } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { storyAPI } from '@/lib/api'
 import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 import { toast } from '@/lib/toast'
@@ -77,6 +77,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
   const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null)
   const [displayedStories, setDisplayedStories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [likingStories, setLikingStories] = useState<Set<string>>(new Set())
   const [isInitialLoading, setIsInitialLoading] = useState(true)
   const shareMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const moreMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
@@ -112,6 +113,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
         })
         setLikedStories(newLiked)
         setSavedStories(newSaved)
+        console.log('Initialized liked stories:', Array.from(newLiked))
         console.log('Initialized saved stories:', Array.from(newSaved))
         setDisplayedStories(stories)
       } catch (error) {
@@ -154,10 +156,14 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
     }
   }, [showShareMenu, showMoreMenu])
 
-  const toggleLike = async (storyId: string) => {
+  const toggleLike = useCallback(async (storyId: string) => {
+    const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
+    
+    if (likingStories.has(actualStoryId)) return
+    
     try {
-      // Use the correct ID format (_id for backend)
-      const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
+      setLikingStories(prev => new Set(prev).add(actualStoryId))
+      
       const response = await storyAPI.likeStory(actualStoryId)
       const isLiked = response.data.isLiked
       const likesCount = response.data.likesCount
@@ -190,8 +196,14 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
     } catch (error) {
       console.error('Failed to like story:', error)
       toast.error('Failed to like story. Please try again.')
+    } finally {
+      setLikingStories(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(actualStoryId)
+        return newSet
+      })
     }
-  }
+  }, [likingStories])
 
   const toggleSave = async (storyId: string) => {
     if (isLoading) return // Prevent multiple calls
@@ -445,7 +457,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                       <button
                         onClick={() => {
                           console.log('Hide story:', story.title)
-                          handleHideStory(story._id || story.id)
+                          handleNotInterested(story._id || story.id)
                         }}
                         className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                           hiddenStories.has(story._id || story.id)
@@ -538,8 +550,13 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
               {/* Actions - Bottom Right */}
               <div className="flex items-center space-x-6">
                 <button
-                  onClick={() => toggleLike(story._id || story.id)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    toggleLike(story._id || story.id)
+                  }}
+                  disabled={likingStories.has(story._id || story.id)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
                 >
                   <Heart
                     size={20}

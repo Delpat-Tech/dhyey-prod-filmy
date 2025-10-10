@@ -1,4 +1,4 @@
-// File: C:\Delpath\dhyey-prod-filmy\frontend\src\app\auth\forgot-password\page.tsx
+// File: D:\Prog\Webdev\react\filmy-creators\frontend\src\app\auth\forgot-password\page.tsx
 import * as entry from '../../../../../src/app/auth/forgot-password/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

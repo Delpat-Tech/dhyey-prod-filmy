@@ -1,4 +1,4 @@
-// File: C:\Delpath\dhyey-prod-filmy\frontend\src\app\admin\competitions\[id]\judge\page.tsx
+// File: D:\Prog\Webdev\react\filmy-creators\frontend\src\app\admin\competitions\[id]\judge\page.tsx
 import * as entry from '../../../../../../../src/app/admin/competitions/[id]/judge/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

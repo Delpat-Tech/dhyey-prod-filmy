@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/admin/comments":{},"/admin/users/suspend":{},"/auth/forgot-password":{},"/auth/register":{},"/auth/login":{},"/privacy":{},"/terms":{}}}
+{"version":1,"functions":{"/admin/comments":{},"/admin/users/suspend":{},"/auth/forgot-password":{},"/auth/login":{},"/auth/register":{},"/privacy":{},"/terms":{}}}

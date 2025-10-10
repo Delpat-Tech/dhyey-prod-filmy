@@ -68,15 +68,15 @@ const mockComments = [
 ]
 
 export default function CommentsSection({ storyId, storyStatus }: CommentsSectionProps) {
-  // Check if story is under review
-  const isUnderReview = storyStatus && !['approved'].includes(storyStatus)
-  
-  // Don't render comments section for stories under review
-  if (isUnderReview) {
-    return null
-  }
   const [comments, setComments] = useState(mockComments)
   const [isLoading, setIsLoading] = useState(false)
+  const [newComment, setNewComment] = useState('')
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [showAllComments, setShowAllComments] = useState(false)
+
+  // Check if story is under review
+  const isUnderReview = storyStatus && !['approved'].includes(storyStatus)
 
   // Load comments from API
   useEffect(() => {
@@ -95,10 +95,11 @@ export default function CommentsSection({ storyId, storyStatus }: CommentsSectio
 
     loadComments()
   }, [storyId])
-  const [newComment, setNewComment] = useState('')
-  const [replyingTo, setReplyingTo] = useState<number | null>(null)
-  const [replyText, setReplyText] = useState('')
-  const [showAllComments, setShowAllComments] = useState(false)
+  
+  // Don't render comments section for stories under review
+  if (isUnderReview) {
+    return null
+  }
 
 
   const handleLikeComment = async (commentId: number) => {

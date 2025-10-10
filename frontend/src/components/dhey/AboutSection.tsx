@@ -195,7 +195,7 @@ export default function AboutSection() {
               <div className="space-y-6 text-gray-700 leading-relaxed">
                 {section.content.map((item, itemIndex) => (
                   <div key={itemIndex}>
-                    {item.subtitle && (
+                    {'subtitle' in item && item.subtitle && (
                       <h4 className="text-lg font-semibold text-purple-600 mb-3">
                         {item.subtitle}
                       </h4>

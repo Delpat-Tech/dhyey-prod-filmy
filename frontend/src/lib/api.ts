@@ -271,13 +271,6 @@ export const adminAPI = {
 
   // Admin user management
   getAllAdmins: () => apiRequest('/admin/admins'),
-  suspendUser: (userId: string, reason: string) =>
-    apiRequest(`/admin/users/${userId}/suspend`, {
-      method: 'PATCH',
-      body: JSON.stringify({ reason }),
-    }),
-  unsuspendUser: (userId: string) =>
-    apiRequest(`/admin/users/${userId}/unsuspend`, { method: 'PATCH' }),
 
   // Admin Profile Management
   getAdminProfile: () => apiRequest('/admin/profile'),

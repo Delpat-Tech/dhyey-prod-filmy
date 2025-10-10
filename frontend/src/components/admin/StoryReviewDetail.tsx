@@ -387,11 +387,7 @@ export default function StoryReviewDetail({ storyId }: StoryReviewDetailProps) {
             >
               <tab.icon size={16} />
               <span>{tab.label}</span>
-              {tab.badge && tab.badge > 0 && (
-                <span className="ml-2 bg-red-100 text-red-600 text-xs font-medium px-2 py-0.5 rounded-full">
-                  {tab.badge}
-                </span>
-              )}
+
             </button>
           ))}
         </nav>

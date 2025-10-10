@@ -534,7 +534,7 @@ export default function StoryFeed({ genreFilter }: StoryFeedProps) {
                       }}
                     >
                       <div className="text-xs text-gray-500 px-4 py-2 border-b border-gray-100">
-                        Share "{story.title}"
+                        Share &quot;{story.title}&quot;
                       </div>
                       <button
                         onClick={() => {

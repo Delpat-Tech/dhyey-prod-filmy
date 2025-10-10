@@ -83,7 +83,7 @@ export default function AdminEditProfilePage() {
         // Update user context with new data including avatar
         updateUser({
           name: formData.name,
-          authorName: formData.authorName,
+          username: formData.authorName,
           bio: formData.bio,
           location: formData.location,
           website: formData.website,
@@ -99,7 +99,7 @@ export default function AdminEditProfilePage() {
         // Update user context to reflect changes in navbar
         updateUser({
           name: formData.name,
-          authorName: formData.authorName,
+          username: formData.authorName,
           bio: formData.bio,
           location: formData.location,
           website: formData.website,

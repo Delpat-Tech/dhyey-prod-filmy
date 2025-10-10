@@ -42,7 +42,7 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Featured Stories</h2>
             <p className="text-gray-600 mb-4">Coming Soon</p>
             <p className="text-sm text-gray-500">
-              We're working on bringing you curated featured stories from our top authors. Stay tuned!
+              We&apos;re working on bringing you curated featured stories from our top authors. Stay tuned!
             </p>
           </div>
         </div>

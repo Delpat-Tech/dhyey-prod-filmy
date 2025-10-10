@@ -1,0 +1,11 @@
+"use strict";exports.id=9283,exports.ids=[9283],exports.modules={69283:(e,o,r)=>{r.d(o,{Mv:()=>shareProfile,c0:()=>showNotification});let showNotification=({type:e,title:o,message:r,duration:t=3e3})=>{let n=document.createElement("div");n.className=`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm transition-all duration-300 ${"success"===e?"bg-green-100 text-green-800 border border-green-200":"error"===e?"bg-red-100 text-red-800 border border-red-200":"warning"===e?"bg-yellow-100 text-yellow-800 border border-yellow-200":"bg-blue-100 text-blue-800 border border-blue-200"}`,n.innerHTML=`
+    <div class="flex items-start">
+      <div class="flex-1">
+        <div class="font-medium">${o}</div>
+        ${r?`<div class="text-sm mt-1">${r}</div>`:""}
+      </div>
+      <button class="ml-2 text-gray-400 hover:text-gray-600" onclick="this.parentElement.parentElement.remove()">
+        \xd7
+      </button>
+    </div>
+  `,document.body.appendChild(n),setTimeout(()=>{n.parentElement&&n.remove()},t)},handleAsyncError=(e,o="An unexpected error occurred")=>{console.error("Error:",e);let r=e?.response?.data?.message||e?.message||o;showNotification({type:"error",title:"Error",message:r})},showSuccess=(e,o)=>{showNotification({type:"success",title:e,message:o})},shareProfile=async(e,o)=>{let r=`${window.location.origin}/profile/${o.username}`,t=`Check out ${o.name}'s profile on Dhyey`;try{switch(e){case"copy":await navigator.clipboard.writeText(r),showSuccess("Link Copied","Profile link copied to clipboard!");break;case"twitter":window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(t)}&url=${encodeURIComponent(r)}`,"_blank");break;case"facebook":window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(r)}`,"_blank");break;case"linkedin":window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(r)}`,"_blank");break;default:throw Error("Unsupported platform")}}catch(e){handleAsyncError(e,"Failed to share profile")}}}};

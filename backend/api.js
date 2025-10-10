@@ -100,6 +100,13 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/api/v1/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Chal Raha hai bhai'
+  });
+});
+
 // 3) ROUTES
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);

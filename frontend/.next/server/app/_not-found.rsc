@@ -1,10 +1,10 @@
-1:HL["/_next/static/css/0dce9d244a262f70.css","style",{"crossOrigin":""}]
-0:["twycRDNpwJXd9umVjaCvf",[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],"$L2",[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/0dce9d244a262f70.css","precedence":"next","crossOrigin":""}]],"$L3"]]]]
-4:I[26709,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-6167d930b60a6fcc.js"],"AuthProvider"]
-5:I[71482,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-6167d930b60a6fcc.js"],""]
+1:HL["/_next/static/css/1630b2e2950baa1e.css","style",{"crossOrigin":""}]
+0:["d2W8VEnaNsskwmLoCzbxY",[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",true],"$L2",[[["$","link","0",{"rel":"stylesheet","href":"/_next/static/css/1630b2e2950baa1e.css","precedence":"next","crossOrigin":""}]],"$L3"]]]]
+4:I[26709,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-1622a762bd6901f1.js"],"AuthProvider"]
+5:I[71482,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-1622a762bd6901f1.js"],""]
 6:I[16652,[],""]
 7:I[1030,[],""]
-d:I[17551,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-6167d930b60a6fcc.js"],""]
+d:I[17551,["2054","static/chunks/2054-bb15000f233533e8.js","6607","static/chunks/6607-6c5601c84b9b22ce.js","3185","static/chunks/app/layout-1622a762bd6901f1.js"],""]
 9:{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"}
 a:{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"}
 b:{"display":"inline-block"}

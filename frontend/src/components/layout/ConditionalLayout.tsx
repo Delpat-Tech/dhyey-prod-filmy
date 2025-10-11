@@ -26,7 +26,7 @@ export default function ConditionalLayout({
       )}
       
       {/* Main Content */}
-      <main className={`flex-1 ${!isAuthPage && sidebarOpen ? 'md:ml-64' : ''} ${!isAuthPage ? 'pb-16 md:pb-0' : ''} relative`}>
+      <main className={`flex-1 ${!isAuthPage && sidebarOpen ? 'md:ml-64' : ''} ${!isAuthPage ? 'pb-16 md:pb-0' : ''} relative w-full max-w-full overflow-x-hidden`}>
         {!isAuthPage && (
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)} 

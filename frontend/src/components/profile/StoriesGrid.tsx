@@ -1,3 +1,5 @@
+// frontend/src/components/profile/StoriesGrid.tsx
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -90,7 +92,7 @@ export default function StoriesGrid() {
             <h3 className="text-lg font-semibold text-purple-800">Published Stories</h3>
             <span className="flex-1 h-px bg-gradient-to-r from-purple-200 via-indigo-200 to-transparent" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             {publishedStories.map((story) => (
               <Link key={story._id} href={`/story/${story._id}`} className="group">
                 <div className="relative aspect-square rounded-2xl overflow-hidden border border-purple-200/70 bg-gradient-to-br from-purple-700 via-indigo-700 to-slate-900 shadow-md shadow-purple-200/40">

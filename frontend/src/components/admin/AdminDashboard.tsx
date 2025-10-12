@@ -94,8 +94,13 @@ export default function AdminDashboard() {
   const fetchAdminData = async () => {
     try {
       setIsLoading(true)
-      const data = await adminAPI.getDashboardStats()
-      setStats(data)
+      const response = await adminAPI.getDashboardStats()
+      console.log('Dashboard stats response:', response)
+      if (response.status === 'success') {
+        setStats(response.data)
+      } else {
+        setStats(dashboardStats)
+      }
     } catch (error) {
       console.error('Error fetching admin data:', error)
       setStats(dashboardStats)
@@ -127,9 +132,12 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">Welcome back! Here's what's happening on your platform.</p>
         </div>
-        <div className="text-sm text-gray-500">
-          Last updated: Just now
-        </div>
+        <button 
+          onClick={fetchAdminData}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+        >
+          Refresh Data
+        </button>
       </div>
 
       {/* Enhanced Stats Cards */}

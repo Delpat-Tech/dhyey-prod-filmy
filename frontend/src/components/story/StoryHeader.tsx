@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { ArrowLeft, Share2, MoreHorizontal, Calendar, Clock } from 'lucide-react'
+import { ArrowLeft, Share2, MoreHorizontal, Calendar, Clock, X } from 'lucide-react'
 import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 import { toast } from '@/lib/toast'
 
@@ -35,6 +35,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
   const [isFollowing, setIsFollowing] = useState(story.author.isFollowing)
   const [showShareMenu, setShowShareMenu] = useState(false)
   const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
   const shareMenuRef = useRef<HTMLDivElement>(null)
   const moreMenuRef = useRef<HTMLDivElement>(null)
 
@@ -199,7 +200,10 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
 
         {/* Featured Image */}
         {story.image && (
-          <div className="relative aspect-video rounded-xl overflow-hidden">
+          <div 
+            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
+            onClick={() => setShowImageModal(true)}
+          >
             <Image
               src={getImageUrl(story.image)}
               alt={story.title}
@@ -210,6 +214,31 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
           </div>
         )}
       </div>
+
+      {/* Image Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-7xl max-h-full">
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+            >
+              <X size={32} />
+            </button>
+            <Image
+              src={getImageUrl(story.image)}
+              alt={story.title}
+              width={1200}
+              height={800}
+              className="max-w-full max-h-[90vh] object-contain"
+            />
+          </div>
+          <div 
+            className="absolute inset-0" 
+            onClick={() => setShowImageModal(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }

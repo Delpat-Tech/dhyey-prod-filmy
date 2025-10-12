@@ -73,6 +73,7 @@ export default function StoriesGrid() {
   const publishedStories = stories.filter(story => story.status === 'approved')
   const draftStories = stories.filter(story => story.status === 'draft')
   const reviewStories = stories.filter(story => story.status === 'pending')
+  const rejectedStories = stories.filter(story => story.status === 'rejected')
 
   return (
     <div className="space-y-8">
@@ -144,6 +145,50 @@ export default function StoriesGrid() {
         </div>
       )}
 
+      {/* Under Review Stories */}
+      {reviewStories.length > 0 && (
+        <div className="bg-gradient-to-br from-yellow-50 via-white to-orange-50 border border-yellow-100 rounded-2xl p-6 shadow-sm shadow-yellow-200/50">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-lg font-semibold text-yellow-800">Under Review</h3>
+            <span className="flex-1 h-px bg-gradient-to-r from-yellow-200 via-orange-200 to-transparent" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {reviewStories.map((story) => (
+              <Link key={story._id} href={`/story/${story._id}`} className="group">
+                <div className="relative aspect-square rounded-2xl overflow-hidden border border-yellow-200/70 bg-gradient-to-br from-yellow-600 via-orange-600 to-red-700 shadow-md shadow-yellow-200/40">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-4xl font-semibold text-white/90 tracking-[0.35em]">
+                      {story.title.charAt(0)}
+                    </span>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className="px-2 py-1 rounded-full border border-white/20 bg-white/10 text-white text-xs font-medium backdrop-blur-sm">
+                      Under Review
+                    </span>
+                  </div>
+
+                  {/* Genre Badge */}
+                  <div className="absolute top-3 right-3">
+                    <span className="px-2 py-1 rounded-full border border-white/20 bg-white/10 text-white text-xs font-medium backdrop-blur-sm">
+                      {story.genre}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="mt-2">
+                  <h4 className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-1">
+                    {story.title}
+                  </h4>
+                  <p className="text-sm text-yellow-600 mt-1">Waiting for approval</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Draft Stories */}
       {draftStories.length > 0 && (
         <div>
@@ -182,6 +227,50 @@ export default function StoriesGrid() {
                   <p className="text-sm text-gray-500 mt-1">Continue editing</p>
                 </div>
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rejected Stories */}
+      {rejectedStories.length > 0 && (
+        <div className="bg-gradient-to-br from-red-50 via-white to-pink-50 border border-red-100 rounded-2xl p-6 shadow-sm shadow-red-200/50">
+          <div className="flex items-center gap-3 mb-4">
+            <h3 className="text-lg font-semibold text-red-800">Rejected Stories</h3>
+            <span className="flex-1 h-px bg-gradient-to-r from-red-200 via-pink-200 to-transparent" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {rejectedStories.map((story) => (
+              <Link key={story._id} href={`/story/${story._id}`} className="group">
+                <div className="relative aspect-square rounded-2xl overflow-hidden border border-red-200/70 bg-gradient-to-br from-red-600 via-pink-600 to-rose-700 shadow-md shadow-red-200/40">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-4xl font-semibold text-white/90 tracking-[0.35em]">
+                      {story.title.charAt(0)}
+                    </span>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className="absolute top-3 left-3">
+                    <span className="px-2 py-1 rounded-full border border-white/20 bg-white/10 text-white text-xs font-medium backdrop-blur-sm">
+                      Rejected
+                    </span>
+                  </div>
+
+                  {/* Genre Badge */}
+                  <div className="absolute top-3 right-3">
+                    <span className="px-2 py-1 rounded-full border border-white/20 bg-white/10 text-white text-xs font-medium backdrop-blur-sm">
+                      {story.genre}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="mt-2">
+                  <h4 className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-1">
+                    {story.title}
+                  </h4>
+                  <p className="text-sm text-red-600 mt-1">Review feedback available</p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

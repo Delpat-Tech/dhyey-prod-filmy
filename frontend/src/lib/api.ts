@@ -126,6 +126,24 @@ export const userAPI = {
       body: JSON.stringify(userData),
     }),
 
+  updateMeWithImage: async (formData: FormData) => {
+    const token = localStorage.getItem('dhyey_token')
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      method: 'PATCH',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+    }
+    
+    return response.json()
+  },
+
   getUserProfile: (identifier: string) => apiRequest(`/users/profile/${identifier}`),
   
   followUser: (userId: string) =>
@@ -152,6 +170,24 @@ export const storyAPI = {
       method: 'POST',
       body: JSON.stringify(storyData),
     }),
+
+  createStoryWithImage: async (formData: FormData) => {
+    const token = localStorage.getItem('dhyey_token')
+    const response = await fetch(`${API_BASE_URL}/stories`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    })
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+    }
+    
+    return response.json()
+  },
 
   updateStory: (id: string, storyData: any) =>
     apiRequest(`/stories/${id}`, {

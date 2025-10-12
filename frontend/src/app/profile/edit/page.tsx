@@ -52,10 +52,18 @@ export default function EditProfilePage() {
 
     try {
       if (selectedFile) {
-        await uploadPhoto()
+        const formDataWithImage = new FormData()
+        formDataWithImage.append('avatar', selectedFile)
+        Object.keys(formData).forEach(key => {
+          formDataWithImage.append(key, formData[key as keyof typeof formData])
+        })
+        
+        const response = await userAPI.updateMeWithImage(formDataWithImage)
+        setAvatar(response.data.user.avatar)
+        setSelectedFile(null)
+      } else {
+        await userAPI.updateMe(formData)
       }
-      
-      await userAPI.updateMe(formData)
       
       setMessage('Profile updated successfully!')
     } catch (error: any) {
@@ -74,20 +82,7 @@ export default function EditProfilePage() {
     }
   }
 
-  const uploadPhoto = async () => {
-    if (!selectedFile) return
 
-    const formData = new FormData()
-    formData.append('avatar', selectedFile)
-
-    try {
-      const response = await userAPI.updateMe(formData)
-      setAvatar(response.data.user.avatar)
-      setSelectedFile(null)
-    } catch (error) {
-      console.error('Photo upload failed:', error)
-    }
-  }
 
   if (loading) {
     return (

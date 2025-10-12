@@ -8,35 +8,37 @@ const nextConfig = {
       {
         source: '/api/:path*',
         destination: 'http://localhost:5000/api/:path*'
+      },
+      {
+        source: '/uploads/:path*',
+        destination: 'http://localhost:5000/uploads/:path*'
       }
     ]
   },
   images: {
-    domains: ['localhost', 'images.unsplash.com', 'randomuser.me', 'ui-avatars.com'],
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '5000',
-        pathname: '/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3001',
       },
       {
         protocol: 'https',
         hostname: 'randomuser.me',
-        port: '',
-        pathname: '/**',
       },
       {
         protocol: 'https',
         hostname: 'ui-avatars.com',
-        port: '',
-        pathname: '/**',
       },
     ],
   },

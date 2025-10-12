@@ -4,7 +4,7 @@
 
   import Image from 'next/image'
   import Link from 'next/link'
-  import { Heart, Bookmark, Share2, MessageCircle, MoreHorizontal } from 'lucide-react'
+  import { Heart, Bookmark, MessageCircle, MoreHorizontal } from 'lucide-react'
   import { useState, useEffect, useRef, useCallback } from 'react'
   import { storyAPI } from '@/lib/api'
   import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
@@ -75,13 +75,11 @@
     const [hiddenStories, setHiddenStories] = useState<Set<string>>(new Set())
     const [blockedAuthors, setBlockedAuthors] = useState<Set<string>>(new Set())
     const [reportedStories, setReportedStories] = useState<Set<string>>(new Set())
-    const [showShareMenu, setShowShareMenu] = useState<string | null>(null)
     const [showMoreMenu, setShowMoreMenu] = useState<string | null>(null)
     const [displayedStories, setDisplayedStories] = useState<any[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [likingStories, setLikingStories] = useState<Set<string>>(new Set())
     const [isInitialLoading, setIsInitialLoading] = useState(true)
-    const shareMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
     const moreMenuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
 
     // Load stories from API with genre filter
@@ -135,14 +133,6 @@
     // Close menus when clicking outside
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        // Check share menus
-        if (showShareMenu !== null) {
-          const shareRef = shareMenuRefs.current[showShareMenu]
-          if (shareRef && !shareRef.contains(event.target as Node)) {
-            setShowShareMenu(null)
-          }
-        }
-        
         // Check more menus
         if (showMoreMenu !== null) {
           const moreRef = moreMenuRefs.current[showMoreMenu]
@@ -156,7 +146,7 @@
       return () => {
         document.removeEventListener('mousedown', handleClickOutside)
       }
-    }, [showShareMenu, showMoreMenu])
+    }, [showMoreMenu])
 
     const toggleLike = useCallback(async (storyId: string) => {
       const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
@@ -262,15 +252,8 @@
       }
     }
 
-    const handleShare = (storyId: string) => {
-      console.log('Share button clicked for story:', storyId) // Debug log
-      setShowShareMenu(showShareMenu === storyId ? null : storyId)
-      setShowMoreMenu(null) // Close other menu
-    }
-
     const handleMore = (storyId: string) => {
       setShowMoreMenu(showMoreMenu === storyId ? null : storyId)
-      setShowShareMenu(null) // Close other menu
     }
 
     const handleReportStory = async (storyId: string) => {
@@ -312,35 +295,7 @@
       }
     }
 
-    const shareStory = async (platform: string, story: any) => {
-      const url = `${window.location.origin}/story/${story.id}`
-      const title = `Check out "${story.title}" by ${story.author.name}`
-      
-      try {
-        // Track the share on backend
-        await storyAPI.shareStory(story.id, { platform })
-        
-        switch (platform) {
-          case 'copy':
-            await navigator.clipboard.writeText(url)
-            toast.success('Link copied to clipboard!')
-            break
-          case 'twitter':
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`, '_blank')
-            break
-          case 'facebook':
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank')
-            break
-          case 'linkedin':
-            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
-            break
-        }
-      } catch (error) {
-        console.error('Share failed:', error)
-        toast.error('Failed to share story. Please try again.')
-      }
-      setShowShareMenu(null)
-    }
+
 
     const loadMoreStories = async () => {
       setIsLoading(true)
@@ -454,9 +409,9 @@
             {/* Story Footer - Author Info and Actions */}
             <div className="p-4">
               <div className="flex items-center justify-between">
-                {/* Author Info - Bottom Left */}
-                <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group">
-                  <div className="relative">
+                {/* Author Info */}
+                <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group flex-1 min-w-0">
+                  <div className="relative flex-shrink-0">
                     <Image
                       src={getAvatarUrl(story.author.avatar)}
                       alt={story.author.name}
@@ -466,14 +421,14 @@
                     />
                     <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{story.author.name}</h4>
-                    <p className="text-sm text-gray-500">@{story.author.username} • {story.timeAgo}</p>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="font-semibold text-gray-900 truncate">{story.author.name}</h4>
+                    <p className="text-sm text-gray-500 truncate">@{story.author.username} • {story.timeAgo}</p>
                   </div>
                 </Link>
 
-                {/* Actions - Bottom Right */}
-                <div className="flex items-center space-x-6">
+                {/* Actions */}
+                <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
                   <button
                     onClick={(e) => {
                       e.preventDefault()
@@ -481,117 +436,34 @@
                       toggleLike(story._id || story.id)
                     }}
                     disabled={likingStories.has(story._id || story.id)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
                   >
                     <Heart
                       size={18}
                       className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`}
                     />
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium hidden sm:inline">
                       {story.stats?.likes || story.likes || 0}
                     </span>
                   </button>
 
                   <Link
                     href={`/story/${story._id || story.id}#comments`}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                    className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <MessageCircle size={18} className="transition-transform duration-300 hover:scale-110" />
-                    <span className="text-sm font-medium">{story.stats?.comments || story.comments || 0}</span>
+                    <span className="text-sm font-medium hidden sm:inline">{story.stats?.comments || story.comments || 0}</span>
                   </Link>
 
                   <button
                     onClick={() => toggleSave(story._id || story.id)}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                    className="flex items-center text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <Bookmark
                       size={18}
                       className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`}
                     />
                   </button>
-
-                  <div className="relative" ref={el => { shareMenuRefs.current[story.id] = el }}>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        console.log('Share button clicked - event triggered')
-                        handleShare(story._id || story.id)
-                      }}
-                      className="flex items-center space-x-2 text-gray-600 hover:text-green-500 transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer"
-                    >
-                      <Share2 size={18} className="transition-transform duration-300 hover:scale-110" />
-                      <span className="text-sm font-medium">Share</span>
-                    </button>
-
-                    {/* Share Menu */}
-                    {showShareMenu === (story._id || story.id) && (
-                      <div
-                        className="fixed bg-white border border-gray-200 rounded-lg shadow-2xl py-1 min-w-[180px]"
-                        style={{
-                          zIndex: 9999,
-                          left: '50%',
-                          top: '50%',
-                          transform: 'translate(-50%, -50%)'
-                        }}
-                      >
-                        <div className="text-xs text-gray-500 px-4 py-2 border-b border-gray-100">
-                          Share "{story.title}"
-                        </div>
-                        <button
-                          onClick={() => {
-                            console.log('Copy link clicked')
-                            shareStory('copy', story)
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          📋 Copy Link
-                        </button>
-                        <button
-                          onClick={() => {
-                            console.log('Twitter share clicked')
-                            shareStory('twitter', story)
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          🐦 Share on Twitter
-                        </button>
-                        <button
-                          onClick={() => {
-                            console.log('Facebook share clicked')
-                            shareStory('facebook', story)
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          📘 Share on Facebook
-                        </button>
-                        <button
-                          onClick={() => {
-                            console.log('LinkedIn share clicked')
-                            shareStory('linkedin', story)
-                          }}
-                          className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                          💼 Share on LinkedIn
-                        </button>
-                        <button
-                          onClick={() => setShowShareMenu(null)}
-                          className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-                        >
-                          ❌ Cancel
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Backdrop */}
-                    {showShareMenu === (story._id || story.id) && (
-                      <div
-                        className="fixed inset-0 bg-black bg-opacity-50"
-                        style={{ zIndex: 9998 }}
-                        onClick={() => setShowShareMenu(null)}
-                      />
-                    )}
-                  </div>
                 </div>
               </div>
             </div>

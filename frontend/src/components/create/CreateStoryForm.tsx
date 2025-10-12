@@ -82,17 +82,26 @@ export default function CreateStoryForm() {
     setIsSubmitting(true)
     
     try {
-      // Prepare story data with pending status for admin review
-      const storyData = {
-        title: formData.title,
-        content: formData.content,
-        genre: formData.genres[0] || 'Fiction', // Use first selected genre
-        hashtags: formData.hashtags.split(' ').filter(tag => tag.trim()),
-        status: 'pending', // Set as pending for admin review
-        // Note: Image upload would need special handling with FormData
+      // Create FormData for file upload
+      const formDataToSend = new FormData()
+      formDataToSend.append('title', formData.title)
+      formDataToSend.append('content', formData.content)
+      formDataToSend.append('genre', formData.genres[0] || 'Fiction')
+      
+      // Send hashtags as individual form fields
+      const hashtagsArray = formData.hashtags.split(' ').filter(tag => tag.trim())
+      hashtagsArray.forEach((tag, index) => {
+        formDataToSend.append(`hashtags[${index}]`, tag)
+      })
+      
+      formDataToSend.append('status', 'pending')
+      
+      // Add image if selected
+      if (formData.featuredImage) {
+        formDataToSend.append('storyImage', formData.featuredImage)
       }
       
-      const response = await storyAPI.createStory(storyData)
+      const response = await storyAPI.createStoryWithImage(formDataToSend)
       
       showNotification({
         type: 'success',

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Type, Minus, Plus } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Type, Minus, Plus, Palette } from 'lucide-react'
 
 interface StoryContentProps {
   story: {
@@ -13,6 +13,27 @@ interface StoryContentProps {
 export default function StoryContent({ story }: StoryContentProps) {
   const [fontSize, setFontSize] = useState(16)
   const [showReadingOptions, setShowReadingOptions] = useState(false)
+  const [backgroundTheme, setBackgroundTheme] = useState<'clean-white' | 'warm-paper' | 'cool-screen'>('clean-white')
+  const [readingProgress, setReadingProgress] = useState(0)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  const backgroundThemes = {
+    'clean-white': {
+      name: 'Clean White',
+      background: 'bg-white',
+      textColor: 'text-gray-800'
+    },
+    'warm-paper': {
+      name: 'Warm Paper',
+      background: 'bg-amber-50',
+      textColor: 'text-gray-900'
+    },
+    'cool-screen': {
+      name: 'Cool Screen',
+      background: 'bg-slate-50',
+      textColor: 'text-gray-800'
+    }
+  }
 
   const increaseFontSize = () => {
     if (fontSize < 24) setFontSize(fontSize + 2)
@@ -22,6 +43,24 @@ export default function StoryContent({ story }: StoryContentProps) {
     if (fontSize > 12) setFontSize(fontSize - 2)
   }
 
+  const handleScroll = () => {
+    if (contentRef.current) {
+      const element = contentRef.current
+      const scrollTop = element.scrollTop
+      const scrollHeight = element.scrollHeight - element.clientHeight
+      const progress = (scrollTop / scrollHeight) * 100
+      setReadingProgress(Math.min(100, Math.max(0, progress)))
+    }
+  }
+
+  useEffect(() => {
+    const element = contentRef.current
+    if (element) {
+      element.addEventListener('scroll', handleScroll)
+      return () => element.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   const paragraphs = story.content.split('\n\n').filter(p => p.trim())
 
   return (
@@ -29,7 +68,7 @@ export default function StoryContent({ story }: StoryContentProps) {
       {/* Reading Options */}
       <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-100">
         <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span>Reading time: {story.readTime}</span>
+          <span>Estimated reading time: {story.readTime} minutes</span>
         </div>
         
         <div className="flex items-center space-x-2">
@@ -45,9 +84,12 @@ export default function StoryContent({ story }: StoryContentProps) {
 
       {/* Font Size Controls */}
       {showReadingOptions && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg space-y-6">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Font Size</span>
+            <div className="flex items-center space-x-2">
+              <Type size={16} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">Font Size</span>
+            </div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={decreaseFontSize}
@@ -68,20 +110,66 @@ export default function StoryContent({ story }: StoryContentProps) {
               </button>
             </div>
           </div>
+
+          {/* Background Theme Selection */}
+          <div>
+            <div className="flex items-center space-x-2 mb-3">
+              <Palette size={16} className="text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">Background</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(backgroundThemes).map(([key, theme]) => (
+                <button
+                  key={key}
+                  onClick={() => setBackgroundTheme(key as typeof backgroundTheme)}
+                  className={`p-2 rounded-lg border-2 text-xs font-medium transition-all ${
+                    backgroundTheme === key
+                      ? 'border-purple-500 bg-purple-50 text-purple-700'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  style={{
+                    backgroundColor: key === 'clean-white' ? '#ffffff' :
+                                     key === 'warm-paper' ? '#fef3c7' :
+                                     key === 'cool-screen' ? '#f1f5f9' :
+                                     '#ffffff'
+                  }}
+                >
+                  {theme.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Story Content */}
-      <article className="prose prose-lg max-w-none">
-        <div 
-          className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere text-justify"
-          style={{ fontSize: `${fontSize}px`, lineHeight: '2.0' }}
+      <article className={`prose prose-lg max-w-none rounded-lg ${backgroundThemes[backgroundTheme].background} relative`}>
+        {/* Reading Progress Bar */}
+        <div className="sticky top-0 z-20 w-full h-1 bg-gray-200 mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 ease-out"
+            style={{ width: `${readingProgress}%` }}
+          ></div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div
+          ref={contentRef}
+          className={`p-8 max-h-[70vh] overflow-y-auto ${backgroundThemes[backgroundTheme].textColor}`}
+          style={{
+            fontSize: `${fontSize}px`,
+            lineHeight: '2.0',
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgb(147, 51, 234) rgb(243, 244, 246)'
+          }}
         >
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="mb-6 break-words">
-              {paragraph}
-            </p>
-          ))}
+          <div className="break-words overflow-wrap-anywhere text-justify">
+            {paragraphs.map((paragraph, index) => (
+              <p key={index} className="mb-6 break-words">
+                {paragraph}
+              </p>
+            ))}
+          </div>
         </div>
       </article>
 

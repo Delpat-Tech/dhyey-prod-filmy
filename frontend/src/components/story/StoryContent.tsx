@@ -64,12 +64,25 @@ export default function StoryContent({ story }: StoryContentProps) {
 
   const paragraphs = story.content.split('\n\n').filter(p => p.trim())
 
+  // Calculate total words
+  const totalWords = paragraphs.reduce((total, paragraph) => {
+    return total + paragraph.trim().split(/\s+/).length
+  }, 0)
+
+  // Format word count with commas
+  const formattedWordCount = totalWords.toLocaleString()
+
   return (
     <div className="px-6 py-8">
       {/* Reading Options */}
       <div className={`flex items-center justify-between mb-8 pb-4 border-b border-gray-100 ${focusMode ? 'opacity-50' : ''}`}>
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <span>Estimated reading time: {story.readTime} minutes</span>
+        <div className="flex flex-col space-y-1">
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <span>Estimated reading time: {story.readTime} minutes</span>
+          </div>
+          <div className="text-xs text-gray-500">
+            <span className="font-medium">Total words:</span> {formattedWordCount}
+          </div>
         </div>
 
         <div className="flex items-center space-x-2">

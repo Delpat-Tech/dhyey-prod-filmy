@@ -3,6 +3,7 @@ import { Inter, Poppins, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import ConditionalLayout from '@/components/layout/ConditionalLayout'
 import { AuthProvider } from '@/contexts/AuthContext'
+import AuthGuard from '@/components/AuthGuard'
 import ToastContainer from '@/components/ui/ToastContainer'
 
 const inter = Inter({ 
@@ -38,7 +39,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${poppins.variable} ${playfairDisplay.variable} font-sans bg-gray-50 min-h-screen`}>
         <AuthProvider>
-          <ConditionalLayout>{children}</ConditionalLayout>
+          <AuthGuard>
+            <ConditionalLayout>{children}</ConditionalLayout>
+          </AuthGuard>
           <ToastContainer />
         </AuthProvider>
       </body>

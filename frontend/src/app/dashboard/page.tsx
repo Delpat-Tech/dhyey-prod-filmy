@@ -28,7 +28,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="w-full max-w-4xl mx-auto px-4 py-4">
+      <div className="w-full max-w-3xl mx-auto px-4 py-4">                        {/* change this line to increase/decrease the width of the cards */}
         {/* Featured Stories Section - Coming Soon */}
         {/* <FeaturedStories /> */}
 

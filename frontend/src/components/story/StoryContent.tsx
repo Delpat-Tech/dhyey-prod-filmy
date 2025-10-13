@@ -74,8 +74,8 @@ export default function StoryContent({ story }: StoryContentProps) {
       {/* Story Content */}
       <article className="prose prose-lg max-w-none">
         <div 
-          className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere"
-          style={{ fontSize: `${fontSize}px`, lineHeight: '1.7' }}
+          className="text-gray-800 leading-relaxed break-words overflow-wrap-anywhere text-justify"
+          style={{ fontSize: `${fontSize}px`, lineHeight: '2.0' }}
         >
           {paragraphs.map((paragraph, index) => (
             <p key={index} className="mb-6 break-words">

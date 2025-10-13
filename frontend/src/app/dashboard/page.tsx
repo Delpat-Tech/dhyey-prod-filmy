@@ -28,7 +28,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="w-full max-w-6xl mx-auto px-4 py-4">
+      <div className="w-full max-w-4xl mx-auto px-4 py-4">
         {/* Featured Stories Section - Coming Soon */}
         {/* <FeaturedStories /> */}
 

@@ -80,7 +80,7 @@ export default function RelatedStories({ currentStoryId, genre }: RelatedStories
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {relatedStories.map((story) => (
-            <Link key={story.id} href={`/story/${story.id}`} className="group">
+            <Link key={story.id} href={`/story/${story.slug || story.id}`} className="group">
               <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 {/* Story Image */}
                 <div className="relative aspect-video overflow-hidden">

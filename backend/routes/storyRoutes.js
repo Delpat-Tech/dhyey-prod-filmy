@@ -7,6 +7,7 @@ const router = express.Router();
 // Public routes (with optional auth to track user interactions)
 router.get('/', authController.optionalAuth, storyController.getPublicStories);
 router.get('/search', authController.optionalAuth, storyController.searchStories);
+router.get('/slug/:slug', authController.optionalAuth, storyController.getStoryBySlug);
 router.get('/:id', authController.optionalAuth, storyController.getStoryById);
 router.get('/user/:userId', authController.optionalAuth, storyController.getUserStories);
 

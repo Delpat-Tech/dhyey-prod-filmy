@@ -283,6 +283,69 @@ exports.getPublicStories = catchAsync(async (req, res, next) => {
   });
 });
 
+// Get single story by slug
+exports.getStoryBySlug = catchAsync(async (req, res, next) => {
+  const story = await Story.findOne({ slug: req.params.slug })
+    .populate('author', 'name username avatar stats')
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'author',
+        select: 'name username avatar'
+      }
+    });
+
+  if (!story) {
+    return next(new AppError('No story found with that slug', 404));
+  }
+
+  // Only allow access to approved stories for public access (except for admins and story authors)
+  if (story.status !== 'approved') {
+    if (!req.user) {
+      return next(new AppError('Story not available', 404));
+    }
+    
+    // Allow access if user is admin or story author
+    const isAuthor = req.user._id.toString() === story.author._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isAuthor && !isAdmin) {
+      return next(new AppError('Story not available', 404));
+    }
+  }
+
+  // Track view if user is authenticated
+  if (req.user) {
+    await analyticsService.trackEvent(
+      analyticsService.eventTypes.STORY_VIEW,
+      req.user._id,
+      { 
+        storyId: story._id,
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      }
+    );
+  } else {
+    // Track anonymous view
+    await story.incrementView();
+  }
+
+  // Add isLiked and isSaved status
+  const storyObj = story.toObject();
+  if (req.user) {
+    storyObj.isLiked = story.likedBy && story.likedBy.some(id => id.toString() === req.user._id.toString());
+    storyObj.isSaved = story.savedBy && story.savedBy.some(id => id.toString() === req.user._id.toString());
+  } else {
+    storyObj.isLiked = false;
+    storyObj.isSaved = false;
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: { story: storyObj }
+  });
+});
+
 // Get single story by ID
 exports.getStoryById = catchAsync(async (req, res, next) => {
   const story = await Story.findById(req.params.id)

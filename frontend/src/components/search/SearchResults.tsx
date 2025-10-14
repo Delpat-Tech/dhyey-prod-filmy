@@ -158,7 +158,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
             <div className="md:flex">
               {/* Story Image */}
               <div className="md:w-48 h-48 md:h-auto relative flex-shrink-0">
-                <Link href={`/story/${story._id || story.id}`}>
+                <Link href={`/story/${story.slug || story._id || story.id}`}>
                   <Image
                     src={getImageUrl(story.image)}
                     alt={story.title}
@@ -203,7 +203,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                   </span>
                 </div>
 
-                <Link href={`/story/${story._id || story.id}`}>
+                <Link href={`/story/${story.slug || story._id || story.id}`}>
                   <h3 className="font-bold text-lg text-gray-900 mb-2 hover:text-purple-600 transition-colors">
                     {story.title}
                   </h3>
@@ -239,7 +239,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                   </div>
                   
                   <Link 
-                    href={`/story/${story.id}`}
+                    href={`/story/${story.slug || story._id || story.id}`}
                     className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-md text-sm inline-block"
                   >
                     Read More

@@ -373,7 +373,7 @@
             <div className="p-8">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <Link href={`/story/${story.id}`}>
+                  <Link href={`/story/${story.slug || story.id}`}>
                     <h3 className="font-bold text-lg text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
                       {story.title}
                     </h3>
@@ -398,7 +398,7 @@
 
             {/* Story Content */}
             <div className="px-8 pb-8">
-              <Link href={`/story/${story.id}`}>
+              <Link href={`/story/${story.slug || story.id}`}>
                 <p className="text-gray-700 leading-loose line-clamp-2 font-body text-base">
                   {(() => {
                     const words = story.content.split(' ');
@@ -413,7 +413,7 @@
             <div className="px-8 pb-6">
               <div className="flex justify-center">
                 <Link
-                  href={`/story/${story.id}`}
+                  href={`/story/${story.slug || story.id}`}
                   className="group inline-flex items-center space-x-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-base hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 relative px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-lg"
                 >
                   <BookOpen size={18} className="text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
@@ -425,7 +425,7 @@
 
             {/* Story Image */}
             {story.image && (
-              <Link href={`/story/${story.id}`} className="block overflow-hidden">
+              <Link href={`/story/${story.slug || story.id}`} className="block overflow-hidden">
                 <div className="relative h-[32rem] md:h-[40rem] group">
                   <Image
                     src={getImageUrl(story.image)}
@@ -481,7 +481,7 @@
                   </button>
 
                   <Link
-                    href={`/story/${story._id || story.id}#comments`}
+                    href={`/story/${story.slug || story._id || story.id}#comments`}
                     className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <MessageCircle size={18} className="transition-transform duration-300 hover:scale-110" />

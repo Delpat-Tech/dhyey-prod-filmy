@@ -165,6 +165,8 @@ export const storyAPI = {
   
   getStoryById: (id: string) => apiRequest(`/stories/${id}`),
   
+  getStoryBySlug: (slug: string) => apiRequest(`/stories/slug/${slug}`),
+  
   createStory: (storyData: any) =>
     apiRequest('/stories', {
       method: 'POST',

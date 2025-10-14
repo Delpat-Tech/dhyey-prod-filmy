@@ -43,7 +43,15 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
   const isUnderReview = story.status && !['approved'].includes(story.status)
 
   const handleFollow = () => {
-    setIsFollowing(!isFollowing)
+    const newFollowingState = !isFollowing
+    setIsFollowing(newFollowingState)
+
+    // Show toast message
+    if (newFollowingState) {
+      toast.success(`Following ${story.author.name}!`)
+    } else {
+      toast.success(`Unfollowed ${story.author.name}`)
+    }
   }
 
   // Close menus when clicking outside
@@ -175,10 +183,10 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
 
             <button
               onClick={handleFollow}
-              className={`px-6 py-2 rounded-full font-medium transition-colors ${
+              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 isFollowing
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-purple-500 text-white hover:bg-purple-600'
+                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+                  : 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:from-purple-600 hover:to-indigo-700 shadow-lg hover:shadow-xl backdrop-blur-sm'
               }`}
             >
               {isFollowing ? 'Following' : 'Follow'}

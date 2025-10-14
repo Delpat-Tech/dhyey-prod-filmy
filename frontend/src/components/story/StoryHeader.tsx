@@ -185,8 +185,8 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
               onClick={handleFollow}
               className={`px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 isFollowing
-                  ? 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl backdrop-blur-sm'
-                  : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl backdrop-blur-sm'
+                  ? 'bg-gradient-to-r from-red-400 to-red-500 text-white hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-xl backdrop-blur-sm'
+                  : 'bg-gradient-to-r from-green-400 to-green-500 text-white hover:from-green-500 hover:to-green-600 shadow-lg hover:shadow-xl backdrop-blur-sm'
               }`}
             >
               {isFollowing ? 'Unfollow' : 'Follow'}

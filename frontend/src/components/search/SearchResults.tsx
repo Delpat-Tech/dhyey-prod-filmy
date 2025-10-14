@@ -231,7 +231,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                   
                   <Link 
                     href={`/story/${story.id}`}
-                    className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-md text-sm inline-block"
                   >
                     Read More
                   </Link>

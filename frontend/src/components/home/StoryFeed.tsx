@@ -431,10 +431,9 @@
                     src={getImageUrl(story.image)}
                     alt={story.title}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-
+                    className="object-cover transition-transform duration-300 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-black opacity-0 hover:opacity-5 transition-opacity duration-300"></div>
                 </div>
               </Link>
             )}

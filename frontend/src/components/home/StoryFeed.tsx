@@ -362,7 +362,7 @@
       <div className="space-y-20">
         {displayedStories.map((story: any, index: number) => (
           <div
-            key={story.id}
+            key={`${story.id}-${index}`}
             className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden story-card transform transition-all duration-500 hover:shadow-lg max-w-4xl mx-auto"
             style={{
               animationDelay: `${index * 100}ms`,
@@ -509,7 +509,7 @@
           <button 
             onClick={loadMoreStories}
             disabled={isLoading}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Loading...' : 'Load More Stories'}
           </button>

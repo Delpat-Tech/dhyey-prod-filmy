@@ -416,9 +416,9 @@
                   href={`/story/${story.id}`}
                   className="group inline-flex items-center space-x-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-base hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 relative px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-lg"
                 >
-                  <BookOpen size={20} className="text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+                  <BookOpen size={18} className="text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
                   <span>Continue Reading</span>
-                  <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" />
+                  <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" />
                 </Link>
               </div>
             </div>
@@ -495,7 +495,7 @@
                   >
                     <Bookmark
                       size={18}
-                      className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`}
+                      className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500' : 'hover:scale-110'}`}
                     />
                     <span className="text-sm font-medium">Save</span>
                   </button>

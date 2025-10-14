@@ -111,11 +111,20 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
   if (!query && genre === 'All' && !hasSearched) {
     return (
       <div className="text-center py-12">
-        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-          <Search size={32} className="text-gray-400" />
+        <div className="relative mx-auto mb-4 w-24 h-24">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full blur-sm opacity-30 animate-pulse"></div>
+          <div className="relative w-24 h-24 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
+            <Search size={32} className="text-purple-600" />
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Your Discovery</h3>
-        <p className="text-gray-600">Search for stories, authors, or hashtags to find amazing content</p>
+        <div className="relative">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Start Your Discovery
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            Search for stories, authors, or hashtags to find amazing content
+          </p>
+        </div>
       </div>
     )
   }

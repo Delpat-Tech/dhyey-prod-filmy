@@ -9,7 +9,7 @@ interface SearchResultsProps {
   query: string
   searchType: 'all' | 'title' | 'author' | 'hashtag'
   genre: string
-  sortBy: string
+  sortBy?: string
   results?: any[]
   isLoading?: boolean
   hasSearched?: boolean

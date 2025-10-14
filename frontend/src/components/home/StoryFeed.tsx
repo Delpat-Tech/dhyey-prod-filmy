@@ -359,7 +359,7 @@
     }
 
     return (
-      <div className="space-y-12">
+      <div className="space-y-20">
         {displayedStories.map((story: any, index: number) => (
           <div
             key={story.id}

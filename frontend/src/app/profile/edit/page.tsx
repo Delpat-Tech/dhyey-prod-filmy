@@ -11,8 +11,7 @@ export default function EditProfilePage() {
     name: '',
     username: '',
     bio: '',
-    location: '',
-    website: ''
+    location: ''
   })
   const [avatar, setAvatar] = useState('')
   const [loading, setLoading] = useState(true)
@@ -33,8 +32,7 @@ export default function EditProfilePage() {
         name: user.name || '',
         username: user.username || '',
         bio: user.bio || '',
-        location: user.location || '',
-        website: user.website || ''
+        location: user.location || ''
       })
       setAvatar(user.avatar || '')
     } catch (error) {
@@ -223,18 +221,6 @@ export default function EditProfilePage() {
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white transition-colors"
                     placeholder="City, Country"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Website
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.website}
-                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white transition-colors"
-                    placeholder="https://yourwebsite.com"
                   />
                 </div>
               </div>

@@ -50,7 +50,7 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
     if (newFollowingState) {
       toast.success(`Following ${story.author.name}!`)
     } else {
-      toast.success(`Unfollowed ${story.author.name}`)
+      toast.error(`Unfollowed ${story.author.name}`)
     }
   }
 
@@ -183,10 +183,10 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
 
             <button
               onClick={handleFollow}
-              className={`px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 isFollowing
-                  ? 'bg-gradient-to-r from-red-400 to-red-500 text-white hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-xl backdrop-blur-sm'
-                  : 'bg-gradient-to-r from-green-400 to-green-500 text-white hover:from-green-500 hover:to-green-600 shadow-lg hover:shadow-xl backdrop-blur-sm'
+                  ? 'bg-gradient-to-r from-red-300 to-red-400 text-white hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl backdrop-blur-sm'
+                  : 'bg-gradient-to-r from-green-300 to-green-400 text-white hover:from-green-400 hover:to-green-500 shadow-lg hover:shadow-xl backdrop-blur-sm'
               }`}
             >
               {isFollowing ? 'Unfollow' : 'Follow'}

@@ -286,7 +286,7 @@ export default function StoriesGrid() {
           <p className="text-gray-600 mb-4">Start sharing your creativity with the world</p>
           <Link 
             href="/create"
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 shadow-md"
           >
             <Plus size={16} />
             <span>Create Your First Story</span>

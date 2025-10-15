@@ -60,9 +60,7 @@ export default function Navbar() {
           >
             <Search size={20} />
           </Link>
-          <div className="flex items-center justify-center">
-            <NotificationCenter />
-          </div>
+          <NotificationCenter />
           <Link 
             href="/profile" 
             className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
@@ -91,7 +89,7 @@ export default function Navbar() {
 
       {/* Mobile Menu - Hide on desktop sidebar */}
       {isMenuOpen && (
-        <div className="md:hidden py-4 border-t border-gray-200 animate-in slide-in-from-top duration-300 absolute top-full left-0 right-0 bg-white">
+        <div className="md:hidden py-4 border-t border-gray-200 absolute top-full left-0 right-0 bg-white shadow-lg">
           <div className="flex flex-col space-y-4 px-4">
             <Link 
               href="/" 

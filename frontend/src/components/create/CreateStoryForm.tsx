@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { storyAPI } from '@/lib/api'
 import { showNotification } from '@/lib/errorHandler'
 
-const genres = ['Fiction', 'Poetry', 'Romance', 'Mystery', 'Sci-Fi', 'Fantasy', 'Drama', 'Non-Fiction']
+const genres = ['Fiction', 'Poetry', 'Romance', 'Mystery', 'Sci-Fi', 'Fantasy', 'Drama', 'Non-Fiction', 'Comedy']
 
 export default function CreateStoryForm() {
   const [formData, setFormData] = useState({
@@ -176,7 +176,8 @@ export default function CreateStoryForm() {
                        genre === 'Sci-Fi' ? '🚀' :
                        genre === 'Fantasy' ? '🧙‍♂️' :
                        genre === 'Drama' ? '🎬' :
-                       genre === 'Non-Fiction' ? '📖' : '📝'
+                       genre === 'Non-Fiction' ? '📖' :
+                       genre === 'Comedy' ? '😂' : '📝'
               }))}
               className="w-full"
             />
@@ -189,7 +190,6 @@ export default function CreateStoryForm() {
                       key={genre}
                       className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700"
                     >
-                      {genres.find(g => g === genre) && (
                         <span className="mr-1">
                           {genre === 'Fiction' ? '📚' : 
                            genre === 'Poetry' ? '🎭' :
@@ -198,9 +198,9 @@ export default function CreateStoryForm() {
                            genre === 'Sci-Fi' ? '🚀' :
                            genre === 'Fantasy' ? '🧙‍♂️' :
                            genre === 'Drama' ? '🎬' :
-                           genre === 'Non-Fiction' ? '📖' : '📝'}
+                           genre === 'Non-Fiction' ? '📖' :
+                           genre === 'Comedy' ? '😂' : '📝'}
                         </span>
-                      )}
                       {genre}
                     </span>
                   ))}
@@ -304,17 +304,6 @@ export default function CreateStoryForm() {
             <p className="text-sm text-gray-500">
               {formData.content.length} characters
             </p>
-            <div className="flex items-center space-x-2">
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                saveStatus === 'saved' ? 'bg-green-100 text-green-700' :
-                saveStatus === 'saving' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-gray-100 text-gray-600'
-              }`}>
-                {saveStatus === 'saved' ? 'Saved' :
-                 saveStatus === 'saving' ? 'Saving...' :
-                 'Unsaved changes'}
-              </span>
-            </div>
           </div>
         </div>
 

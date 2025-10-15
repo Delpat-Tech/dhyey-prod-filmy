@@ -32,10 +32,19 @@ export default function StoryActions({ story }: StoryActionsProps) {
   const handleLike = async () => {
     try {
       const response = await storyAPI.likeStory(story.id.toString())
-      setIsLiked(response.data.isLiked)
+      const newLikedState = response.data.isLiked
+      setIsLiked(newLikedState)
+
       // Update the story stats in parent component if needed
       if (story.stats) {
         story.stats.likes = response.data.likesCount
+      }
+
+      // Show toast message based on like state
+      if (newLikedState) {
+        toast.success('❤️ Story liked!')
+      } else {
+        toast.info('🤍 Like removed')
       }
     } catch (error) {
       console.error('Failed to like story:', error)
@@ -100,17 +109,30 @@ export default function StoryActions({ story }: StoryActionsProps) {
               {/* Like Button */}
               <button
                 onClick={handleLike}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-all ${
+                className={`group relative flex items-center space-x-2 px-4 py-2 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 ${
                   isLiked
                     ? 'bg-red-50 text-red-600 hover:bg-red-100'
                     : 'text-gray-600 hover:text-red-600 hover:bg-red-50'
                 }`}
               >
-                <Heart 
-                  size={20} 
-                  className={isLiked ? 'fill-red-600' : ''} 
-                />
-                <span className="font-medium">
+                <div className={`relative ${isLiked ? 'animate-pulse' : ''}`}>
+                  <Heart
+                    size={20}
+                    className={`transition-all duration-300 ${
+                      isLiked
+                        ? 'fill-red-600 scale-110'
+                        : 'group-hover:scale-110'
+                    }`}
+                  />
+                  {isLiked && (
+                    <div className="absolute inset-0 animate-ping">
+                      <Heart size={20} className="fill-red-400 opacity-75" />
+                    </div>
+                  )}
+                </div>
+                <span className={`font-medium transition-all duration-300 ${
+                  isLiked ? 'animate-pulse' : ''
+                }`}>
                   {story.stats.likes}
                 </span>
               </button>
@@ -174,7 +196,7 @@ export default function StoryActions({ story }: StoryActionsProps) {
               </p>
               <div className="flex flex-col sm:flex-row gap-2 justify-center">
                 <button className="bg-purple-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-600 transition-colors">
-                  Follow Author
+                  Support Author
                 </button>
                 <button className="border border-purple-500 text-purple-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-purple-500 hover:text-white transition-colors">
                   Read More Stories

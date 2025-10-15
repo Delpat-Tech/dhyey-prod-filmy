@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Type, Minus, Plus, Palette, Focus } from 'lucide-react'
+import { Type, Minus, Plus, Palette, Focus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
 
 interface StoryContentProps {
   story: {
@@ -16,6 +16,7 @@ export default function StoryContent({ story }: StoryContentProps) {
   const [backgroundTheme, setBackgroundTheme] = useState<'clean-white' | 'warm-paper' | 'cool-screen'>('clean-white')
   const [readingProgress, setReadingProgress] = useState(0)
   const [focusMode, setFocusMode] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
   const contentRef = useRef<HTMLDivElement>(null)
 
   const backgroundThemes = {
@@ -44,24 +45,6 @@ export default function StoryContent({ story }: StoryContentProps) {
     if (fontSize > 12) setFontSize(fontSize - 2)
   }
 
-  const handleScroll = () => {
-    if (contentRef.current) {
-      const element = contentRef.current
-      const scrollTop = element.scrollTop
-      const scrollHeight = element.scrollHeight - element.clientHeight
-      const progress = (scrollTop / scrollHeight) * 100
-      setReadingProgress(Math.min(100, Math.max(0, progress)))
-    }
-  }
-
-  useEffect(() => {
-    const element = contentRef.current
-    if (element) {
-      element.addEventListener('scroll', handleScroll)
-      return () => element.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
   const paragraphs = story.content.split('\n\n').filter(p => p.trim())
 
   // Calculate total words
@@ -72,6 +55,59 @@ export default function StoryContent({ story }: StoryContentProps) {
   // Format word count with commas
   const formattedWordCount = totalWords.toLocaleString()
 
+  // Pagination logic - aim for ~150 words per page
+  const WORDS_PER_PAGE = 150
+  const totalPages = Math.ceil(totalWords / WORDS_PER_PAGE)
+
+  // Group paragraphs into pages
+  const getPages = () => {
+    const pages = []
+    let currentPageWords = 0
+    let currentPageParagraphs = []
+
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paragraphWordCount = paragraphs[i].trim().split(/\s+/).length
+
+      if (currentPageWords + paragraphWordCount > WORDS_PER_PAGE && currentPageParagraphs.length > 0) {
+        pages.push(currentPageParagraphs)
+        currentPageWords = 0
+        currentPageParagraphs = []
+      }
+
+      currentPageParagraphs.push(paragraphs[i])
+      currentPageWords += paragraphWordCount
+    }
+
+    if (currentPageParagraphs.length > 0) {
+      pages.push(currentPageParagraphs)
+    }
+
+    return pages
+  }
+
+  const pages = getPages()
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage)
+      setReadingProgress((newPage / totalPages) * 100)
+
+      // Scroll to top of content when changing pages
+      if (contentRef.current) {
+        contentRef.current.scrollTop = 0
+      }
+    }
+  }
+
+  const handleScroll = () => {
+    // Keep reading progress in sync with current page
+    setReadingProgress((currentPage / totalPages) * 100)
+  }
+
+  useEffect(() => {
+    handleScroll()
+  }, [currentPage, totalPages])
+
   return (
     <div className="px-6 py-8">
       {/* Reading Options */}
@@ -81,7 +117,7 @@ export default function StoryContent({ story }: StoryContentProps) {
             <span>Estimated reading time: {story.readTime} minutes</span>
           </div>
           <div className="text-xs text-gray-500">
-            <span className="font-medium">Total words:</span> {formattedWordCount}
+            <span className="font-medium">Total words:</span> {formattedWordCount} • <span className="font-medium">Pages:</span> {totalPages}
           </div>
         </div>
 
@@ -173,42 +209,119 @@ export default function StoryContent({ story }: StoryContentProps) {
       {/* Story Content */}
       <article className={`prose prose-lg max-w-none rounded-lg ${backgroundThemes[backgroundTheme].background} relative`}>
         {/* Reading Progress Bar */}
-        <div className="sticky top-0 z-20 w-full h-1 bg-gray-200 mb-4">
+        <div className="sticky top-0 z-20 w-full h-2 bg-gray-200 mb-4">
           <div
             className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300 ease-out"
             style={{ width: `${readingProgress}%` }}
           ></div>
         </div>
 
+        {/* Pagination Controls */}
+        <div className={`flex items-center justify-between mb-6 px-8 ${focusMode ? 'opacity-0 pointer-events-none' : ''}`}>
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={currentPage === 1}
+            className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronsLeft size={16} />
+            <span>First</span>
+          </button>
+
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <ChevronLeft size={16} />
+            <span>Previous</span>
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-gray-600">Page</span>
+            <span className="font-semibold text-purple-600">{currentPage}</span>
+            <span className="text-sm text-gray-600">of</span>
+            <span className="font-semibold text-gray-900">{totalPages}</span>
+          </div>
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span>Next</span>
+            <ChevronRight size={16} />
+          </button>
+
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={currentPage === totalPages}
+            className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span>Last</span>
+            <ChevronsRight size={16} />
+          </button>
+        </div>
+
         {/* Scrollable Content */}
         <div
           ref={contentRef}
-          className={`p-8 max-h-[70vh] overflow-y-auto ${backgroundThemes[backgroundTheme].textColor}`}
+          className={`px-8 pb-8 max-h-[60vh] overflow-y-auto ${backgroundThemes[backgroundTheme].textColor}`}
           style={{
             fontSize: `${fontSize}px`,
-            lineHeight: '2.0',
+            lineHeight: '2.5',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgb(147, 51, 234) rgb(243, 244, 246)'
           }}
         >
           <div className="break-words overflow-wrap-anywhere text-justify">
-            {paragraphs.map((paragraph, index) => (
+            {pages[currentPage - 1]?.map((paragraph, index) => (
               <p key={index} className="mb-6 break-words">
                 {paragraph}
               </p>
             ))}
           </div>
         </div>
-      </article>
 
-      {/* Reading Progress Indicator */}
-      <div className="mt-12 pt-8 border-t border-gray-100">
-        <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-          <span>End of Story</span>
-          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+        {/* Pagination Controls (Bottom) */}
+        <div className={`flex items-center justify-center mt-6 px-8 ${focusMode ? 'opacity-0 pointer-events-none' : ''}`}>
+          <div className="flex items-center space-x-2 bg-gray-50 rounded-full px-4 py-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-purple-500 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-1 text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed rounded"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
-      </div>
+      </article>
     </div>
   )
 }

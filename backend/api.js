@@ -33,7 +33,16 @@ const app = express();
 // 1) GLOBAL MIDDLEWARES
 // Implement CORS
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://api.dhyey.delpat.in'],
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://127.0.0.1:3000',
+    'http://192.168.56.1:3001',
+    'https://dhyey.delpat.in',
+    'https://api.dhyey.delpat.in',
+    'https://dhyey-prod-filmy-frontend.onrender.com',
+    'https://dhyey-prod-filmy-6-backend.onrender.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -42,7 +51,25 @@ app.use(cors({
 app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
-// Serving static files
+// Serving static files with error handling for missing images
+app.use('/uploads', (req, res, next) => {
+  const filePath = path.join(__dirname, 'public', req.url);
+  const fs = require('fs');
+  
+  // Check if file exists
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      // File doesn't exist, return 404 JSON response instead of HTML error
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Image not found'
+      });
+    }
+    // File exists, serve it normally
+    express.static(path.join(__dirname, 'public'))(req, res, next);
+  });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set security HTTP headers

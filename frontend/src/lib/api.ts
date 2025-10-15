@@ -165,7 +165,7 @@ export const storyAPI = {
   
   getStoryById: (id: string) => apiRequest(`/stories/${id}`),
   
-  getStoryBySlug: (slug: string) => apiRequest(`/stories/slug/${slug}`),
+  getStoryBySlug: (slug: string) => apiRequest(`/stories/${slug}`),
   
   createStory: (storyData: any) =>
     apiRequest('/stories', {
@@ -201,18 +201,18 @@ export const storyAPI = {
     apiRequest(`/stories/${id}`, { method: 'DELETE' }),
 
   likeStory: (id: string) =>
-    apiRequest(`/stories/${id}/like`, { method: 'POST' }),
+    apiRequest(`/stories/id/${id}/like`, { method: 'POST' }),
 
   saveStory: (id: string) =>
-    apiRequest(`/stories/${id}/save`, { method: 'POST' }),
+    apiRequest(`/stories/id/${id}/save`, { method: 'POST' }),
 
   shareStory: (id: string, data?: any) =>
-    apiRequest(`/stories/${id}/share`, { 
+    apiRequest(`/stories/id/${id}/share`, { 
       method: 'POST',
       body: JSON.stringify(data || {})
     }),
 
-  getUserStories: (userId: string) => apiRequest(`/stories/user/${userId}`),
+  getUserStories: (userId: string) => apiRequest(`/stories/by-user/${userId}`),
   
   searchStories: (query: string, filters?: any) => {
     const params = new URLSearchParams({ q: query, ...filters })
@@ -220,16 +220,16 @@ export const storyAPI = {
   },
 
   // Comment-related endpoints
-  getStoryComments: (storyId: string) => apiRequest(`/stories/${storyId}/comments`),
+  getStoryComments: (storyId: string) => apiRequest(`/stories/id/${storyId}/comments`),
   
   addComment: (storyId: string, content: string, parentComment?: string) =>
-    apiRequest(`/stories/${storyId}/comments`, {
+    apiRequest(`/stories/id/${storyId}/comments`, {
       method: 'POST',
       body: JSON.stringify({ content, parentComment }),
     }),
 
   likeComment: (storyId: string, commentId: string) =>
-    apiRequest(`/stories/${storyId}/comments/${commentId}/like`, { method: 'POST' }),
+    apiRequest(`/stories/id/${storyId}/comments/${commentId}/like`, { method: 'POST' }),
 }
 
 // Search API

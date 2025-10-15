@@ -60,14 +60,14 @@ She stepped off the train and into her new life, ready to write the next chapter
   }
 }
 
-export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
+export default function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const { id } = use(params) // Unwrap params Promise
+  const { slug } = use(params) // Unwrap params Promise
 
   const loadStory = async () => {
     try {
-      const response = await storyAPI.getStoryById(id)
+      const response = await storyAPI.getStoryBySlug(slug)
       const storyData = response.data.story
       console.log('Loaded story bookmark state:', storyData.isSaved)
       setStory(storyData)
@@ -78,7 +78,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
         setStory(null)
       } else {
         // Only use mock data for clearly mock IDs
-        setStory(getMockStoryData(id))
+        setStory(getMockStoryData(slug))
       }
     } finally {
       setIsLoading(false)
@@ -90,7 +90,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     
     // Listen for story updates (like new comments)
     const handleStoryUpdate = (event: CustomEvent) => {
-      if (event.detail.storyId === parseInt(id)) {
+      if (event.detail.storySlug === slug) {
         loadStory()
       }
     }
@@ -100,7 +100,7 @@ export default function StoryPage({ params }: { params: Promise<{ id: string }> 
     return () => {
       window.removeEventListener('storyUpdated', handleStoryUpdate as EventListener)
     }
-  }, [id])
+  }, [slug])
 
   if (isLoading) {
     return (

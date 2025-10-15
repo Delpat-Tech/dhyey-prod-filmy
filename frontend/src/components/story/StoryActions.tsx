@@ -158,10 +158,12 @@ export default function StoryActions({ story }: StoryActionsProps) {
             </div>
             
             {/* Appreciation Button */}
+            {/*
             <button className="flex items-center space-x-1 text-gray-600 hover:text-purple-600 transition-colors">
               <ThumbsUp size={16} />
               <span>Show appreciation</span>
             </button>
+            */}
           </div>
 
           {/* Call to Action */}

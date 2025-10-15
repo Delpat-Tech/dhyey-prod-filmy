@@ -60,13 +60,19 @@ She stepped off the train and into her new life, ready to write the next chapter
   }
 }
 
-export default function StoryPage({ params }: { params: { slug: string } }) {
+export default function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [resolvedParams, setResolvedParams] = useState<{ slug: string } | null>(null)
+
+  useEffect(() => {
+    params.then(setResolvedParams)
+  }, [params])
 
   const loadStory = async () => {
+    if (!resolvedParams) return
     try {
-      const response = await storyAPI.getStoryBySlug(params.slug)
+      const response = await storyAPI.getStoryBySlug(resolvedParams.slug)
       const storyData = response.data.story
       console.log('Loaded story bookmark state:', storyData.isSaved)
       setStory(storyData)
@@ -85,11 +91,13 @@ export default function StoryPage({ params }: { params: { slug: string } }) {
   }
 
   useEffect(() => {
-    loadStory()
+    if (resolvedParams) {
+      loadStory()
+    }
     
     // Listen for story updates (like new comments)
     const handleStoryUpdate = (event: CustomEvent) => {
-      if (event.detail.storySlug === params.slug) {
+      if (resolvedParams && event.detail.storySlug === resolvedParams.slug) {
         loadStory()
       }
     }
@@ -99,7 +107,7 @@ export default function StoryPage({ params }: { params: { slug: string } }) {
     return () => {
       window.removeEventListener('storyUpdated', handleStoryUpdate as EventListener)
     }
-  }, [params.slug])
+  }, [resolvedParams])
 
   if (isLoading) {
     return (

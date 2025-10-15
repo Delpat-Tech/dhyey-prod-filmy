@@ -1,5 +1,6 @@
 import StoryReviewDetail from '@/components/admin/StoryReviewDetail'
 
-export default function StoryReviewPage({ params }: { params: { id: string } }) {
-  return <StoryReviewDetail storyId={params.id} />
+export default async function StoryReviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <StoryReviewDetail storyId={id} />
 }

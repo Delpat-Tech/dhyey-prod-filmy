@@ -13,6 +13,7 @@ interface RelatedStoriesProps {
 const mockRelatedStories = [
   {
     id: 2,
+    slug: "digital-dreams-1642234567890",
     title: "Digital Dreams",
     author: {
       name: "Alex Chen",
@@ -29,6 +30,7 @@ const mockRelatedStories = [
   },
   {
     id: 3,
+    slug: "oceans-whisper-1642234567891",
     title: "Ocean's Whisper",
     author: {
       name: "Luna Martinez",
@@ -45,6 +47,7 @@ const mockRelatedStories = [
   },
   {
     id: 4,
+    slug: "city-lights-1642234567892",
     title: "City Lights",
     author: {
       name: "Marcus Chen",

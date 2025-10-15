@@ -370,11 +370,11 @@
             }}
           >
             {/* Story Header - Title and Tags */}
-            <div className="p-8">
+            <div className="p-10">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <Link href={`/story/${story.slug || story.id}`}>
-                    <h3 className="font-bold text-lg text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
+                    <h3 className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
                       {story.title}
                     </h3>
                   </Link>
@@ -397,14 +397,10 @@
             </div>
 
             {/* Story Content */}
-            <div className="px-8 pb-8">
+            <div className="px-10 pb-10">
               <Link href={`/story/${story.slug || story.id}`}>
-                <p className="text-gray-700 leading-loose line-clamp-2 font-body text-base">
-                  {(() => {
-                    const words = story.content.split(' ');
-                    const truncated = words.slice(0, 15).join(' ');
-                    return words.length > 15 ? `${truncated}...` : truncated;
-                  })()}
+                <p className="text-gray-700 leading-loose line-clamp-4 font-body text-lg">
+                  {story.content}
                 </p>
               </Link>
             </div>
@@ -426,7 +422,7 @@
             {/* Story Image */}
             {story.image && (
               <Link href={`/story/${story.slug || story.id}`} className="block overflow-hidden">
-                <div className="relative h-[32rem] md:h-[40rem] group">
+                <div className="relative h-[20rem] md:h-[24rem] group">
                   <Image
                     src={getImageUrl(story.image)}
                     alt={story.title}
@@ -439,29 +435,29 @@
             )}
 
             {/* Author Info Section */}
-            <div className="px-8 py-6 bg-gray-50/50">
-              <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group">
+            <div className="px-10 py-8 bg-gray-50/50">
+              <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-4 group">
                 <div className="relative flex-shrink-0">
                   <Image
                     src={getAvatarUrl(story.author.avatar)}
                     alt={story.author.name}
-                    width={40}
-                    height={40}
+                    width={48}
+                    height={48}
                     className="rounded-full transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-semibold text-gray-900 truncate">{story.author.name}</h4>
-                  <p className="text-sm text-gray-500 truncate">@{story.author.username} • {story.timeAgo}</p>
+                  <h4 className="font-semibold text-lg text-gray-900 truncate">{story.author.name}</h4>
+                  <p className="text-base text-gray-500 truncate">@{story.author.username} • {story.timeAgo}</p>
                 </div>
               </Link>
             </div>
 
             {/* Action Bar */}
-            <div className="px-8 py-4 bg-white border-t border-gray-100">
+            <div className="px-10 py-6 bg-white border-t border-gray-100">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-8">
                   <button
                     onClick={(e) => {
                       e.preventDefault()
@@ -472,10 +468,10 @@
                     className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
                   >
                     <Heart
-                      size={18}
+                      size={20}
                       className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`}
                     />
-                    <span className="text-sm font-medium">
+                    <span className="text-base font-medium">
                       {story.stats?.likes || story.likes || 0}
                     </span>
                   </button>
@@ -484,8 +480,8 @@
                     href={`/story/${story.slug || story._id || story.id}#comments`}
                     className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
-                    <MessageCircle size={18} className="transition-transform duration-300 hover:scale-110" />
-                    <span className="text-sm font-medium">{story.stats?.comments || story.comments || 0}</span>
+                    <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
+                    <span className="text-base font-medium">{story.stats?.comments || story.comments || 0}</span>
                   </Link>
 
                   <button
@@ -493,10 +489,10 @@
                     className="flex items-center space-x-2 text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <Bookmark
-                      size={18}
+                      size={20}
                       className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500' : 'hover:scale-110'}`}
                     />
-                    <span className="text-sm font-medium">Save</span>
+                    <span className="text-base font-medium">Save</span>
                   </button>
                 </div>
               </div>

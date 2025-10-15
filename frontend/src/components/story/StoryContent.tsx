@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Type, Minus, Plus, Palette, Focus, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react'
+import { getImageUrl } from '@/lib/imageUtils'
 
 interface StoryContentProps {
   story: {
@@ -298,7 +299,7 @@ export default function StoryContent({ story }: StoryContentProps) {
             {showFeaturedImage && story.image && (
               <div className="mb-8">
                 <img
-                  src={story.image}
+                  src={getImageUrl(story.image)}
                   alt="Story featured image"
                   className="w-full h-64 md:h-80 object-cover rounded-lg shadow-lg"
                 />

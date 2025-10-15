@@ -3,7 +3,8 @@
  * Handles construction of image URLs for the application
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1';
+const BACKEND_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1').replace('/api/v1', '');
 const FRONTEND_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
 
 /**
@@ -31,9 +32,9 @@ export const getImageUrl = (imagePath?: string | null, fallback?: string): strin
   // Construct full URL, ensuring no double slashes
   const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
   
-  // For uploads, use frontend proxy to avoid CORS issues
+  // For uploads, use backend server without /api/v1 prefix
   if (cleanPath.startsWith('/uploads/')) {
-    return `${FRONTEND_URL}${cleanPath}`;
+    return `${BACKEND_BASE_URL}${cleanPath}`;
   }
   
   return `${API_BASE_URL}${cleanPath}`;

@@ -51,24 +51,8 @@ app.use(cors({
 app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
-// Serving static files with error handling for missing images
-app.use('/uploads', (req, res, next) => {
-  const filePath = path.join(__dirname, 'public', req.url);
-  const fs = require('fs');
-  
-  // Check if file exists
-  fs.access(filePath, fs.constants.F_OK, (err) => {
-    if (err) {
-      // File doesn't exist, return 404 JSON response instead of HTML error
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Image not found'
-      });
-    }
-    // File exists, serve it normally
-    express.static(path.join(__dirname, 'public'))(req, res, next);
-  });
-});
+// Serving static files
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use(express.static(path.join(__dirname, 'public')));
 

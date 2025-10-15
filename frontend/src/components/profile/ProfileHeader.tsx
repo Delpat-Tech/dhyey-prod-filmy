@@ -34,7 +34,7 @@ export default function ProfileHeader({ username }: ProfileHeaderProps) {
             // Fetch actual published story count
             try {
               const storiesResponse = await storyAPI.getUserStories(userData._id)
-              const publishedStories = storiesResponse.data.stories.filter(story => story.status === 'approved' || story.status === 'published')
+              const publishedStories = storiesResponse.data.stories.filter((story: any) => story.status === 'approved' || story.status === 'published')
               userData.stats = {
                 ...userData.stats,
                 stories: publishedStories.length

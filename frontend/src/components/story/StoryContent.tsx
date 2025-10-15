@@ -9,6 +9,10 @@ interface StoryContentProps {
     readTime: string
     image?: string
     title?: string
+    author?: {
+      name: string
+      username: string
+    }
   }
 }
 
@@ -304,6 +308,12 @@ export default function StoryContent({ story }: StoryContentProps) {
                     <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
                       {story.title}
                     </h2>
+                    {/* Show author name below the title */}
+                    {story.author?.name && (
+                      <p className="mt-2 text-lg text-gray-600 font-medium">
+                        by {story.author.name}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>

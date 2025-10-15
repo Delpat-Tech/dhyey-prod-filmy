@@ -40,8 +40,7 @@ app.use(cors({
     'http://192.168.56.1:3001',
     'https://dhyey.delpat.in',
     'https://api.dhyey.delpat.in',
-    'https://dhyey-prod-filmy-frontend.onrender.com',
-    'https://dhyey-prod-filmy-6-backend.onrender.com'
+    'https://dhyey-prod-filmy-frontend.onrender.com'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -52,8 +51,6 @@ app.options('*', cors());
 // app.options('/api/v1/tours/:id', cors());
 
 // Serving static files
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set security HTTP headers

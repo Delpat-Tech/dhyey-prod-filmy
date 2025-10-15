@@ -7,6 +7,8 @@ interface StoryContentProps {
   story: {
     content: string
     readTime: string
+    image?: string
+    title?: string
   }
 }
 
@@ -55,9 +57,11 @@ export default function StoryContent({ story }: StoryContentProps) {
   // Format word count with commas
   const formattedWordCount = totalWords.toLocaleString()
 
+  // Check if story has featured image
+  const hasFeaturedImage = Boolean(story.image)
+
   // Pagination logic - aim for ~150 words per page
   const WORDS_PER_PAGE = 150
-  const totalPages = Math.ceil(totalWords / WORDS_PER_PAGE)
 
   // Group paragraphs into pages
   const getPages = () => {
@@ -85,7 +89,9 @@ export default function StoryContent({ story }: StoryContentProps) {
     return pages
   }
 
-  const pages = getPages()
+  // Adjust total pages based on whether there's a featured image
+  const contentPages = getPages()
+  const totalPages = hasFeaturedImage ? contentPages.length + 1 : contentPages.length
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -107,6 +113,16 @@ export default function StoryContent({ story }: StoryContentProps) {
   useEffect(() => {
     handleScroll()
   }, [currentPage, totalPages])
+
+  // Determine what to show on current page
+  const isFirstPage = currentPage === 1
+  const showFeaturedImage = hasFeaturedImage && isFirstPage
+  const showContent = !showFeaturedImage || currentPage > 1
+
+  // Get content page index (adjust for featured image)
+  // When we have featured image: Page 1 = image, Page 2+ = content
+  // When no featured image: Page 1+ = content
+  const contentPageIndex = currentPage === 1 && hasFeaturedImage ? -1 : (hasFeaturedImage ? currentPage - 2 : currentPage - 1)
 
   return (
     <div className="px-6 py-8">
@@ -274,7 +290,27 @@ export default function StoryContent({ story }: StoryContentProps) {
           }}
         >
           <div className="break-words overflow-wrap-anywhere text-justify">
-            {pages[currentPage - 1]?.map((paragraph, index) => (
+            {/* Show featured image on page 1 if it exists */}
+            {showFeaturedImage && story.image && (
+              <div className="mb-8">
+                <img
+                  src={story.image}
+                  alt="Story featured image"
+                  className="w-full h-64 md:h-80 object-cover rounded-lg shadow-lg"
+                />
+                {/* Show story title below the featured image */}
+                {story.title && (
+                  <div className="mt-6">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                      {story.title}
+                    </h2>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Show content pages */}
+            {showContent && contentPageIndex >= 0 && contentPages[contentPageIndex]?.map((paragraph: string, index: number) => (
               <p key={index} className="mb-6 break-words">
                 {paragraph}
               </p>

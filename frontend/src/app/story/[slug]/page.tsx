@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import StoryHeader from '@/components/story/StoryHeader'
 import StoryContent from '@/components/story/StoryContent'
 import StoryActions from '@/components/story/StoryActions'
@@ -60,30 +60,25 @@ She stepped off the train and into her new life, ready to write the next chapter
   }
 }
 
-export default function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default function StoryPage({ params }: { params: Promise<{ id: string }> }) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [resolvedParams, setResolvedParams] = useState<{ slug: string } | null>(null)
-
-  useEffect(() => {
-    params.then(setResolvedParams)
-  }, [params])
+  const { id } = use(params) // Unwrap params Promise
 
   const loadStory = async () => {
-    if (!resolvedParams) return
     try {
-      const response = await storyAPI.getStoryBySlug(resolvedParams.slug)
+      const response = await storyAPI.getStoryById(id)
       const storyData = response.data.story
       console.log('Loaded story bookmark state:', storyData.isSaved)
       setStory(storyData)
     } catch (error: any) {
       console.error('Failed to load story:', error)
-      // Don't fallback to mock data for real story slugs
+      // Don't fallback to mock data for real story IDs
       if (error.message?.includes('Story not available')) {
         setStory(null)
       } else {
-        // No fallback to mock data for real slugs
-        setStory(null)
+        // Only use mock data for clearly mock IDs
+        setStory(getMockStoryData(id))
       }
     } finally {
       setIsLoading(false)
@@ -91,13 +86,11 @@ export default function StoryPage({ params }: { params: Promise<{ slug: string }
   }
 
   useEffect(() => {
-    if (resolvedParams) {
-      loadStory()
-    }
+    loadStory()
     
     // Listen for story updates (like new comments)
     const handleStoryUpdate = (event: CustomEvent) => {
-      if (resolvedParams && event.detail.storySlug === resolvedParams.slug) {
+      if (event.detail.storyId === parseInt(id)) {
         loadStory()
       }
     }
@@ -107,7 +100,7 @@ export default function StoryPage({ params }: { params: Promise<{ slug: string }
     return () => {
       window.removeEventListener('storyUpdated', handleStoryUpdate as EventListener)
     }
-  }, [resolvedParams])
+  }, [id])
 
   if (isLoading) {
     return (

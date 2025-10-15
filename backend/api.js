@@ -100,6 +100,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ignore root request
+app.get('/', (req, res) => res.status(200).json({ message: 'API is running' }));
+
+// Ignore favicon
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({
     status: 'ok',

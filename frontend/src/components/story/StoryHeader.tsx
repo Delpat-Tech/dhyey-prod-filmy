@@ -205,22 +205,6 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
           </div>
 
         </div>
-
-        {/* Featured Image */}
-        {story.image && (
-          <div 
-            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
-            onClick={() => setShowImageModal(true)}
-          >
-            <Image
-              src={getImageUrl(story.image)}
-              alt={story.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
       </div>
 
       {/* Image Modal */}
@@ -241,8 +225,8 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
               className="max-w-full max-h-[90vh] object-contain"
             />
           </div>
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0"
             onClick={() => setShowImageModal(false)}
           />
         </div>

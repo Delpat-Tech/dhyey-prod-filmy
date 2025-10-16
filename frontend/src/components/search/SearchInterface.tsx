@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Search, Filter, X } from 'lucide-react'
 import SearchResults from './SearchResults'
 import { searchAPI } from '@/lib/api'
@@ -9,22 +10,50 @@ const genres = ['All', 'Fiction', 'Poetry', 'Romance', 'Mystery', 'Sci-Fi', 'Fan
 const sortOptions = ['Latest', 'Most Liked', 'Most Saved', 'Trending']
 
 export default function SearchInterface() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedGenre, setSelectedGenre] = useState('All')
-  const [sortBy, setSortBy] = useState('Latest')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '')
+  const [selectedGenre, setSelectedGenre] = useState(searchParams.get('genre') || 'All')
+  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'Latest')
   const [showFilters, setShowFilters] = useState(false)
-  const [searchType, setSearchType] = useState<'all' | 'title' | 'author' | 'hashtag'>('all')
-  const [searchResults, setSearchResults] = useState<any[]>([])
+  const [searchType, setSearchType] = useState<'all' | 'title' | 'author' | 'hashtag'>((searchParams.get('type') as any) || 'all')
+  const [searchResults, setSearchResults] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('searchResults')
+      return saved ? JSON.parse(saved) : []
+    }
+    return []
+  })
   const [isSearching, setIsSearching] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false)
+  const [hasSearched, setHasSearched] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasSearched') === 'true'
+    }
+    return false
+  })
   const [searchError, setSearchError] = useState<string | null>(null)
+
+  const updateURL = (query: string, type: string, genre: string, sort: string) => {
+    const params = new URLSearchParams()
+    if (query) params.set('q', query)
+    if (type !== 'all') params.set('type', type)
+    if (genre !== 'All') params.set('genre', genre)
+    if (sort !== 'Latest') params.set('sort', sort)
+    
+    const newURL = `/search${params.toString() ? '?' + params.toString() : ''}`
+    router.replace(newURL, { scroll: false })
+  }
 
   const performSearch = async (query: string) => {
     if (!query.trim()) {
       setSearchResults([])
       setHasSearched(false)
+      updateURL('', searchType, selectedGenre, sortBy)
       return
     }
+    
+    updateURL(query, searchType, selectedGenre, sortBy)
 
     setIsSearching(true)
     setHasSearched(true)
@@ -94,6 +123,8 @@ export default function SearchInterface() {
       console.log('Found', results.length, 'stories:', results)
 
       setSearchResults(results)
+      sessionStorage.setItem('searchResults', JSON.stringify(results))
+      sessionStorage.setItem('hasSearched', 'true')
     } catch (error) {
       console.error('Search failed:', error)
       // Show more detailed error information
@@ -122,6 +153,11 @@ export default function SearchInterface() {
 
   // Auto-search when query changes (with debounce)
   useEffect(() => {
+    // Don't auto-search if we already have cached results for this query
+    if (hasSearched && searchResults.length > 0) {
+      return
+    }
+    
     const timer = setTimeout(() => {
       if (searchQuery.length >= 2) {
         console.log('Auto-searching for:', searchQuery)
@@ -130,6 +166,9 @@ export default function SearchInterface() {
         setSearchResults([])
         setHasSearched(false)
         setSearchError(null)
+        sessionStorage.removeItem('searchResults')
+        sessionStorage.removeItem('hasSearched')
+        updateURL('', searchType, selectedGenre, sortBy)
       }
     }, 500) // 500ms debounce
 
@@ -137,9 +176,22 @@ export default function SearchInterface() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, searchType, selectedGenre, sortBy])
 
+  // Load search results on component mount if URL has search params
+  useEffect(() => {
+    const query = searchParams.get('q')
+    if (query && query.length >= 2 && searchResults.length === 0 && !hasSearched) {
+      performSearch(query)
+    }
+  }, [])
+
   const clearSearch = () => {
     setSearchQuery('')
     setSearchError(null)
+    setSearchResults([])
+    setHasSearched(false)
+    sessionStorage.removeItem('searchResults')
+    sessionStorage.removeItem('hasSearched')
+    updateURL('', searchType, selectedGenre, sortBy)
   }
 
   return (

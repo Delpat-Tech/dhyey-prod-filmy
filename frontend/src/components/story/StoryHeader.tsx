@@ -113,13 +113,13 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
     <div className="bg-white border-b border-gray-200">
       {/* Navigation */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <Link 
-          href="/"
+        <button 
+          onClick={() => window.history.back()}
           className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft size={20} />
-          <span className="hidden sm:inline">Back to Feed</span>
-        </Link>
+          <span className="hidden sm:inline">Back</span>
+        </button>
         
 
       </div>

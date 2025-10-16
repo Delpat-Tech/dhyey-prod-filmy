@@ -9,6 +9,7 @@
   import { storyAPI } from '@/lib/api'
   import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
   import { toast } from '@/lib/toast'
+  import { useLoginPrompt } from '@/lib/useLoginPrompt'
 
   // Mock data - fallback for when API is not available
   const mockStories = [
@@ -70,6 +71,7 @@
   }
 
   export default function StoryFeed({ genreFilter }: StoryFeedProps) {
+    const { requireAuth, isAuthenticated } = useLoginPrompt()
     const [likedStories, setLikedStories] = useState<Set<string>>(new Set())
     const [savedStories, setSavedStories] = useState<Set<string>>(new Set())
     const [hiddenStories, setHiddenStories] = useState<Set<string>>(new Set())
@@ -99,18 +101,20 @@
           console.log('First story isLiked:', stories[0]?.isLiked, 'isSaved:', stories[0]?.isSaved)
           console.log('First story full data:', stories[0])
           
-          // Initialize liked/saved state from backend data
+          // Initialize liked/saved state from backend data only if authenticated
           const newLiked = new Set<string>()
           const newSaved = new Set<string>()
-          stories.forEach((story: any) => {
-            const storyId = story._id || story.id
-            if (story.isLiked) {
-              newLiked.add(storyId)
-            }
-            if (story.isSaved) {
-              newSaved.add(storyId)
-            }
-          })
+          if (isAuthenticated) {
+            stories.forEach((story: any) => {
+              const storyId = story._id || story.id
+              if (story.isLiked) {
+                newLiked.add(storyId)
+              }
+              if (story.isSaved) {
+                newSaved.add(storyId)
+              }
+            })
+          }
           setLikedStories(newLiked)
           setSavedStories(newSaved)
           console.log('Initialized liked stories:', Array.from(newLiked))
@@ -128,7 +132,7 @@
       }
 
       loadStories()
-    }, [genreFilter])
+    }, [genreFilter, isAuthenticated])
 
     // Close menus when clicking outside
     useEffect(() => {
@@ -149,6 +153,8 @@
     }, [showMoreMenu])
 
     const toggleLike = useCallback(async (storyId: string) => {
+      if (!requireAuth('like this story')) return
+      
       const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
       
       if (likingStories.has(actualStoryId)) return
@@ -198,6 +204,7 @@
     }, [likingStories])
 
     const toggleSave = async (storyId: string) => {
+      if (!requireAuth('save this story')) return
       if (isLoading) return // Prevent multiple calls
       
       try {
@@ -476,13 +483,16 @@
                     </span>
                   </button>
 
-                  <Link
-                    href={`/story/${story.slug || story._id || story.id}#comments`}
+                  <button
+                    onClick={() => {
+                      if (!requireAuth('comment on this story')) return
+                      window.location.href = `/story/${story.slug || story._id || story.id}#comments`
+                    }}
                     className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
                     <span className="text-base font-medium">{story.stats?.comments || story.comments || 0}</span>
-                  </Link>
+                  </button>
 
                   <button
                     onClick={() => toggleSave(story._id || story.id)}

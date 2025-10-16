@@ -11,11 +11,13 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('dhyey_token') || getCookie('dhyey_token')
+      const token = sessionStorage.getItem('dhyey_token') || getCookie('dhyey_token')
       const publicRoutes = ['/auth/login', '/auth/register', '/auth/forgot-password', '/login', '/register']
+      const guestAllowedRoutes = ['/', '/dashboard', '/dhey-production'] // Allow dashboard access for guests
       const isPublicRoute = publicRoutes.includes(pathname)
+      const isGuestAllowed = guestAllowedRoutes.includes(pathname)
 
-      if (!token && !isPublicRoute) {
+      if (!token && !isPublicRoute && !isGuestAllowed) {
         router.replace('/auth/login')
         return
       }

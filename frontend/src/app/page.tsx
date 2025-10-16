@@ -4,16 +4,8 @@ import { useEffect } from 'react'
 
 export default function HomePage() {
   useEffect(() => {
-    // Check if user is authenticated
-    const token = localStorage.getItem('dhyey_token')
-    
-    if (token) {
-      // Redirect to dashboard if authenticated
-      window.location.href = '/dashboard'
-    } else {
-      // Redirect to login if not authenticated
-      window.location.href = '/auth/login'
-    }
+    // Always redirect to dashboard (both authenticated and guest users)
+    window.location.href = '/dashboard'
   }, [])
 
   return (

@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Search, Plus, User, Menu, X, Home, Compass, Clapperboard } from 'lucide-react'
+import { Search, Plus, User, Menu, X, Home, Compass, Clapperboard, LogIn, UserPlus } from 'lucide-react'
 import NotificationCenter from '@/components/notifications/NotificationCenter'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
+  const { isAuthenticated } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -32,7 +34,7 @@ export default function Navbar() {
           <span className="text-xs uppercase tracking-[0.3em] text-gray-400">Navigation</span>
           <span className="flex-1 h-px bg-gradient-to-l from-transparent via-gray-300 to-gray-200" />
         </div>
-        <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium transition-all duration-300 hover:translate-x-2 hover:text-purple-600 flex items-center space-x-3 py-3 px-3 rounded-lg hover:bg-gray-50">
+        <Link href="/dashboard" className="text-gray-700 hover:text-gray-900 font-medium transition-all duration-300 hover:translate-x-2 hover:text-purple-600 flex items-center space-x-3 py-3 px-3 rounded-lg hover:bg-gray-50">
           <Home className="h-4 w-4" />
           <span>Home</span>
         </Link>
@@ -50,31 +52,55 @@ export default function Navbar() {
       <div className="flex flex-col space-y-2 px-4 mt-auto">
         <div className="flex items-center gap-3 mt-1 mb-3">
           <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-gray-200" />
-          <span className="text-xs uppercase tracking-[0.3em] text-gray-400">Quick Access</span>
+          <span className="text-xs uppercase tracking-[0.3em] text-gray-400">
+            {isAuthenticated ? 'Quick Access' : 'Get Started'}
+          </span>
           <span className="flex-1 h-px bg-gradient-to-l from-transparent via-gray-300 to-gray-200" />
         </div>
-        <div className="flex space-x-12">
-          <Link 
-            href="/search" 
-            className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
-          >
-            <Search size={20} />
-          </Link>
-          <NotificationCenter />
-          <Link 
-            href="/profile" 
-            className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
-          >
-            <User className="h-6 w-5" />
-          </Link>
-        </div>
-        <Link 
-          href="/create" 
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 hover:shadow-lg active:scale-95 transform"
-        >
-          <Plus size={16} />
-          <span>Create</span>
-        </Link>
+        
+        {isAuthenticated ? (
+          <>
+            <div className="flex space-x-12">
+              <Link 
+                href="/search" 
+                className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
+              >
+                <Search size={20} />
+              </Link>
+              <NotificationCenter />
+              <Link 
+                href="/profile" 
+                className="p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center"
+              >
+                <User className="h-6 w-5" />
+              </Link>
+            </div>
+            <Link 
+              href="/create" 
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 hover:shadow-lg active:scale-95 transform"
+            >
+              <Plus size={16} />
+              <span>Create</span>
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link 
+              href="/auth/login" 
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 hover:shadow-lg active:scale-95 transform"
+            >
+              <LogIn size={16} />
+              <span>Sign In</span>
+            </Link>
+            <Link 
+              href="/auth/register" 
+              className="border-2 border-purple-600 text-purple-600 p-3 rounded-lg font-medium hover:bg-purple-50 transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 active:scale-95 transform"
+            >
+              <UserPlus size={16} />
+              <span>Join Now</span>
+            </Link>
+          </>
+        )}
       </div>
 
       {/* Mobile Menu Button - Hide on desktop sidebar */}
@@ -112,13 +138,32 @@ export default function Navbar() {
             >
               DHEY Production
             </Link>
-            <Link 
-              href="/create" 
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-full font-medium text-center transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Create Story
-            </Link>
+            {isAuthenticated ? (
+              <Link 
+                href="/create" 
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-full font-medium text-center transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Create Story
+              </Link>
+            ) : (
+              <div className="flex flex-col space-y-2">
+                <Link 
+                  href="/auth/login" 
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-full font-medium text-center transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link 
+                  href="/auth/register" 
+                  className="border-2 border-purple-600 text-purple-600 px-4 py-2 rounded-full font-medium text-center transition-all duration-300 hover:scale-105 active:scale-95 transform"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Join Now
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

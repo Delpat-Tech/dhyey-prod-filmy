@@ -6,12 +6,31 @@ import {
   Users, 
   TrendingUp, 
   Clock, 
-  CheckCircle 
+  CheckCircle,
+  RefreshCw 
 } from 'lucide-react'
 import Link from 'next/link'
 import AdminLoading from './AdminLoading'
 import StatCard from './StatCard'
 import { adminAPI } from '@/lib/api'
+import { showNotification } from '@/lib/errorHandler'
+
+
+// Modular gradient color system for metric cards
+const metricGradients = {
+  stories: 'bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600',
+  reviews: 'bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500',
+  submissions: 'bg-gradient-to-br from-pink-500 via-rose-500 to-red-600',
+  users: 'bg-gradient-to-br from-emerald-500 via-green-500 to-teal-600',
+} as const
+
+// Hover variants for each gradient
+const metricHoverGradients = {
+  stories: 'hover:from-purple-600 hover:via-purple-700 hover:to-indigo-700',
+  reviews: 'hover:from-yellow-500 hover:via-orange-500 hover:to-red-600',
+  submissions: 'hover:from-pink-600 hover:via-rose-600 hover:to-red-700',
+  users: 'hover:from-emerald-600 hover:via-green-600 hover:to-teal-700',
+} as const
 
 
 // Mock dashboard data with trends and sparkline data
@@ -93,6 +112,12 @@ export default function AdminDashboard() {
 
   const fetchAdminData = async () => {
     try {
+      showNotification({
+        type: 'info',
+        title: 'Refreshing Data',
+        message: 'Please wait while we refresh your dashboard...'
+      })
+
       setIsLoading(true)
       const response = await adminAPI.getDashboardStats()
       console.log('Dashboard stats response:', response)
@@ -132,11 +157,12 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">Welcome back! Here's what's happening on your platform.</p>
         </div>
-        <button 
+        <button
           onClick={fetchAdminData}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-lg hover:from-purple-600 hover:to-indigo-700 transition-all duration-200 text-sm shadow-sm hover:shadow-md"
         >
-          Refresh Data
+          <RefreshCw size={16} />
+          <span>Refresh Data</span>
         </button>
       </div>
 
@@ -149,14 +175,14 @@ export default function AdminDashboard() {
           changeType="percentage"
           trend={stats.totalStories?.trend || 'up'}
           icon={FileText}
-          gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+          gradient={`${metricGradients.stories} ${metricHoverGradients.stories}`}
           sparklineData={stats.totalStories?.sparklineData || []}
         />
       </div>
 
       {/* Enhanced Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Link href="/admin/stories" className="group relative overflow-hidden bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300">
+        <Link href="/admin/stories" className={`group relative overflow-hidden ${metricGradients.reviews} ${metricHoverGradients.reviews} rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300`}>
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
@@ -178,7 +204,7 @@ export default function AdminDashboard() {
           </div>
         </Link>
 
-        <Link href="/admin/stories" className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300">
+        <Link href="/admin/stories" className={`group relative overflow-hidden ${metricGradients.submissions} ${metricHoverGradients.submissions} rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300`}>
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">
@@ -200,7 +226,7 @@ export default function AdminDashboard() {
           </div>
         </Link>
 
-        <Link href="/admin/users" className="group relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300">
+        <Link href="/admin/users" className={`group relative overflow-hidden ${metricGradients.users} ${metricHoverGradients.users} rounded-xl p-6 hover:scale-105 hover:shadow-xl transition-all duration-300`}>
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-3">

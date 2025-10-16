@@ -125,18 +125,23 @@ export default function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProp
                     <Link
                       key={item.name}
                       href={item.href}
-                      className={`group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      className={`group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                         isActive
-                          ? 'bg-purple-100 text-purple-700 border-r-2 border-purple-500'
+                          ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25 border-r-2 border-white'
                           : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                       } ${isCollapsed ? 'justify-center' : ''}`}
                       title={isCollapsed ? item.name : undefined}
                     >
+                      {/* Active Indicator Line */}
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full shadow-sm" />
+                      )}
+
                       <item.icon
-                        className={`flex-shrink-0 h-5 w-5 ${
+                        className={`flex-shrink-0 h-5 w-5 transition-colors duration-200 ${
                           isCollapsed ? '' : '-ml-1 mr-3'
                         } ${
-                          isActive ? 'text-purple-500' : 'text-gray-400 group-hover:text-gray-500'
+                          isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-500'
                         }`}
                       />
                       {!isCollapsed && (

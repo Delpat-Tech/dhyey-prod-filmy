@@ -34,6 +34,13 @@ class SearchService {
       query = query.replace(/author:\w+/gi, '').trim();
     }
 
+    // Extract title filter (title:text)
+    const titleMatch = query.match(/title:(.+)/i);
+    if (titleMatch) {
+      filters.title = titleMatch[1].trim();
+      query = query.replace(/title:.+/gi, '').trim();
+    }
+
     // Extract tags (#tag)
     const tagMatches = query.match(/#\w+/g);
     if (tagMatches) {
@@ -71,8 +78,12 @@ class SearchService {
       status: includeUnpublished ? { $in: ['published', 'approved', 'draft'] } : { $in: ['published', 'approved'] }
     };
 
+    // Title-only search
+    if (filters.title) {
+      matchStage.title = new RegExp(filters.title, 'i');
+    }
     // Text search - use regex if text index doesn't exist
-    if (filters.text) {
+    else if (filters.text) {
       // Try to use text search, but fallback to regex if needed
       try {
         matchStage.$or = [

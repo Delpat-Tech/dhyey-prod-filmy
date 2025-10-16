@@ -241,6 +241,7 @@ export const searchAPI = {
     ) : {}
     const params = new URLSearchParams({ q: query, ...cleanFilters })
     console.log('API call URL:', `/search/stories?${params}`)
+    console.log('Full API URL:', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/search/stories?${params}`)
     return apiRequest(`/search/stories?${params}`)
   },
 

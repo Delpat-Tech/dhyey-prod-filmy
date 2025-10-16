@@ -43,7 +43,15 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
   const isUnderReview = story.status && !['approved'].includes(story.status)
 
   const handleFollow = () => {
-    setIsFollowing(!isFollowing)
+    const newFollowingState = !isFollowing
+    setIsFollowing(newFollowingState)
+
+    // Show toast message
+    if (newFollowingState) {
+      toast.success(`Following ${story.author.name}!`)
+    } else {
+      toast.error(`Unfollowed ${story.author.name}`)
+    }
   }
 
   // Close menus when clicking outside
@@ -105,13 +113,13 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
     <div className="bg-white border-b border-gray-200">
       {/* Navigation */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
-        <Link 
-          href="/"
+        <button 
+          onClick={() => window.history.back()}
           className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft size={20} />
-          <span className="hidden sm:inline">Back to Feed</span>
-        </Link>
+          <span className="hidden sm:inline">Back</span>
+        </button>
         
 
       </div>
@@ -175,13 +183,13 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
 
             <button
               onClick={handleFollow}
-              className={`px-6 py-2 rounded-full font-medium transition-colors ${
+              className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 isFollowing
-                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : 'bg-purple-500 text-white hover:bg-purple-600'
+                  ? 'bg-gradient-to-r from-red-300 to-red-400 text-white hover:from-red-400 hover:to-red-500 shadow-lg hover:shadow-xl backdrop-blur-sm'
+                  : 'bg-gradient-to-r from-green-300 to-green-400 text-white hover:from-green-400 hover:to-green-500 shadow-lg hover:shadow-xl backdrop-blur-sm'
               }`}
             >
-              {isFollowing ? 'Following' : 'Follow'}
+              {isFollowing ? 'Unfollow' : 'Follow'}
             </button>
           </div>
         )}
@@ -197,22 +205,6 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
           </div>
 
         </div>
-
-        {/* Featured Image */}
-        {story.image && (
-          <div 
-            className="relative aspect-video rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
-            onClick={() => setShowImageModal(true)}
-          >
-            <Image
-              src={getImageUrl(story.image)}
-              alt={story.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
       </div>
 
       {/* Image Modal */}
@@ -233,8 +225,8 @@ export default function StoryHeader({ story }: StoryHeaderProps) {
               className="max-w-full max-h-[90vh] object-contain"
             />
           </div>
-          <div 
-            className="absolute inset-0" 
+          <div
+            className="absolute inset-0"
             onClick={() => setShowImageModal(false)}
           />
         </div>

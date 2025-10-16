@@ -4,11 +4,12 @@
 
   import Image from 'next/image'
   import Link from 'next/link'
-  import { Heart, Bookmark, MessageCircle, MoreHorizontal } from 'lucide-react'
+  import { Heart, Bookmark, MessageCircle, MoreHorizontal, BookOpen, ArrowRight } from 'lucide-react'
   import { useState, useEffect, useRef, useCallback } from 'react'
   import { storyAPI } from '@/lib/api'
   import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
   import { toast } from '@/lib/toast'
+  import { useLoginPrompt } from '@/lib/useLoginPrompt'
 
   // Mock data - fallback for when API is not available
   const mockStories = [
@@ -70,6 +71,7 @@
   }
 
   export default function StoryFeed({ genreFilter }: StoryFeedProps) {
+    const { requireAuth, isAuthenticated } = useLoginPrompt()
     const [likedStories, setLikedStories] = useState<Set<string>>(new Set())
     const [savedStories, setSavedStories] = useState<Set<string>>(new Set())
     const [hiddenStories, setHiddenStories] = useState<Set<string>>(new Set())
@@ -99,18 +101,20 @@
           console.log('First story isLiked:', stories[0]?.isLiked, 'isSaved:', stories[0]?.isSaved)
           console.log('First story full data:', stories[0])
           
-          // Initialize liked/saved state from backend data
+          // Initialize liked/saved state from backend data only if authenticated
           const newLiked = new Set<string>()
           const newSaved = new Set<string>()
-          stories.forEach((story: any) => {
-            const storyId = story._id || story.id
-            if (story.isLiked) {
-              newLiked.add(storyId)
-            }
-            if (story.isSaved) {
-              newSaved.add(storyId)
-            }
-          })
+          if (isAuthenticated) {
+            stories.forEach((story: any) => {
+              const storyId = story._id || story.id
+              if (story.isLiked) {
+                newLiked.add(storyId)
+              }
+              if (story.isSaved) {
+                newSaved.add(storyId)
+              }
+            })
+          }
           setLikedStories(newLiked)
           setSavedStories(newSaved)
           console.log('Initialized liked stories:', Array.from(newLiked))
@@ -128,7 +132,7 @@
       }
 
       loadStories()
-    }, [genreFilter])
+    }, [genreFilter, isAuthenticated])
 
     // Close menus when clicking outside
     useEffect(() => {
@@ -149,6 +153,8 @@
     }, [showMoreMenu])
 
     const toggleLike = useCallback(async (storyId: string) => {
+      if (!requireAuth('like this story')) return
+      
       const actualStoryId = storyId.startsWith('story-') ? storyId : storyId
       
       if (likingStories.has(actualStoryId)) return
@@ -198,6 +204,7 @@
     }, [likingStories])
 
     const toggleSave = async (storyId: string) => {
+      if (!requireAuth('save this story')) return
       if (isLoading) return // Prevent multiple calls
       
       try {
@@ -308,7 +315,7 @@
         const response = await storyAPI.getPublicStories(params)
         const newStories = response.data.stories || mockStories.map((story: any, index: number) => ({
           ...story,
-          id: story.id + displayedStories.length + index,
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}-${index}`,
           timeAgo: Math.floor(Math.random() * 12) + 1 + 'h'
         }))
         
@@ -324,19 +331,34 @@
       return (
         <div className="space-y-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 animate-pulse">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div className="space-y-2">
+                  <div className="h-5 bg-gray-200 rounded w-24"></div>
+                  <div className="h-4 bg-gray-200 rounded w-16"></div>
+                </div>
+              </div>
+              <div className="space-y-3 mb-6">
+                <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-5 bg-gray-200 rounded w-1/2"></div>
+              </div>
+              <div className="flex justify-center mb-6">
+                <div className="h-6 w-48 bg-gray-200 rounded-full"></div>
+              </div>
+              <div className="h-[32rem] md:h-[40rem] bg-gray-200 rounded mb-4"></div>
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
                 <div className="space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="h-4 bg-gray-200 rounded w-20"></div>
                   <div className="h-3 bg-gray-200 rounded w-16"></div>
                 </div>
               </div>
-              <div className="space-y-2 mb-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="flex items-center space-x-6">
+                <div className="h-8 w-16 bg-gray-200 rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 rounded"></div>
+                <div className="h-8 w-16 bg-gray-200 rounded"></div>
               </div>
-              <div className="h-48 bg-gray-200 rounded"></div>
             </div>
           ))}
         </div>
@@ -344,22 +366,22 @@
     }
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-20">
         {displayedStories.map((story: any, index: number) => (
-          <div 
-            key={story.id} 
-            className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden story-card transform transition-all duration-500 hover:shadow-lg hover:-translate-y-1"
-            style={{ 
+          <div
+            key={`${story.id}-${index}`}
+            className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden story-card transform transition-all duration-500 hover:shadow-lg max-w-4xl mx-auto"
+            style={{
               animationDelay: `${index * 100}ms`,
               animation: 'fadeInUp 0.6s ease-out forwards'
             }}
           >
             {/* Story Header - Title and Tags */}
-            <div className="p-4">
+            <div className="p-10">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <Link href={`/story/${story.id}`}>
-                    <h3 className="font-bold text-lg text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
+                  <Link href={`/story/${story.slug || story.id}`}>
+                    <h3 className="font-bold text-xl text-gray-900 hover:text-purple-600 transition-colors duration-300 font-display">
                       {story.title}
                     </h3>
                   </Link>
@@ -382,53 +404,67 @@
             </div>
 
             {/* Story Content */}
-            <div className="px-4 pb-3">
-              <Link href={`/story/${story.id}`}>
-                <p className="text-gray-700 leading-relaxed mb-4 line-clamp-3 font-body">
+            <div className="px-10 pb-10">
+              <Link href={`/story/${story.slug || story.id}`}>
+                <p className="text-gray-700 leading-loose line-clamp-4 font-body text-lg">
                   {story.content}
                 </p>
               </Link>
             </div>
 
+            {/* Read More Link */}
+            <div className="px-8 pb-6">
+              <div className="flex justify-center">
+                <Link
+                  href={`/story/${story.slug || story.id}`}
+                  className="group inline-flex items-center space-x-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 font-semibold text-base hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 relative px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:border-white/30 hover:shadow-lg"
+                >
+                  <BookOpen size={18} className="text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+                  <span>Continue Reading</span>
+                  <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transform translate-x-0 group-hover:translate-x-1 transition-all duration-300" />
+                </Link>
+              </div>
+            </div>
+
             {/* Story Image */}
             {story.image && (
-              <Link href={`/story/${story.id}`} className="block overflow-hidden">
-                <div className="relative h-64 md:h-80 group">
+              <Link href={`/story/${story.slug || story.id}`} className="block overflow-hidden">
+                <div className="relative h-[20rem] md:h-[24rem] group">
                   <Image
                     src={getImageUrl(story.image)}
                     alt={story.title}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-
+                    className="object-cover transition-transform duration-300 hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                  <div className="absolute inset-0 bg-black opacity-0 hover:opacity-5 transition-opacity duration-300"></div>
                 </div>
               </Link>
             )}
 
-            {/* Story Footer - Author Info and Actions */}
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                {/* Author Info */}
-                <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-3 group flex-1 min-w-0">
-                  <div className="relative flex-shrink-0">
-                    <Image
-                      src={getAvatarUrl(story.author.avatar)}
-                      alt={story.author.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-semibold text-gray-900 truncate">{story.author.name}</h4>
-                    <p className="text-sm text-gray-500 truncate">@{story.author.username} • {story.timeAgo}</p>
-                  </div>
-                </Link>
+            {/* Author Info Section */}
+            <div className="px-10 py-8 bg-gray-50/50">
+              <Link href={`/profile/${story.author.username}`} className="flex items-center space-x-4 group">
+                <div className="relative flex-shrink-0">
+                  <Image
+                    src={getAvatarUrl(story.author.avatar)}
+                    alt={story.author.name}
+                    width={48}
+                    height={48}
+                    className="rounded-full transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-lg text-gray-900 truncate">{story.author.name}</h4>
+                  <p className="text-base text-gray-500 truncate">@{story.author.username} • {story.timeAgo}</p>
+                </div>
+              </Link>
+            </div>
 
-                {/* Actions */}
-                <div className="flex items-center space-x-3 flex-shrink-0 ml-4">
+            {/* Action Bar */}
+            <div className="px-10 py-6 bg-white border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-8">
                   <button
                     onClick={(e) => {
                       e.preventDefault()
@@ -436,33 +472,37 @@
                       toggleLike(story._id || story.id)
                     }}
                     disabled={likingStories.has(story._id || story.id)}
-                    className="flex items-center space-x-1 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-red-500 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50"
                   >
                     <Heart
-                      size={18}
+                      size={20}
                       className={`transition-all duration-300 ${likedStories.has(story._id || story.id) ? 'fill-red-500 text-red-500 animate-pulse' : 'hover:scale-110'}`}
                     />
-                    <span className="text-sm font-medium hidden sm:inline">
+                    <span className="text-base font-medium">
                       {story.stats?.likes || story.likes || 0}
                     </span>
                   </button>
 
-                  <Link
-                    href={`/story/${story._id || story.id}#comments`}
-                    className="flex items-center space-x-1 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                  <button
+                    onClick={() => {
+                      if (!requireAuth('comment on this story')) return
+                      window.location.href = `/story/${story.slug || story._id || story.id}#comments`
+                    }}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-blue-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
-                    <MessageCircle size={18} className="transition-transform duration-300 hover:scale-110" />
-                    <span className="text-sm font-medium hidden sm:inline">{story.stats?.comments || story.comments || 0}</span>
-                  </Link>
+                    <MessageCircle size={20} className="transition-transform duration-300 hover:scale-110" />
+                    <span className="text-base font-medium">{story.stats?.comments || story.comments || 0}</span>
+                  </button>
 
                   <button
                     onClick={() => toggleSave(story._id || story.id)}
-                    className="flex items-center text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
+                    className="flex items-center space-x-2 text-gray-600 hover:text-purple-500 transition-all duration-300 hover:scale-110 active:scale-95"
                   >
                     <Bookmark
-                      size={18}
-                      className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500 animate-bounce' : 'hover:scale-110'}`}
+                      size={20}
+                      className={`transition-all duration-300 ${savedStories.has(story._id || story.id) ? 'fill-purple-500 text-purple-500' : 'hover:scale-110'}`}
                     />
+                    <span className="text-base font-medium">Save</span>
                   </button>
                 </div>
               </div>
@@ -475,7 +515,7 @@
           <button 
             onClick={loadMoreStories}
             disabled={isLoading}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Loading...' : 'Load More Stories'}
           </button>

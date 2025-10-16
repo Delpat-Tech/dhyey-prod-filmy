@@ -7,8 +7,8 @@ const router = express.Router();
 // Public routes (with optional auth to track user interactions)
 router.get('/', authController.optionalAuth, storyController.getPublicStories);
 router.get('/search', authController.optionalAuth, storyController.searchStories);
-router.get('/:id', authController.optionalAuth, storyController.getStoryById);
-router.get('/user/:userId', authController.optionalAuth, storyController.getUserStories);
+router.get('/by-user/:userId', authController.optionalAuth, storyController.getUserStories);
+router.get('/:slug', authController.optionalAuth, storyController.getStoryBySlug);
 
 // Protected routes (require authentication)
 router.use(authController.protect);
@@ -28,14 +28,14 @@ router.patch('/:id',
 
 router.delete('/:id', storyController.deleteStory);
 
-// Story interactions
-router.post('/:id/like', storyController.toggleLikeStory);
-router.post('/:id/save', storyController.toggleSaveStory);
-router.post('/:id/share', storyController.shareStory);
+// Story interactions (using ObjectId)
+router.post('/id/:id/like', storyController.toggleLikeStory);
+router.post('/id/:id/save', storyController.toggleSaveStory);
+router.post('/id/:id/share', storyController.shareStory);
 
-// Comment routes
-router.get('/:id/comments', storyController.getStoryComments);
-router.post('/:id/comments', storyController.addComment);
-router.post('/:id/comments/:commentId/like', storyController.toggleLikeComment);
+// Comment routes (using ObjectId)
+router.get('/id/:id/comments', storyController.getStoryComments);
+router.post('/id/:id/comments', storyController.addComment);
+router.post('/id/:id/comments/:commentId/like', storyController.toggleLikeComment);
 
 module.exports = router;

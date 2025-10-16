@@ -7,7 +7,7 @@ import ProfileStats from './ProfileStats'
 import ProfileBio from './ProfileBio'
 import { shareProfile } from '@/lib/errorHandler'
 import { useAuth } from '@/contexts/AuthContext'
-import { userAPI } from '@/lib/api'
+import { userAPI, storyAPI } from '@/lib/api'
 import { getAvatarUrl } from '@/lib/imageUtils'
 
 interface ProfileHeaderProps {
@@ -29,7 +29,21 @@ export default function ProfileHeader({ username }: ProfileHeaderProps) {
         if (user) {
           try {
             const response = await userAPI.getMe()
-            setProfileData(response.data.user)
+            const userData = response.data.user
+            
+            // Fetch actual published story count
+            try {
+              const storiesResponse = await storyAPI.getUserStories(userData._id)
+              const publishedStories = storiesResponse.data.stories.filter((story: any) => story.status === 'approved' || story.status === 'published')
+              userData.stats = {
+                ...userData.stats,
+                stories: publishedStories.length
+              }
+            } catch (storyError) {
+              console.error('Error fetching user stories:', storyError)
+            }
+            
+            setProfileData(userData)
           } catch (error) {
             console.error('Error fetching user data:', error)
             setProfileData(user)

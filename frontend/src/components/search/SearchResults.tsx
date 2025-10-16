@@ -5,98 +5,44 @@ import Link from 'next/link'
 import { Heart, Bookmark, MessageCircle, Clock, Search } from 'lucide-react'
 import { getImageUrl, getAvatarUrl } from '@/lib/imageUtils'
 
+// Helper function to format time ago
+function formatTimeAgo(dateString: string | Date): string {
+  if (!dateString) return 'Unknown'
+  
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  
+  if (diffInSeconds < 60) return 'Just now'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
+  if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d`
+  if (diffInSeconds < 31536000) return `${Math.floor(diffInSeconds / 2592000)}mo`
+  return `${Math.floor(diffInSeconds / 31536000)}y`
+}
+
 interface SearchResultsProps {
   query: string
   searchType: 'all' | 'title' | 'author' | 'hashtag'
   genre: string
-  sortBy: string
+  sortBy?: string
   results?: any[]
   isLoading?: boolean
   hasSearched?: boolean
 }
 
-// Mock search results - replace with API calls later
-const mockResults = [
-  {
-    id: 1,
-    title: "The Digital Nomad's Journey",
-    author: {
-      name: "Alex Thompson",
-      username: "alexwrites",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"
-    },
-    excerpt: "Working from coffee shops around the world taught me more than any office ever could...",
-    image: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=300&h=200&fit=crop",
-    genre: "Non-Fiction",
-    likes: 342,
-    comments: 28,
-    saves: 89,
-    timeAgo: "3h",
-    hashtags: ["#travel", "#work", "#lifestyle"]
-  },
-  {
-    id: 2,
-    title: "Midnight in Tokyo",
-    author: {
-      name: "Yuki Tanaka",
-      username: "yukistories",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face"
-    },
-    excerpt: "The neon lights reflected off the wet streets as I walked through Shibuya, each step taking me further from my past...",
-    image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300&h=200&fit=crop",
-    genre: "Fiction",
-    likes: 567,
-    comments: 45,
-    saves: 123,
-    timeAgo: "5h",
-    hashtags: ["#tokyo", "#fiction", "#urban"]
-  },
-  {
-    id: 3,
-    title: "The Art of Letting Go",
-    author: {
-      name: "Maya Patel",
-      username: "mayapoetry",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face"
-    },
-    excerpt: "Like autumn leaves that dance on wind, our memories float away, leaving space for new growth...",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop",
-    genre: "Poetry",
-    likes: 234,
-    comments: 19,
-    saves: 67,
-    timeAgo: "1d",
-    hashtags: ["#poetry", "#healing", "#growth"]
-  }
-]
+// Helper function to get display query
+function getDisplayQuery(query: string, searchType: string): string {
+  // The query passed here is the original user input, not the formatted query
+  return query
+}
+
+
 
 export default function SearchResults({ query, searchType, genre, sortBy, results, isLoading, hasSearched }: SearchResultsProps) {
-  // Use real API results if available, fallback to mock data
-  const displayResults = results && results.length > 0 ? results : (hasSearched && results ? [] : mockResults)
-  
-  // Filter mock results for demo purposes (only if using mock data)
-  const filteredResults = !results ? displayResults.filter(story => {
-    if (genre !== 'All' && story.genre !== genre) return false
-    
-    if (!query) return true
-    
-    const searchLower = query.toLowerCase()
-    
-    switch (searchType) {
-      case 'title':
-        return story.title.toLowerCase().includes(searchLower)
-      case 'author':
-        return story.author.name.toLowerCase().includes(searchLower) || 
-               story.author.username.toLowerCase().includes(searchLower)
-      case 'hashtag':
-        return story.hashtags?.some((tag: string) => tag.toLowerCase().includes(searchLower))
-      default:
-        return story.title.toLowerCase().includes(searchLower) ||
-               story.author.name.toLowerCase().includes(searchLower) ||
-               story.hashtags?.some((tag: string) => tag.toLowerCase().includes(searchLower)) ||
-               story.excerpt?.toLowerCase().includes(searchLower)
-    }
-  }) : displayResults
+  // Use only real API results
+  const displayResults = results || []
+  const filteredResults = displayResults
 
   // Show loading state
   if (isLoading) {
@@ -111,11 +57,20 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
   if (!query && genre === 'All' && !hasSearched) {
     return (
       <div className="text-center py-12">
-        <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-          <Search size={32} className="text-gray-400" />
+        <div className="relative mx-auto mb-4 w-24 h-24">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full blur-sm opacity-30 animate-pulse"></div>
+          <div className="relative w-24 h-24 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-full flex items-center justify-center shadow-lg">
+            <Search size={32} className="text-purple-600" />
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Start Your Discovery</h3>
-        <p className="text-gray-600">Search for stories, authors, or hashtags to find amazing content</p>
+        <div className="relative">
+          <h3 className="text-xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Start Your Discovery
+          </h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            Search for stories, authors, or hashtags to find amazing content
+          </p>
+        </div>
       </div>
     )
   }
@@ -139,7 +94,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
           {filteredResults.length} result{filteredResults.length !== 1 ? 's' : ''} found
-          {query && ` for "${query}"`}
+          {query && ` for "${getDisplayQuery(query, searchType)}"`}
         </p>
       </div>
 
@@ -149,7 +104,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
             <div className="md:flex">
               {/* Story Image */}
               <div className="md:w-48 h-48 md:h-auto relative flex-shrink-0">
-                <Link href={`/story/${story._id || story.id}`}>
+                <Link href={`/story/${story.slug || story._id || story.id}`}>
                   <Image
                     src={getImageUrl(story.image)}
                     alt={story.title}
@@ -184,7 +139,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                         <span>•</span>
                         <div className="flex items-center space-x-1">
                           <Clock size={12} />
-                          <span>{story.timeAgo}</span>
+                          <span>{story.timeAgo || formatTimeAgo(story.publishedAt || story.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -194,7 +149,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                   </span>
                 </div>
 
-                <Link href={`/story/${story._id || story.id}`}>
+                <Link href={`/story/${story.slug || story._id || story.id}`}>
                   <h3 className="font-bold text-lg text-gray-900 mb-2 hover:text-purple-600 transition-colors">
                     {story.title}
                   </h3>
@@ -217,21 +172,21 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
                   <div className="flex items-center space-x-6 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
                       <Heart size={16} />
-                      <span>{story.likes}</span>
+                      <span>{story.likes || story.stats?.likes || 0}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <MessageCircle size={16} />
-                      <span>{story.comments}</span>
+                      <span>{story.comments || story.stats?.comments || 0}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Bookmark size={16} />
-                      <span>{story.saves}</span>
+                      <span>{story.saves || story.stats?.saves || 0}</span>
                     </div>
                   </div>
                   
                   <Link 
-                    href={`/story/${story.id}`}
-                    className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+                    href={`/story/${story.slug || story._id || story.id}`}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-md text-sm inline-block"
                   >
                     Read More
                   </Link>
@@ -244,7 +199,7 @@ export default function SearchResults({ query, searchType, genre, sortBy, result
 
       {/* Load More */}
       <div className="text-center py-8">
-        <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all">
+        <button className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-10 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 transform disabled:opacity-50 disabled:cursor-not-allowed">
           Load More Results
         </button>
       </div>

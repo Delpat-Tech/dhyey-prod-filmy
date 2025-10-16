@@ -52,9 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const storedUser = localStorage.getItem('dhyey_user')
-      const token = localStorage.getItem('dhyey_token')
-      const tokenExpiry = localStorage.getItem('dhyey_token_expiry')
+      const storedUser = sessionStorage.getItem('dhyey_user')
+      const token = sessionStorage.getItem('dhyey_token')
+      const tokenExpiry = sessionStorage.getItem('dhyey_token_expiry')
       
       if (storedUser && token) {
         // Check if token is expired
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkTokenValidity = async (): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('dhyey_token')
+      const token = sessionStorage.getItem('dhyey_token')
       if (!token) return false
 
       // Try to make an authenticated request to verify token
@@ -142,10 +142,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         : new Date().getTime() + (24 * 60 * 60 * 1000) // 24 hours
 
       // Store user data, token, and expiry
-      localStorage.setItem('dhyey_user', JSON.stringify(userData))
-      localStorage.setItem('dhyey_token', data.token)
-      localStorage.setItem('dhyey_token_expiry', expiryTime.toString())
-      localStorage.setItem('dhyey_remember_me', rememberMe.toString())
+      sessionStorage.setItem('dhyey_user', JSON.stringify(userData))
+      sessionStorage.setItem('dhyey_token', data.token)
+      sessionStorage.setItem('dhyey_token_expiry', expiryTime.toString())
+      sessionStorage.setItem('dhyey_remember_me', rememberMe.toString())
       
       setUser(userData)
     } catch (error: any) {
@@ -175,8 +175,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Store user data and token
-      localStorage.setItem('dhyey_user', JSON.stringify(newUser))
-      localStorage.setItem('dhyey_token', data.token)
+      sessionStorage.setItem('dhyey_user', JSON.stringify(newUser))
+      sessionStorage.setItem('dhyey_token', data.token)
       setUser(newUser)
     } finally {
       setIsLoading(false)
@@ -192,11 +192,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Continue with local logout even if backend fails
     }
     
-    // Clear local storage
-    localStorage.removeItem('dhyey_user')
-    localStorage.removeItem('dhyey_token')
-    localStorage.removeItem('dhyey_token_expiry')
-    localStorage.removeItem('dhyey_remember_me')
+    // Clear session storage
+    sessionStorage.removeItem('dhyey_user')
+    sessionStorage.removeItem('dhyey_token')
+    sessionStorage.removeItem('dhyey_token_expiry')
+    sessionStorage.removeItem('dhyey_remember_me')
     setUser(null)
     
     // Redirect to login page
@@ -209,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) {
       const updatedUser = { ...user, ...userData }
       setUser(updatedUser)
-      localStorage.setItem('dhyey_user', JSON.stringify(updatedUser))
+      sessionStorage.setItem('dhyey_user', JSON.stringify(updatedUser))
     }
   }
 

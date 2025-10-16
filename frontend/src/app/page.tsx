@@ -4,8 +4,8 @@ import { useEffect } from 'react'
 
 export default function HomePage() {
   useEffect(() => {
-    // Always redirect to login page
-    window.location.href = '/auth/login'
+    // Always redirect to dashboard (both authenticated and guest users)
+    window.location.href = '/dashboard'
   }, [])
 
   return (

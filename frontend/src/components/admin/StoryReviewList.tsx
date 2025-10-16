@@ -488,7 +488,7 @@ export default function StoryReviewList() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0 pr-4">
                       <Link 
-                        href={`/admin/stories/${story.id}`}
+                        href={`/admin/stories/${story._id || story.id}`}
                         className="text-lg font-semibold text-gray-900 hover:text-purple-600 block"
                       >
                         {story.title}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import StoryHeader from '@/components/story/StoryHeader'
 import StoryContent from '@/components/story/StoryContent'
 import StoryActions from '@/components/story/StoryActions'
@@ -60,13 +60,14 @@ She stepped off the train and into her new life, ready to write the next chapter
   }
 }
 
-export default function StoryPage({ params }: { params: { id: string } }) {
+export default function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const [story, setStory] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { slug } = use(params) // Unwrap params Promise
 
   const loadStory = async () => {
     try {
-      const response = await storyAPI.getStoryById(params.id)
+      const response = await storyAPI.getStoryBySlug(slug)
       const storyData = response.data.story
       console.log('Loaded story bookmark state:', storyData.isSaved)
       setStory(storyData)
@@ -77,7 +78,7 @@ export default function StoryPage({ params }: { params: { id: string } }) {
         setStory(null)
       } else {
         // Only use mock data for clearly mock IDs
-        setStory(getMockStoryData(params.id))
+        setStory(getMockStoryData(slug))
       }
     } finally {
       setIsLoading(false)
@@ -89,7 +90,7 @@ export default function StoryPage({ params }: { params: { id: string } }) {
     
     // Listen for story updates (like new comments)
     const handleStoryUpdate = (event: CustomEvent) => {
-      if (event.detail.storyId === parseInt(params.id)) {
+      if (event.detail.storySlug === slug) {
         loadStory()
       }
     }
@@ -99,7 +100,7 @@ export default function StoryPage({ params }: { params: { id: string } }) {
     return () => {
       window.removeEventListener('storyUpdated', handleStoryUpdate as EventListener)
     }
-  }, [params.id])
+  }, [slug])
 
   if (isLoading) {
     return (

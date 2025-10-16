@@ -33,7 +33,15 @@ const app = express();
 // 1) GLOBAL MIDDLEWARES
 // Implement CORS
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://api.dhyey.delpat.in'],
+  origin: [
+    'http://localhost:3000', 
+    'http://localhost:3001', 
+    'http://127.0.0.1:3000',
+    'http://192.168.56.1:3001',
+    'https://dhyey.delpat.in',
+    'https://api.dhyey.delpat.in',
+    'https://dhyey-prod-filmy-frontend.onrender.com'
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -99,6 +107,12 @@ app.use((req, res, next) => {
   // console.log(req.cookies);
   next();
 });
+
+// Ignore root request
+app.get('/', (req, res) => res.status(200).json({ message: 'API is running' }));
+
+// Ignore favicon
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({

@@ -1,5 +1,6 @@
 import JudgingInterface from '@/components/admin/JudgingInterface'
 
-export default function JudgingPage({ params }: { params: { id: string } }) {
-  return <JudgingInterface competitionId={params.id} />
+export default async function JudgingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  return <JudgingInterface competitionId={id} />
 }

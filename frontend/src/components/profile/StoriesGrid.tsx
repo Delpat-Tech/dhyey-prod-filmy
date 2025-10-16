@@ -12,6 +12,7 @@ import { storyAPI } from '@/lib/api'
 interface Story {
   _id: string
   title: string
+  slug?: string
   image?: string
   genre: string
   stats: {
@@ -95,7 +96,7 @@ export default function StoriesGrid() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {publishedStories.map((story) => (
-              <Link key={story._id} href={`/story/${story._id}`} className="group">
+              <Link key={story._id} href={`/story/${story.slug || story._id}`} className="group">
                 <div className="relative aspect-square rounded-2xl overflow-hidden border border-purple-200/70 bg-gradient-to-br from-purple-700 via-indigo-700 to-slate-900 shadow-md shadow-purple-200/40">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-4xl font-semibold text-white/90 tracking-[0.35em]">
@@ -154,7 +155,7 @@ export default function StoriesGrid() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {reviewStories.map((story) => (
-              <Link key={story._id} href={`/story/${story._id}`} className="group">
+              <Link key={story._id} href={`/story/${story.slug || story._id}`} className="group">
                 <div className="relative aspect-square rounded-2xl overflow-hidden border border-yellow-200/70 bg-gradient-to-br from-yellow-600 via-orange-600 to-red-700 shadow-md shadow-yellow-200/40">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-4xl font-semibold text-white/90 tracking-[0.35em]">
@@ -241,7 +242,7 @@ export default function StoriesGrid() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             {rejectedStories.map((story) => (
-              <Link key={story._id} href={`/story/${story._id}`} className="group">
+              <Link key={story._id} href={`/story/${story.slug || story._id}`} className="group">
                 <div className="relative aspect-square rounded-2xl overflow-hidden border border-red-200/70 bg-gradient-to-br from-red-600 via-pink-600 to-rose-700 shadow-md shadow-red-200/40">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-4xl font-semibold text-white/90 tracking-[0.35em]">
@@ -286,7 +287,7 @@ export default function StoriesGrid() {
           <p className="text-gray-600 mb-4">Start sharing your creativity with the world</p>
           <Link 
             href="/create"
-            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-medium hover:from-purple-600 hover:to-pink-600 transition-all"
+            className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-3 rounded-full font-medium hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 hover:scale-105 hover:shadow-lg active:scale-95 shadow-md"
           >
             <Plus size={16} />
             <span>Create Your First Story</span>

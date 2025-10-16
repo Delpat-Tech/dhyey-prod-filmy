@@ -18,20 +18,9 @@ export default function SearchInterface() {
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'Latest')
   const [showFilters, setShowFilters] = useState(false)
   const [searchType, setSearchType] = useState<'all' | 'title' | 'author' | 'hashtag'>((searchParams.get('type') as any) || 'all')
-  const [searchResults, setSearchResults] = useState<any[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = sessionStorage.getItem('searchResults')
-      return saved ? JSON.parse(saved) : []
-    }
-    return []
-  })
+  const [searchResults, setSearchResults] = useState<any[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const [hasSearched, setHasSearched] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasSearched') === 'true'
-    }
-    return false
-  })
+  const [hasSearched, setHasSearched] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
 
   const updateURL = (query: string, type: string, genre: string, sort: string) => {
@@ -123,8 +112,6 @@ export default function SearchInterface() {
       console.log('Found', results.length, 'stories:', results)
 
       setSearchResults(results)
-      sessionStorage.setItem('searchResults', JSON.stringify(results))
-      sessionStorage.setItem('hasSearched', 'true')
     } catch (error) {
       console.error('Search failed:', error)
       // Show more detailed error information
@@ -153,11 +140,6 @@ export default function SearchInterface() {
 
   // Auto-search when query changes (with debounce)
   useEffect(() => {
-    // Don't auto-search if we already have cached results for this query
-    if (hasSearched && searchResults.length > 0) {
-      return
-    }
-    
     const timer = setTimeout(() => {
       if (searchQuery.length >= 2) {
         console.log('Auto-searching for:', searchQuery)
@@ -166,11 +148,9 @@ export default function SearchInterface() {
         setSearchResults([])
         setHasSearched(false)
         setSearchError(null)
-        sessionStorage.removeItem('searchResults')
-        sessionStorage.removeItem('hasSearched')
         updateURL('', searchType, selectedGenre, sortBy)
       }
-    }, 500) // 500ms debounce
+    }, 300) // 300ms debounce
 
     return () => clearTimeout(timer)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -189,8 +169,6 @@ export default function SearchInterface() {
     setSearchError(null)
     setSearchResults([])
     setHasSearched(false)
-    sessionStorage.removeItem('searchResults')
-    sessionStorage.removeItem('hasSearched')
     updateURL('', searchType, selectedGenre, sortBy)
   }
 

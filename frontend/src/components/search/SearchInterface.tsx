@@ -72,7 +72,7 @@ export default function SearchInterface() {
         responses.forEach(response => {
           if (response.status === 'fulfilled' && response.value?.status === 'success') {
             const stories = response.value.stories || []
-            stories.forEach(story => {
+            stories.forEach((story: any) => {
               const key = story._id || story.id
               if (key && !allResults.has(key)) {
                 allResults.set(key, story)

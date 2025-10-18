@@ -52,9 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     try {
-      const storedUser = sessionStorage.getItem('dhyey_user')
-      const token = sessionStorage.getItem('dhyey_token')
-      const tokenExpiry = sessionStorage.getItem('dhyey_token_expiry')
+      // Check both sessionStorage and localStorage for consistency
+      const storedUser = sessionStorage.getItem('dhyey_user') || localStorage.getItem('dhyey_user')
+      const token = sessionStorage.getItem('dhyey_token') || localStorage.getItem('dhyey_token')
+      const tokenExpiry = sessionStorage.getItem('dhyey_token_expiry') || localStorage.getItem('dhyey_token_expiry')
       
       if (storedUser && token) {
         // Check if token is expired
@@ -64,8 +65,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return
         }
         
+        const userData = JSON.parse(storedUser)
+        
+        // Validate user role exists and is valid
+        if (!userData.role) {
+          userData.role = 'user' // Default to user if role is missing
+        }
+        
         // ✅ PERFORMANCE FIX: Trust localStorage, set user immediately
-        setUser(JSON.parse(storedUser))
+        setUser(userData)
         
         // ✅ Validate token in background (non-blocking)
         validateTokenInBackground(token)
@@ -147,6 +155,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem('dhyey_token_expiry', expiryTime.toString())
       sessionStorage.setItem('dhyey_remember_me', rememberMe.toString())
       
+      // Also store in localStorage for consistency with other login forms
+      localStorage.setItem('dhyey_user', JSON.stringify(userData))
+      localStorage.setItem('dhyey_token', data.token)
+      localStorage.setItem('dhyey_token_expiry', expiryTime.toString())
+      
       setUser(userData)
     } catch (error: any) {
       // Re-throw the error with proper message for suspended accounts
@@ -192,11 +205,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Continue with local logout even if backend fails
     }
     
-    // Clear session storage
+    // Clear both session and local storage
     sessionStorage.removeItem('dhyey_user')
     sessionStorage.removeItem('dhyey_token')
     sessionStorage.removeItem('dhyey_token_expiry')
     sessionStorage.removeItem('dhyey_remember_me')
+    
+    localStorage.removeItem('dhyey_user')
+    localStorage.removeItem('dhyey_token')
+    localStorage.removeItem('dhyey_token_expiry')
+    
     setUser(null)
     
     // Redirect to login page

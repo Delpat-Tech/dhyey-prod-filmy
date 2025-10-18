@@ -26,20 +26,40 @@ export default function LoginPage() {
       
       // Store token if needed
       if (response.data.token) {
-        localStorage.setItem('dhyey_token', response.data.token)
-        localStorage.setItem('dhyey_user', JSON.stringify(response.data.data.user))
-        // Set expiry (24 hours from now)
+        const userData = response.data.data.user
         const expiryTime = new Date().getTime() + (24 * 60 * 60 * 1000)
+        
+        // Store in both localStorage and sessionStorage for consistency
+        localStorage.setItem('dhyey_token', response.data.token)
+        localStorage.setItem('dhyey_user', JSON.stringify(userData))
         localStorage.setItem('dhyey_token_expiry', expiryTime.toString())
+        
+        sessionStorage.setItem('dhyey_token', response.data.token)
+        sessionStorage.setItem('dhyey_user', JSON.stringify(userData))
+        sessionStorage.setItem('dhyey_token_expiry', expiryTime.toString())
+        
         console.log('Token stored:', response.data.token)
+        console.log('User role:', userData.role)
+        
         // Set cookie for middleware
         document.cookie = `token=${response.data.token}; path=/; max-age=2592000` // 30 days
+        
+        // Role-based redirect
+        if (userData.role === 'admin' || userData.role === 'moderator') {
+          setTimeout(() => {
+            router.push('/admin')
+          }, 1000)
+        } else {
+          setTimeout(() => {
+            router.push('/dashboard')
+          }, 1000)
+        }
+      } else {
+        // Fallback redirect
+        setTimeout(() => {
+          router.push('/')
+        }, 1000)
       }
-      
-      // Redirect to home page after 1 second
-      setTimeout(() => {
-        router.push('/')
-      }, 1000)
       
     } catch (error: any) {
       setMessage(error.response?.data?.message || 'Login failed')

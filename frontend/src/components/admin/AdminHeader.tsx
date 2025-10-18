@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Settings, LogOut, User, Menu, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { getAvatarUrl } from '@/lib/imageUtils'
+import { debugAuthState } from '@/lib/authDebug'
 
 export default function AdminHeader() {
 
@@ -32,6 +33,13 @@ export default function AdminHeader() {
       router.push('/auth/login')
     }
   }
+
+  // Debug authentication state on component mount
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      debugAuthState()
+    }
+  }, [user])
 
 
 

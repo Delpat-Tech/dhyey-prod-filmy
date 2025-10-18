@@ -65,27 +65,38 @@ export default function LoginForm() {
     try {
       await login(formData.email, formData.password, formData.rememberMe)
       
-      // Get the user from localStorage to check role
-      const storedUser = localStorage.getItem('dhyey_user')
+      // Get the user from both storage methods to check role
+      const storedUser = sessionStorage.getItem('dhyey_user') || localStorage.getItem('dhyey_user')
       const user = storedUser ? JSON.parse(storedUser) : null
       
-      if (user && user.role === 'admin') {
-        // Admin user - redirect to admin panel
+      if (user && (user.role === 'admin' || user.role === 'moderator')) {
+        // Admin/Moderator user - redirect to admin panel
         showNotification({
           type: 'success',
           title: 'Admin Login Successful!',
-          message: 'Welcome to the admin panel'
+          message: `Welcome to the admin panel, ${user.name}!`
         })
         
         setTimeout(() => {
           window.location.href = '/admin'
         }, 1000)
-      } else {
+      } else if (user && user.role === 'user') {
         // Regular user - redirect to dashboard
         showNotification({
           type: 'success',
           title: 'Login Successful!',
-          message: 'Welcome back to Dhyey'
+          message: `Welcome back to Dhyey, ${user.name}!`
+        })
+        
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
+      } else {
+        // Fallback for users without proper role
+        showNotification({
+          type: 'warning',
+          title: 'Login Successful!',
+          message: 'Redirecting to dashboard...'
         })
         
         setTimeout(() => {

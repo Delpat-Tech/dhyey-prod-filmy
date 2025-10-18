@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import AdminHeader from '@/components/admin/AdminHeader'
+import AdminAuthGuard from '@/components/admin/AdminAuthGuard'
 
 export default function AdminLayout({
   children,
@@ -16,21 +17,23 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <AdminHeader />
-      
-      <div className="flex">
-        {/* Admin Sidebar */}
-        <AdminSidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+    <AdminAuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        {/* Admin Header */}
+        <AdminHeader />
         
-        {/* Main Content */}
-        <main className={`flex-1 p-6 transition-all duration-300 ${
-          sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-        }`}>
-          {children}
-        </main>
+        <div className="flex">
+          {/* Admin Sidebar */}
+          <AdminSidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
+          
+          {/* Main Content */}
+          <main className={`flex-1 p-6 transition-all duration-300 ${
+            sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          }`}>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </AdminAuthGuard>
   )
 }
